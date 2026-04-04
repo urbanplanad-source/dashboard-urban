@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>이치과 — 마케팅 보고서</title>
+  <style>
+    :root { --primary:#1a1a2e; --accent:#10b981; --accent-light:#d1fae5; --bg:#f7f5f2; --card:#fff; --text:#2d2d2d; --muted:#888; --border:#e8e0d6; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+    .site-header { background:var(--primary); padding:24px 40px; display:flex; align-items:center; justify-content:space-between; }
+    .logo { display:flex; align-items:center; gap:14px; }
+    .logo-badge { width:42px; height:42px; background:var(--accent); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px; }
+    .logo-text h1 { font-size:18px; font-weight:700; color:#fff; }
+    .logo-text p { font-size:12px; color:rgba(255,255,255,0.5); margin-top:2px; }
+    .header-tag { background:rgba(16,185,129,0.2); color:var(--accent); font-size:12px; font-weight:600; padding:6px 14px; border-radius:20px; border:1px solid rgba(16,185,129,0.4); }
+    .container { max-width:960px; margin:0 auto; padding:40px 24px; }
+    .timeline-label { font-size:12px; font-weight:700; color:var(--muted); letter-spacing:1px; text-transform:uppercase; margin-bottom:20px; }
+    .month-tabs { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:36px; }
+    .month-tab { padding:8px 20px; border-radius:20px; font-size:14px; font-weight:600; cursor:pointer; border:2px solid var(--border); background:var(--card); color:var(--muted); transition:all 0.2s; }
+    .month-tab.active { background:var(--primary); color:#fff; border-color:var(--primary); }
+    .month-tab:hover:not(.active) { border-color:var(--accent); color:var(--accent); }
+    .report-panel { display:none; } .report-panel.active { display:block; }
+    .summary-band { background:var(--primary); border-radius:16px; padding:28px 32px; margin-bottom:28px; color:#fff; }
+    .band-title { font-size:13px; color:rgba(255,255,255,0.5); font-weight:600; letter-spacing:0.5px; margin-bottom:6px; }
+    .band-month { font-size:28px; font-weight:800; color:var(--accent); margin-bottom:16px; }
+    .band-points { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:12px; }
+    .band-point { display:flex; gap:10px; align-items:flex-start; }
+    .band-point .dot { width:6px; height:6px; background:var(--accent); border-radius:50%; margin-top:7px; flex-shrink:0; }
+    .band-point p { font-size:14px; line-height:1.6; color:rgba(255,255,255,0.85); }
+    .section-card { background:var(--card); border-radius:14px; border:1px solid var(--border); margin-bottom:20px; overflow:hidden; }
+    .section-header { padding:18px 24px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
+    .section-header .icon { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px; background:#fff8e6; }
+    .section-header h3 { font-size:15px; font-weight:700; }
+    .section-body { padding:20px 24px; }
+    .status-item { display:flex; align-items:flex-start; gap:10px; padding:10px 0; border-bottom:1px solid var(--border); }
+    .status-item:last-child { border-bottom:none; }
+    .status-dot { width:8px; height:8px; border-radius:50%; margin-top:6px; flex-shrink:0; background:#c9a96e; }
+    .status-item p { font-size:14px; line-height:1.6; }
+    .site-footer { background:var(--primary); color:rgba(255,255,255,0.35); text-align:center; padding:20px; font-size:12px; margin-top:60px; }
+    .empty-state { text-align:center; padding:80px 20px; color:var(--muted); }
+    .empty-state .e-icon { font-size:48px; margin-bottom:16px; }
+    .empty-state h3 { font-size:18px; margin-bottom:8px; color:var(--text); }
+    .empty-state p { font-size:14px; line-height:1.7; }
+  </style>
+</head>
+<body>
+<header class="site-header">
+  <div class="logo">
+    <div class="logo-badge">🦷</div>
+    <div class="logo-text"><h1>이치과</h1><p>월간 마케팅 결과보고 대시보드</p></div>
+  </div>
+  <div class="header-tag">어반플랜애드 제공</div>
+</header>
+<main class="container">
+  <p class="timeline-label">보고서 목록</p>
+  <div class="month-tabs">
+    <div class="month-tab active" onclick="switchTab('mar', event)">2026년 3월</div>
+    <div class="month-tab" onclick="switchTab('feb', event)">2026년 2월</div>
+  </div>
+
+  <div class="report-panel active" id="panel-mar">
+
+    <!-- 요약 배너 -->
+    <div class="summary-band">
+      <div class="band-title">MONTHLY SUMMARY</div>
+      <div class="band-month">2026년 3월 마케팅 결과보고</div>
+      <div class="band-points">
+        <div class="band-point"><div class="dot"></div><p><strong>'제주치과·제주사랑니' 순위 10위권 안착</strong> — 3월 말 기준 10위 안정 유지 중</p></div>
+        <div class="band-point"><div class="dot"></div><p>3월 초 <strong>11위</strong>에서 출발, 월말에 <strong>10위로 상승</strong> — 목표 키워드 상위 노출 강화 중</p></div>
+        <div class="band-point"><div class="dot"></div><p>일시적 12위 구간 이후 빠르게 회복·상승 — 순위 관리 안정적으로 유지되고 있음</p></div>
+      </div>
+    </div>
+
+    <!-- 핵심 지표 -->
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-bottom:28px;">
+      <div style="background:var(--accent-light);border-radius:14px;padding:22px 24px;border:1px solid var(--accent);">
+        <div style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:8px;">3월 말 현재 순위</div>
+        <div style="font-size:36px;font-weight:800;color:#059669;">10위</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:6px;">3/21~ 안정 유지</div>
+      </div>
+      <div style="background:#fff;border-radius:14px;padding:22px 24px;border:1px solid var(--border);">
+        <div style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:8px;">3월 시작 순위</div>
+        <div style="font-size:36px;font-weight:800;color:var(--primary);">11위</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:6px;">3/4 기준</div>
+      </div>
+      <div style="background:#fff;border-radius:14px;padding:22px 24px;border:1px solid var(--border);">
+        <div style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:8px;">순위 변동폭</div>
+        <div style="font-size:36px;font-weight:800;color:#059669;">+1계단</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:6px;">11위 → 10위 상승</div>
+      </div>
+      <div style="background:#fff;border-radius:14px;padding:22px 24px;border:1px solid var(--border);">
+        <div style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:8px;">목표 키워드</div>
+        <div style="font-size:15px;font-weight:800;color:var(--primary);line-height:1.5;margin-top:4px;">제주치과<br>제주사랑니</div>
+      </div>
+    </div>
+
+    <!-- 순위 추이 상세 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon">🥇</div>
+        <h3>네이버 플레이스 순위 추이 (제주치과·제주사랑니)</h3>
+      </div>
+      <div class="section-body">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:18px;">
+          <div style="background:#ecfdf5;border-radius:10px;padding:12px 14px;border:1px solid #6ee7b7;">
+            <div style="font-size:10px;font-weight:700;color:#065f46;margin-bottom:4px;">3/4 ~ 3/8</div>
+            <div style="font-size:22px;font-weight:800;color:#059669;">11위</div>
+            <div style="font-size:11px;color:var(--muted);">안정적 시작</div>
+          </div>
+          <div style="background:#fff8e6;border-radius:10px;padding:12px 14px;border:1px solid #e8c96e;">
+            <div style="font-size:10px;font-weight:700;color:#8a6230;margin-bottom:4px;">3/9 ~ 3/18</div>
+            <div style="font-size:22px;font-weight:800;color:#c9a96e;">12위</div>
+            <div style="font-size:11px;color:var(--muted);">소폭 하락 구간</div>
+          </div>
+          <div style="background:#ecfdf5;border-radius:10px;padding:12px 14px;border:1px solid #6ee7b7;">
+            <div style="font-size:10px;font-weight:700;color:#065f46;margin-bottom:4px;">3/19 ~ 3/20</div>
+            <div style="font-size:22px;font-weight:800;color:#059669;">11위</div>
+            <div style="font-size:11px;color:var(--muted);">빠른 회복</div>
+          </div>
+          <div style="background:#d1fae5;border-radius:10px;padding:12px 14px;border:1px solid var(--accent);">
+            <div style="font-size:10px;font-weight:700;color:#065f46;margin-bottom:4px;">3/21 ~ 4/2</div>
+            <div style="font-size:22px;font-weight:800;color:#059669;">10위 ✓</div>
+            <div style="font-size:11px;color:var(--muted);">월말 안정 유지</div>
+          </div>
+        </div>
+
+        <div class="status-item">
+          <div class="status-dot" style="background:#059669;"></div>
+          <p><strong>제주치과·제주사랑니</strong> 키워드 기준 10위권 진입 — 상위 페이지 노출 확보, 검색 유입 개선 기대</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot" style="background:#c9a96e;"></div>
+          <p>3/9~3/18 일시적 12위 하락 → 3/19 이후 신속 회복 및 10위 추가 상승 — 순위 탄력적 유지 확인</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot" style="background:#059669;"></div>
+          <p>3월 말~4월 초까지 <strong>10위 연속 유지 중</strong> — 4월에도 현 순위 방어 및 추가 상승 작업 지속 예정</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 블로그 콘텐츠 발행 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon">📝</div>
+        <h3>순위관리용 의학정보 블로그 발행 <span style="display:inline-block;background:var(--accent);color:#fff;font-size:11px;font-weight:800;padding:3px 9px;border-radius:10px;margin-left:8px;vertical-align:middle;">50건</span></h3>
+      </div>
+      <div class="section-body">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:16px;">
+          <div style="background:var(--accent-light);border-radius:10px;padding:16px;text-align:center;border:1px solid var(--accent);">
+            <div style="font-size:32px;font-weight:800;color:#059669;">50건</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px;">3월 발행 완료</div>
+          </div>
+          <div style="background:#fff;border-radius:10px;padding:16px;border:1px solid var(--border);">
+            <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px;">발행 목적</div>
+            <div style="font-size:13px;font-weight:600;line-height:1.5;">제주치과·제주사랑니<br>키워드 순위 강화</div>
+          </div>
+          <div style="background:#fff;border-radius:10px;padding:16px;border:1px solid var(--border);">
+            <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px;">콘텐츠 유형</div>
+            <div style="font-size:13px;font-weight:600;line-height:1.5;">치과 의학정보<br>SEO 최적화 포스팅</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-top:1px solid var(--border);">
+          <div style="width:8px;height:8px;border-radius:50%;background:#059669;margin-top:6px;flex-shrink:0;"></div>
+          <p style="font-size:14px;line-height:1.6;">월 50건 꾸준한 의학정보 콘텐츠 발행 — <strong>'제주치과·제주사랑니'</strong> 키워드 순위 상승의 핵심 기반 작업</p>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;">
+          <div style="width:8px;height:8px;border-radius:50%;background:#c9a96e;margin-top:6px;flex-shrink:0;"></div>
+          <p style="font-size:14px;line-height:1.6;">블로그 콘텐츠 누적이 검색 알고리즘 신호로 작용 → 11위→10위 상승 및 안정 유지와 직결</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4월 방향 -->
+    <div style="background:var(--accent-light);border:1px solid var(--accent);border-radius:14px;padding:24px 28px;margin-bottom:20px;">
+      <h3 style="font-size:15px;font-weight:700;color:#059669;margin-bottom:16px;">🦷 4월 순위 관리 방향</h3>
+      <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:10px;">
+        <div style="min-width:24px;height:24px;background:var(--accent);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;">1</div>
+        <p style="font-size:14px;line-height:1.6;padding-top:2px;"><strong>'제주치과' 키워드 10위 방어</strong> — 현 순위 이탈 없이 안정 유지</p>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:10px;">
+        <div style="min-width:24px;height:24px;background:var(--accent);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;">2</div>
+        <p style="font-size:14px;line-height:1.6;padding-top:2px;"><strong>'제주사랑니' 키워드 추가 상승</strong> 목표 — 상위 9위 이상 진입 추진</p>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:12px;">
+        <div style="min-width:24px;height:24px;background:var(--accent);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;">3</div>
+        <p style="font-size:14px;line-height:1.6;padding-top:2px;">리뷰 수·최신성 지속 관리 — 플레이스 알고리즘 안정성 확보 유지</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="report-panel" id="panel-feb">
+    <div class="empty-state"><div class="e-icon">📋</div><h3>2월 보고서 준비 중</h3><p>2026년 2월 마케팅 결과보고서가 준비되면 이 화면이 업데이트됩니다.</p></div>
+  </div>
+</main>
+<footer class="site-footer">© 2026 어반플랜애드 · 이치과 전용 보고 대시보드</footer>
+<script>
+  function switchTab(id, event) {
+    document.querySelectorAll('.month-tab').forEach(t=>t.classList.remove('active'));
+    if (event && event.currentTarget) event.currentTarget.classList.add('active');
+    document.querySelectorAll('.report-panel').forEach(p=>p.classList.remove('active'));
+    document.getElementById('panel-'+id).classList.add('active');
+  }
+</script>
+</body>
+</html>

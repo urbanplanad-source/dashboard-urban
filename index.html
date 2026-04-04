@@ -1,0 +1,2009 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>어반플랜애드 — 업무 대시보드</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: { colors: { primary: '#1a1a2e', accent: '#c9a96e' } } }
+    };
+  </script>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    body { font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; background: #f0f2f5; }
+    ::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+
+    .sb { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; white-space:nowrap; }
+    .sb-대기         { background:#f3f4f6; color:#6b7280; }
+    .sb-진행중       { background:#dbeafe; color:#1d4ed8; }
+    .sb-검토중       { background:#ede9fe; color:#6d28d9; }
+    .sb-피드백대기   { background:#ffedd5; color:#c2410c; }
+    .sb-완료         { background:#d1fae5; color:#065f46; }
+
+    .pb { display:inline-flex; font-size:10px; font-weight:700; padding:2px 8px; border-radius:20px; }
+    .pb-높음 { background:#fee2e2; color:#b91c1c; }
+    .pb-중간 { background:#fef3c7; color:#b45309; }
+    .pb-낮음 { background:#f3f4f6; color:#6b7280; }
+
+    .spec-badge { font-size:11px; font-weight:700; padding:3px 9px; border-radius:20px; display:inline-block; }
+    .spec-피부과   { background:#fde8ec; color:#be185d; }
+    .spec-성형외과 { background:#ede9fe; color:#6d28d9; }
+    .spec-안과     { background:#dbeafe; color:#1e40af; }
+    .spec-치과     { background:#d1fae5; color:#065f46; }
+    .spec-이사     { background:#fef3c7; color:#b45309; }
+    .spec-한의원   { background:#dcfce7; color:#166534; }
+    .spec-기타     { background:#f3f4f6; color:#6b7280; }
+
+    .card-hover { transition: box-shadow 0.15s, transform 0.15s; cursor:pointer; }
+    .card-hover:hover { box-shadow:0 6px 22px rgba(0,0,0,0.1); transform:translateY(-2px); }
+
+    .modal-bg { position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:200; display:flex; align-items:center; justify-content:center; padding:20px; }
+    .modal-box { background:#fff; border-radius:16px; max-width:540px; width:100%; max-height:90vh; overflow-y:auto; padding:28px; }
+
+    .fi { width:100%; padding:9px 12px; border:1px solid #d1d5db; border-radius:8px; font-size:13px; outline:none; font-family:inherit; background:#fff; }
+    .fi:focus { border-color:#c9a96e; box-shadow:0 0 0 2px rgba(201,169,110,0.2); }
+    .fi-label { font-size:12px; font-weight:700; color:#374151; margin-bottom:4px; display:block; }
+
+    .btn-primary { background:#1a1a2e; color:#fff; border:none; border-radius:8px; padding:9px 18px; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; }
+    .btn-primary:hover { background:#2d2d50; }
+    .btn-danger  { background:#dc2626; color:#fff; border:none; border-radius:8px; padding:9px 18px; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; }
+    .btn-ghost   { background:transparent; color:#6b7280; border:1px solid #e5e7eb; border-radius:8px; padding:9px 18px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; }
+    .btn-ghost:hover { background:#f9fafb; }
+    .btn-icon    { background:transparent; border:none; cursor:pointer; padding:4px 6px; border-radius:6px; font-size:14px; color:#9ca3af; }
+    .btn-icon:hover { background:#f3f4f6; color:#374151; }
+
+    .section-title { font-size:11px; font-weight:700; color:#9ca3af; letter-spacing:1px; text-transform:uppercase; margin-bottom:14px; }
+
+    /* Progress bar */
+    .prog-track { background:#f3f4f6; border-radius:99px; height:7px; overflow:hidden; margin-top:5px; }
+    .prog-fill  { height:100%; border-radius:99px; transition:width 0.4s ease; }
+
+    /* Common Tasks Card */
+    .ct-item { display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:8px; transition:background 0.12s; }
+    .ct-item:hover { background:#f9fafb; }
+    .ct-item.done .ct-title { color:#9ca3af; text-decoration:line-through; }
+    .ct-check { width:18px; height:18px; border-radius:5px; border:1.5px solid #d1d5db; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all 0.15s; }
+    .ct-check.done { background:#10b981; border-color:#10b981; color:#fff; }
+
+    /* Credentials */
+    .cred-row { display:flex; align-items:center; gap:8px; padding:9px 12px; border-radius:8px; background:#f9fafb; border:1px solid #f3f4f6; }
+    .cred-pw  { font-family:monospace; font-size:12px; color:#374151; letter-spacing:0.5px; cursor:pointer; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+
+  const { useState, useEffect, useMemo, useCallback } = React;
+
+  // ═══════════════════════════════════════════════
+  //  CONSTANTS
+  // ═══════════════════════════════════════════════
+  const SPECIALTIES = ['피부과','성형외과','안과','치과','한의원','이사/운송','기타'];
+  const STORAGE_KEY = 'urbanplanad_pm_v1';
+  const MONTH_KEY   = 'urbanplanad_lastMonth';
+  const API_URL = 'https://script.google.com/macros/s/AKfycbwUsy5dDEG-t4FszWRCj-f0-FLIOY4SPMatiNsm55xM7bFXzaAEFS6McQdvmXT85dT0/exec';
+
+  const SPEC_EMOJI = { '피부과':'🏥','성형외과':'✨','안과':'👁️','치과':'🦷','한의원':'🌿','이사/운송':'🚚','기타':'🏢' };
+  const SPEC_CLS   = { '피부과':'피부과','성형외과':'성형외과','안과':'안과','치과':'치과','한의원':'한의원','이사/운송':'이사','기타':'기타' };
+
+  // ═══════════════════════════════════════════════
+  //  DEFAULT CREDENTIALS (로컬 전용 — Sheets 미동기)
+  // ═══════════════════════════════════════════════
+  const DEFAULT_CREDENTIALS = {
+    btskin: [
+      { credId:'cr-bts-001', service:'네이버 공식블로그', url:'', username:'btskincs7114', password:'jeju7114' },
+      { credId:'cr-bts-002', service:'네이버 서브블로그1', url:'', username:'btskin7114', password:'jeju7114' },
+      { credId:'cr-bts-003', service:'네이버 서브블로그2', url:'', username:'aldls2015', password:'jeju7114' },
+      { credId:'cr-bts-004', service:'인스타그램', url:'https://instagram.com/beautifulskinclinic', username:'beautifulskinclinic', password:'qwaszx-1' },
+      { credId:'cr-bts-005', service:'가비아 (도메인관리)', url:'https://www.gabia.com', username:'btskin7114', password:'jeju!7114' },
+      { credId:'cr-bts-006', service:'구글', url:'https://google.com', username:'beautifulskinclinic@gmail.com', password:'jBSC7467114' },
+      { credId:'cr-bts-007', service:'안랩 기업용 v3백신', url:'https://www.ahnlab.com/ko', username:'btskincs7114@naver.com', password:'jeju!7114' },
+    ],
+  };
+
+  // ═══════════════════════════════════════════════
+  //  DEFAULT DATA
+  // ═══════════════════════════════════════════════
+  const DEFAULT_DATA = {
+    clients: [
+      // ── 거래처 표시 순서 (이 배열 순서가 카드 표시 순서가 됩니다) ──
+      { clientId:'btskin',      clientName:'노형아름다운피부과',         businessType:'병의원', specialty:'피부과',  mainContact:'원장님', lastUpdated:'2026-03-31', priorityLevel:'높음', reportFile:'btskin.html' },
+      { clientId:'belrmon',     clientName:'벨르몬성형외과',            businessType:'병의원', specialty:'성형외과', mainContact:'원장님', lastUpdated:'2026-03-31', priorityLevel:'높음', reportFile:'belrmon.html' },
+      { clientId:'kyunghee',    clientName:'365경희부부한의원 피부센터', businessType:'병의원', specialty:'한의원',  mainContact:'원장님', lastUpdated:'2026-03-27', priorityLevel:'중간', reportFile:'gyunghee.html' },
+      { clientId:'eyecare',     clientName:'눈사랑안과',                businessType:'병의원', specialty:'안과',   mainContact:'원장님', lastUpdated:'2026-03-31', priorityLevel:'중간', reportFile:'eyecare.html' },
+      { clientId:'seoulup',     clientName:'서울UP치과',                businessType:'병의원', specialty:'치과',   mainContact:'원장님', lastUpdated:'2026-03-31', priorityLevel:'중간', reportFile:'seoulup.html' },
+      { clientId:'echi',        clientName:'이치과',                    businessType:'병의원', specialty:'치과',   mainContact:'원장님', lastUpdated:'2026-03-31', priorityLevel:'중간', reportFile:'echi.html' },
+      { clientId:'jejuexpress', clientName:'제주인익스프레스',           businessType:'기타',   specialty:'이사',   mainContact:'담당자', lastUpdated:'2026-03-31', priorityLevel:'중간', reportFile:'jejuexpress.html' },
+      { clientId:'igochi',      clientName:'이고치과',                  businessType:'병의원', specialty:'치과',   mainContact:'원장님', lastUpdated:'2026-03-31', priorityLevel:'중간', reportFile:'igochi.html' },
+    ],
+    projects:     [],
+    tasks:        [],
+    deliverables: [],
+    logs: [],
+    monthlyJobs: [
+      // ── 365경희부부한의원 피부센터 (kyunghee) ──
+      { jobId:'mj-kgh-001', clientId:'kyunghee', title:'네이버 블로그 의학정보 발행', kind:'서브', targetCount:5,    currentCount:3,    unit:'건', dueDate:null, note:'' },
+      { jobId:'mj-kgh-002', clientId:'kyunghee', title:'병원 공식 홈페이지 제작',     kind:'서브', targetCount:null, currentCount:null, unit:null, dueDate:null, note:'진행중' },
+      { jobId:'mj-kgh-003', clientId:'kyunghee', title:'외벽 현수막 디자인 시안 제작',kind:'서브', targetCount:null, currentCount:null, unit:null, dueDate:null, note:'진행중' },
+      { jobId:'mj-kgh-004', clientId:'kyunghee', title:'카카오채널 매장사진 변경',    kind:'서브', targetCount:null, currentCount:null, unit:null, dueDate:null, note:'사진 미수령' },
+      { jobId:'mj-kgh-005', clientId:'kyunghee', title:'카카오 고객센터 매장연결 해제 문의', kind:'서브', targetCount:null, currentCount:null, unit:null, dueDate:null, note:'답변 대기 중' },
+    ],
+    postLogs: [],
+    commonTasks: [],
+  };
+
+  // ═══════════════════════════════════════════════
+  //  HELPERS
+  // ═══════════════════════════════════════════════
+  const uid     = () => Math.random().toString(36).slice(2,10);
+  const today   = () => new Date().toISOString().split('T')[0];
+  const nowMonth= () => new Date().toISOString().slice(0,7); // yyyy-MM
+  const fmtDate = (d) => { if(!d) return '—'; const p=d.split('-'); return `${p[0].slice(2)}.${p[1]}.${p[2]}`; };
+  const daysLeft= (d) => { if(!d) return null; return Math.ceil((new Date(d)-new Date(today()))/(86400000)); };
+
+  // DEFAULT_DATA 순서를 유지하면서 primary·fallback 데이터를 병합하는 함수
+  // - primary  : Sheets 데이터 (sync 시) 또는 localStorage 데이터 (loadData 시)
+  // - fallback : localStorage 데이터 (sync 시, UI 추가 거래처 보존용) — 생략 가능
+  function mergeClients(defaultClients, primaryClients, fallbackClients) {
+    fallbackClients = fallbackClients || [];
+    const defaultIds  = defaultClients.map(c => c.clientId);
+    const primaryIds  = primaryClients.map(c => c.clientId);
+    return [
+      // 1. DEFAULT_DATA 순서대로: primary > fallback > default 우선순위로 채움
+      //    DEFAULT_DATA 필드를 base로 두어 businessType 등 누락 방지
+      ...defaultClients.map(dc => {
+        const src = primaryClients.find(c => c.clientId === dc.clientId)
+                 || fallbackClients.find(c => c.clientId === dc.clientId);
+        if (src) return { ...dc, ...src, reportFile: src.reportFile || dc.reportFile };
+        return dc;
+      }),
+      // 2. primary에만 있는 거래처 (DEFAULT_DATA 외 Sheets 등록 거래처)
+      ...primaryClients.filter(c => !defaultIds.includes(c.clientId)),
+      // 3. fallback에만 있는 거래처 (UI 추가 후 미동기화 — sync 후에도 보존)
+      ...fallbackClients.filter(c => !defaultIds.includes(c.clientId) && !primaryIds.includes(c.clientId))
+    ];
+  }
+
+  function loadData() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(raw) {
+        const s = JSON.parse(raw);
+        return {
+          clients:      mergeClients(DEFAULT_DATA.clients, s.clients || []),
+          projects:     s.projects     ?? [],
+          tasks:        s.tasks        ?? [],
+          deliverables: s.deliverables ?? DEFAULT_DATA.deliverables,
+          logs:         s.logs         ?? [],
+          monthlyJobs:  s.monthlyJobs  ?? DEFAULT_DATA.monthlyJobs,
+          postLogs:     s.postLogs     ?? [],
+          commonTasks:  s.commonTasks  ?? [],
+          credentials:  s.credentials  ?? DEFAULT_CREDENTIALS,
+        };
+      }
+    } catch(e) {}
+    return { ...DEFAULT_DATA };
+  }
+
+  function saveData(data) {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
+    window.dashboardData = data;
+    window.dashboardAPI = {
+      url: API_URL,
+      summary:  () => fetch(API_URL + '?action=summary').then(r => r.json()),
+      clients:  () => fetch(API_URL + '?action=clients').then(r => r.json()),
+      addLog: (clientId, message) => fetch(API_URL, {
+        method: 'POST', redirect: 'follow',
+        body: JSON.stringify({ action: 'addLog', clientId, message })
+      }).then(r => r.json()),
+      // OpenClaw가 호출: { action:"addPost", clientId, jobId, title, url, channel }
+      addPost: (clientId, jobId, title, url, channel) => fetch(API_URL, {
+        method: 'POST', redirect: 'follow',
+        body: JSON.stringify({ action: 'addPost', clientId, jobId, title, url, channel: channel||'홈페이지' })
+      }).then(r => r.json()),
+      updateJobCount: (jobId, delta) => fetch(API_URL, {
+        method: 'POST', redirect: 'follow',
+        body: JSON.stringify({ action: 'updateJobCount', jobId, delta })
+      }).then(r => r.json()),
+      // 공통업무 — OpenClaw 외부 호출용
+      commonTaskAdd:    (title) => fetch(API_URL, {
+        method: 'POST', redirect: 'follow',
+        body: JSON.stringify({ action: 'commonTaskAdd', title })
+      }).then(r => r.json()),
+      commonTaskToggle: (taskId, done) => fetch(API_URL, {
+        method: 'POST', redirect: 'follow',
+        body: JSON.stringify({ action: 'commonTaskToggle', taskId, done })
+      }).then(r => r.json()),
+      commonTaskDelete: (taskId) => fetch(API_URL, {
+        method: 'POST', redirect: 'follow',
+        body: JSON.stringify({ action: 'commonTaskDelete', taskId })
+      }).then(r => r.json()),
+    };
+  }
+
+  async function fetchFromSheets() {
+    const res  = await fetch(API_URL + '?action=summary');
+    const json = await res.json();
+    if (!json.success) throw new Error(json.error || 'API 오류');
+    const d = json.data;
+    return {
+      clients:      (d.clients     && d.clients.length)     ? d.clients     : DEFAULT_DATA.clients,
+      projects:     [],
+      tasks:        [],
+      logs:         d.logs         || [],
+      monthlyJobs:  (d.monthlyJobs && d.monthlyJobs.length) ? d.monthlyJobs : DEFAULT_DATA.monthlyJobs,
+      deliverables: DEFAULT_DATA.deliverables,
+      postLogs: (d.postLogs || []).map(p => ({
+        ...p,
+        channel: p.channel || p[''] || null   // Sheets 빈 헤더 키 정규화
+      })),
+      commonTasks: (d.commonTasks || []).map(t => ({
+        ...t,
+        done: t.done === true || t.done === 'TRUE' || t.done === '1',
+      })),
+    };
+  }
+
+  // ═══════════════════════════════════════════════
+  //  BADGE COMPONENTS
+  // ═══════════════════════════════════════════════
+  function PriorityBadge({ priority }) {
+    const m = {'높음':'pb-높음','중간':'pb-중간','낮음':'pb-낮음'};
+    return <span className={`pb ${m[priority]||'pb-낮음'}`}>{priority}</span>;
+  }
+  function SpecBadge({ specialty }) {
+    const cls = SPEC_CLS[specialty] || '기타';
+    return <span className={`spec-badge spec-${cls}`}>{specialty}</span>;
+  }
+  function DueBadge({ dueDate }) {
+    if(!dueDate) return null;
+    const dl = daysLeft(dueDate);
+    if(dl === null) return null;
+    // 날짜 포맷 ex) 4/9
+    const [,mm,dd] = dueDate.split('-');
+    const label = `${parseInt(mm,10)}/${parseInt(dd,10)}까지`;
+    if(dl < 0)   return <span style={{fontSize:11,fontWeight:700,color:'#dc2626',background:'#fef2f2',padding:'1px 6px',borderRadius:4}}>⚠ {label} ({Math.abs(dl)}일 초과)</span>;
+    if(dl === 0) return <span style={{fontSize:11,fontWeight:700,color:'#dc2626',background:'#fef2f2',padding:'1px 6px',borderRadius:4}}>📅 {label} (오늘 마감)</span>;
+    if(dl <= 3)  return <span style={{fontSize:11,fontWeight:700,color:'#d97706',background:'#fffbeb',padding:'1px 6px',borderRadius:4}}>📅 {label} (D-{dl})</span>;
+    return <span style={{fontSize:11,color:'#6b7280',background:'#f3f4f6',padding:'1px 6px',borderRadius:4}}>📅 {label} (D-{dl})</span>;
+  }
+
+  // ═══════════════════════════════════════════════
+  //  MONTHLY JOBS SECTION (이달의 업무)
+  // ═══════════════════════════════════════════════
+  function MonthlyJobsSection({ clientId, data, mutate, autoLog }) {
+    const jobs      = (data.monthlyJobs || []).filter(j => j.clientId === clientId);
+    const essential = jobs.filter(j => j.kind === '필수');
+    const sub       = jobs.filter(j => j.kind === '서브' || j.kind === '순위');
+
+    const [showAddSub,   setShowAddSub]   = useState(false);
+    const [newSubTitle,  setNewSubTitle]  = useState('');
+    const [newSubDue,    setNewSubDue]    = useState('');
+    const [showAddEss,   setShowAddEss]   = useState(false);
+    const [newEssTitle,  setNewEssTitle]  = useState('');
+    const [newEssKind,   setNewEssKind]   = useState('필수');
+    const [newEssCount,  setNewEssCount]  = useState('');
+    const [newEssUnit,   setNewEssUnit]   = useState('건');
+
+    const essentialDone = essential.filter(j =>
+      j.targetCount != null ? j.currentCount >= j.targetCount : j.note === '완료'
+    ).length;
+
+    function updateCount(jobId, delta) {
+      const job = jobs.find(j => j.jobId === jobId);
+      mutate(d => ({
+        ...d,
+        monthlyJobs: d.monthlyJobs.map(j =>
+          j.jobId === jobId
+            ? { ...j, currentCount: Math.max(0, (j.currentCount||0) + delta) }
+            : j
+        )
+      }));
+      // 자동 로그: targetCount 있는 업무만 기록
+      if (autoLog && job && job.targetCount != null) {
+        const newCount = Math.max(0, (job.currentCount||0) + delta);
+        if (delta > 0) {
+          autoLog(clientId, `📌 ${job.title} +${delta}건 (${newCount}/${job.targetCount}${job.unit||''})`);
+        } else if (delta < 0 && (job.currentCount||0) > 0) {
+          autoLog(clientId, `↩ ${job.title} 수정 (${newCount}/${job.targetCount}${job.unit||''})`);
+        }
+      }
+      fetch(API_URL, {
+        method: 'POST', redirect: 'follow',
+        body: JSON.stringify({ action: 'updateJobCount', jobId, delta })
+      }).catch(e => console.warn('Sheets updateJobCount 오류:', e));
+    }
+
+    function updateNote(jobId, note) {
+      const job = jobs.find(j => j.jobId === jobId);
+      mutate(d => ({
+        ...d,
+        monthlyJobs: d.monthlyJobs.map(j => j.jobId === jobId ? { ...j, note } : j)
+      }));
+      // 자동 로그: 완료 처리 시만
+      if (autoLog && note === '완료' && job) {
+        autoLog(clientId, `✅ ${job.title} 완료 처리`);
+      }
+      fetch(API_URL, {
+        method: 'POST', redirect: 'follow',
+        body: JSON.stringify({ action: 'updateJobNote', jobId, note })
+      }).catch(e => console.warn('Sheets updateJobNote 오류:', e));
+    }
+
+    function updateSubJob(jobId, fields) {
+      // fields: { title, note, dueDate } — 변경된 것만 전달
+      mutate(d => ({
+        ...d,
+        monthlyJobs: d.monthlyJobs.map(j => j.jobId === jobId ? { ...j, ...fields } : j)
+      }));
+      fetch(API_URL, {
+        method: 'POST', redirect: 'follow',
+        body: JSON.stringify({ action: 'updateSubJob', jobId, ...fields })
+      }).catch(e => console.warn('updateSubJob 오류:', e));
+    }
+
+    function deleteSubJobLocal(jobId) {
+      mutate(d => ({ ...d, monthlyJobs: d.monthlyJobs.filter(j => j.jobId !== jobId) }));
+      fetch(API_URL, {
+        method: 'POST', redirect: 'follow',
+        body: JSON.stringify({ action: 'deleteSubJob', jobId })
+      }).catch(e => console.warn('deleteSubJob 오류:', e));
+    }
+
+    function handleAddEssentialJob() {
+      if (!newEssTitle.trim()) return;
+      const tempId  = 'mj-dyn-' + Date.now().toString(36);
+      const tCount  = newEssCount ? parseInt(newEssCount, 10) : null;
+      const newJob  = {
+        jobId: tempId, clientId, title: newEssTitle.trim(),
+        kind: newEssKind,
+        targetCount: (!isNaN(tCount) && tCount > 0) ? tCount : null,
+        currentCount: (!isNaN(tCount) && tCount > 0) ? 0 : null,
+        unit: (!isNaN(tCount) && tCount > 0) ? (newEssUnit.trim() || '건') : null,
+        dueDate: null, note: ''
+      };
+      mutate(d => ({ ...d, monthlyJobs: [...d.monthlyJobs, newJob] }));
+      fetch(API_URL, {
+        method: 'POST', redirect: 'follow',
+        body: JSON.stringify({ action: 'addJob', clientId, title: newEssTitle.trim(), kind: newEssKind,
+          targetCount: newJob.targetCount, unit: newJob.unit })
+      }).then(r=>r.json()).then(res => {
+        if (res.success && res.jobId) {
+          mutate(d => ({ ...d, monthlyJobs: d.monthlyJobs.map(j => j.jobId===tempId ? {...j,jobId:res.jobId} : j) }));
+        }
+      }).catch(e => console.warn('addJob 오류:', e));
+      setNewEssTitle(''); setNewEssCount(''); setNewEssUnit('건'); setShowAddEss(false);
+    }
+
+    function handleAddSubJob() {
+      if (!newSubTitle.trim()) return;
+      const tempId = 'mj-dyn-' + Date.now().toString(36);
+      const newJob = {
+        jobId: tempId, clientId, title: newSubTitle.trim(),
+        kind: '서브', targetCount: null, currentCount: null, unit: null, dueDate: newSubDue || null, note: ''
+      };
+      mutate(d => ({ ...d, monthlyJobs: [...d.monthlyJobs, newJob] }));
+      fetch(API_URL, {
+        method: 'POST', redirect: 'follow',
+        body: JSON.stringify({ action: 'addSubJob', clientId, title: newSubTitle.trim(), dueDate: newSubDue || null })
+      }).then(r => r.json()).then(res => {
+        if (res.success && res.jobId) {
+          mutate(d => ({
+            ...d,
+            monthlyJobs: d.monthlyJobs.map(j => j.jobId === tempId ? { ...j, jobId: res.jobId } : j)
+          }));
+        }
+      }).catch(e => console.warn('addSubJob 오류:', e));
+      setNewSubTitle('');
+      setNewSubDue('');
+      setShowAddSub(false);
+    }
+
+    function JobRow({ job }) {
+      const isCount  = job.targetCount != null;
+      const isSub    = job.kind === '서브' || job.kind === '순위';
+      // 블로그 업무: 카운트는 없지만 글 제목 기록 가능
+      const isBlog   = !isCount && job.title.includes('블로그');
+      const isDone   = isCount ? job.currentCount >= job.targetCount : job.note === '완료';
+      const pct      = isCount ? Math.min(100, Math.round(((job.currentCount||0) / job.targetCount) * 100)) : 0;
+      // 발행 기록은 카운트 업무 + 블로그 업무 모두 표시
+      const jobLogs  = (isCount || isBlog)
+        ? (data.postLogs||[]).filter(p => p.jobId === job.jobId)
+        : [];
+
+      // 수동 발행 기록 폼 상태
+      const [showPost,    setShowPost]    = useState(false);
+      const [postTitle,   setPostTitle]   = useState('');
+      const [postUrl,     setPostUrl]     = useState('');
+      const [postDate,    setPostDate]    = useState(today());
+      const defaultCh = job.title.includes('인스타') ? '인스타그램'
+                      : job.title.includes('블로그') ? '블로그'
+                      : job.title.includes('위챗')   ? '위챗'
+                      : '홈페이지';
+      const [postChannel, setPostChannel] = useState(defaultCh);
+
+      // 서브업무 인라인 편집 상태
+      const [editing,    setEditing]    = useState(false);
+      const [editTitle,  setEditTitle]  = useState(job.title);
+      const [editNote,   setEditNote]   = useState(job.note || '');
+      const [editDue,    setEditDue]    = useState(job.dueDate || '');
+
+      // targetCount 인라인 편집 상태
+      const [editingTarget,  setEditingTarget]  = useState(false);
+      const [editTargetVal,  setEditTargetVal]  = useState(String(job.targetCount || ''));
+
+      function saveTargetCount() {
+        const n = parseInt(editTargetVal, 10);
+        if (isNaN(n) || n < 0) { setEditingTarget(false); return; }
+        mutate(d => ({
+          ...d,
+          monthlyJobs: d.monthlyJobs.map(j => j.jobId === job.jobId ? { ...j, targetCount: n } : j)
+        }));
+        fetch(API_URL, {
+          method: 'POST', redirect: 'follow',
+          body: JSON.stringify({ action: 'updateJobTarget', jobId: job.jobId, targetCount: n })
+        }).catch(e => console.warn('updateJobTarget 오류:', e));
+        setEditingTarget(false);
+      }
+
+      function saveEdit() {
+        if (!editTitle.trim()) return;
+        updateSubJob(job.jobId, {
+          title:   editTitle.trim(),
+          note:    editNote.trim(),
+          dueDate: editDue || null,
+        });
+        setEditing(false);
+      }
+
+      function handleSubmitPost() {
+        if (!postTitle.trim()) return;
+        const tempId    = 'pl-' + Date.now().toString(36);
+        const pubDate   = postDate || today();
+        mutate(d => ({
+          ...d,
+          // 카운트 업무만 currentCount 증가 (블로그 업무는 postLogs.length로만 카운팅)
+          monthlyJobs: isCount ? d.monthlyJobs.map(j =>
+            j.jobId === job.jobId ? { ...j, currentCount: (j.currentCount||0)+1 } : j
+          ) : d.monthlyJobs,
+          postLogs: [...(d.postLogs||[]), {
+            logId: tempId, clientId, jobId: job.jobId,
+            title: postTitle.trim(), url: postUrl.trim(),
+            publishedAt: pubDate, month: pubDate.slice(0,7), channel: postChannel
+          }]
+        }));
+        if (autoLog) autoLog(clientId, `📌 ${job.title} +1건 — ${postTitle.trim()}`);
+        fetch(API_URL, {
+          method: 'POST', redirect: 'follow',
+          body: JSON.stringify({ action:'addPost', clientId, jobId:job.jobId, title:postTitle.trim(), url:postUrl.trim(), channel:postChannel, publishedAt:pubDate })
+        }).catch(e => console.warn('addPost 오류:', e));
+        setPostTitle(''); setPostUrl(''); setPostDate(today()); setShowPost(false);
+      }
+
+      return (
+        <div style={{padding:'10px 0',borderBottom:'1px solid #f3f4f6'}}>
+
+          {/* ── 인라인 편집 폼 (서브업무만) ── */}
+          {editing && (
+            <div style={{background:'#f9fafb',borderRadius:8,padding:'10px 12px',marginBottom:6,border:'1px solid #e5e7eb'}}>
+              <div style={{fontSize:11,fontWeight:700,color:'#374151',marginBottom:6}}>서브업무 수정</div>
+              <input
+                value={editTitle}
+                onChange={e => setEditTitle(e.target.value)}
+                placeholder="업무 제목"
+                autoFocus
+                onKeyDown={e => { if(e.key==='Enter') saveEdit(); if(e.key==='Escape') setEditing(false); }}
+                style={{width:'100%',boxSizing:'border-box',padding:'6px 10px',border:'1px solid #d1d5db',borderRadius:6,fontSize:13,fontFamily:'inherit',outline:'none',marginBottom:5}}
+              />
+              <div style={{display:'flex',gap:6,marginBottom:5}}>
+                <input
+                  value={editNote}
+                  onChange={e => setEditNote(e.target.value)}
+                  placeholder="메모 (선택)"
+                  style={{flex:1,padding:'6px 10px',border:'1px solid #d1d5db',borderRadius:6,fontSize:12,fontFamily:'inherit',outline:'none'}}
+                />
+                <input
+                  type="date"
+                  value={editDue}
+                  onChange={e => setEditDue(e.target.value)}
+                  style={{flex:'0 0 140px',padding:'6px 10px',border:'1px solid #d1d5db',borderRadius:6,fontSize:12,fontFamily:'inherit',outline:'none'}}
+                />
+              </div>
+              <div style={{display:'flex',gap:6,alignItems:'center'}}>
+                <button onClick={saveEdit}
+                  style={{padding:'5px 14px',background:'#1a1a2e',color:'#fff',border:'none',borderRadius:6,fontSize:12,cursor:'pointer',fontFamily:'inherit',fontWeight:700}}>
+                  저장
+                </button>
+                <button onClick={() => setEditing(false)}
+                  style={{padding:'5px 12px',background:'none',border:'1px solid #d1d5db',borderRadius:6,fontSize:12,cursor:'pointer',fontFamily:'inherit',color:'#6b7280'}}>
+                  취소
+                </button>
+                {job.kind === '서브' && (
+                  <button
+                    onClick={() => { if(confirm(`"${job.title}" 서브업무를 삭제하시겠습니까?`)) { deleteSubJobLocal(job.jobId); setEditing(false); } }}
+                    style={{marginLeft:'auto',padding:'5px 12px',background:'none',border:'1px solid #fca5a5',borderRadius:6,fontSize:12,cursor:'pointer',fontFamily:'inherit',color:'#dc2626'}}>
+                    🗑 삭제
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* 제목 + 컨트롤 */}
+          {!editing && (
+          <div style={{display:'flex',alignItems:'center',gap:10}}>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{
+                fontSize:13,fontWeight:600,
+                color: isDone ? '#9ca3af':'#1a1a2e',
+                textDecoration: isDone ? 'line-through':'none',
+                whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'
+              }}>
+                {job.title}
+              </div>
+              {job.dueDate && (
+                <div style={{fontSize:11,marginTop:2}}><DueBadge dueDate={job.dueDate} /></div>
+              )}
+              {!isCount && job.note && job.note !== '완료' && (
+                <div style={{fontSize:11,color:'#6b7280',marginTop:2}}>{job.note}</div>
+              )}
+            </div>
+
+            {isCount ? (
+              <div style={{display:'flex',alignItems:'center',gap:5,flexShrink:0}}>
+                <button
+                  onClick={()=>updateCount(job.jobId,-1)}
+                  style={{width:22,height:22,borderRadius:'50%',border:'1px solid #d1d5db',background:'#f9fafb',cursor:'pointer',fontSize:14,lineHeight:1,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'inherit',color:'#374151'}}>
+                  −
+                </button>
+                <span style={{fontSize:12,fontWeight:700,
+                  color: (job.currentCount||0) > job.targetCount ? '#059669' : isDone ? '#10b981':'#1d4ed8',
+                  minWidth:52,textAlign:'center'}}>
+                  {job.currentCount}/
+                  {editingTarget ? (
+                    <input
+                      type="number" min="1" value={editTargetVal}
+                      onChange={e=>setEditTargetVal(e.target.value)}
+                      onBlur={saveTargetCount}
+                      onKeyDown={e=>{ if(e.key==='Enter') saveTargetCount(); if(e.key==='Escape') setEditingTarget(false); }}
+                      autoFocus
+                      style={{width:38,padding:'1px 4px',border:'1px solid #93c5fd',borderRadius:4,fontSize:12,fontFamily:'inherit',outline:'none',fontWeight:700}}
+                    />
+                  ) : (
+                    <span
+                      onClick={()=>{ setEditTargetVal(String(job.targetCount)); setEditingTarget(true); }}
+                      title="클릭하여 목표 수정"
+                      style={{cursor:'pointer',borderBottom:'1px dashed #93c5fd'}}>
+                      {job.targetCount}
+                    </span>
+                  )}
+                  {!editingTarget && ((job.currentCount||0) > job.targetCount
+                    ? <span style={{fontSize:10,fontWeight:800,color:'#059669',marginLeft:1}}>+{(job.currentCount||0)-job.targetCount}</span>
+                    : <span style={{fontSize:10,fontWeight:400,color:'#9ca3af'}}>{job.unit}</span>
+                  )}
+                </span>
+                <button
+                  onClick={()=>updateCount(job.jobId,1)}
+                  style={{width:22,height:22,borderRadius:'50%',border:'1px solid #d1d5db',background:'#f9fafb',cursor:'pointer',fontSize:14,lineHeight:1,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'inherit',color:'#374151'}}>
+                  +
+                </button>
+                {isDone && <span style={{fontSize:12,color:'#10b981',marginLeft:2}}>✓</span>}
+                <button
+                  onClick={()=>setShowPost(v=>!v)}
+                  title="발행 글 제목 기록"
+                  style={{width:24,height:24,borderRadius:6,border:'1px solid #dbeafe',background: showPost ? '#dbeafe':'#f0f9ff',cursor:'pointer',fontSize:13,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'inherit',color:'#2563eb',marginLeft:2}}>
+                  ✏️
+                </button>
+              </div>
+            ) : (
+              <div style={{display:'flex',alignItems:'center',gap:5,flexShrink:0}}>
+                {/* 블로그 업무: 기록 건수 + ✏️ */}
+                {isBlog && (
+                  <>
+                    {jobLogs.length > 0 && (
+                      <span style={{fontSize:11,fontWeight:700,color:'#6366f1',background:'#ede9fe',padding:'2px 7px',borderRadius:10}}>
+                        {jobLogs.length}건
+                      </span>
+                    )}
+                    <button
+                      onClick={()=>setShowPost(v=>!v)}
+                      title="블로그 글 제목 기록"
+                      style={{width:24,height:24,borderRadius:6,border:'1px solid #dbeafe',background: showPost ? '#dbeafe':'#f0f9ff',cursor:'pointer',fontSize:13,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'inherit',color:'#2563eb'}}>
+                      ✏️
+                    </button>
+                  </>
+                )}
+                <button
+                  onClick={()=>updateNote(job.jobId, job.note==='완료' ? '' : '완료')}
+                  style={{fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:20,border:'none',cursor:'pointer',fontFamily:'inherit',
+                    background: isDone ? '#d1fae5':'#dbeafe',
+                    color:      isDone ? '#065f46':'#1d4ed8'
+                  }}>
+                  {isDone ? '✓ 완료' : '진행중'}
+                </button>
+                {/* 서브업무만 편집 아이콘 */}
+                {isSub && (
+                  <button
+                    onClick={() => { setEditTitle(job.title); setEditNote(job.note||''); setEditDue(job.dueDate||''); setEditing(true); }}
+                    title="수정"
+                    style={{width:22,height:22,borderRadius:6,border:'1px solid #e5e7eb',background:'#f9fafb',cursor:'pointer',fontSize:11,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'inherit',color:'#9ca3af'}}>
+                    ✎
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+          )}  {/* !editing */}
+
+          {/* 진행 바 (카운터 업무만) */}
+          {isCount && (
+            <div className="prog-track" style={{marginTop:7}}>
+              <div className="prog-fill" style={{
+                width: `${pct}%`,
+                background: isDone ? '#10b981' : pct > 60 ? '#3b82f6' : pct > 30 ? '#6366f1' : '#94a3b8'
+              }} />
+            </div>
+          )}
+
+          {/* 수동 발행 기록 인라인 폼 (카운트 업무 + 블로그 업무) */}
+          {(isCount || isBlog) && showPost && (
+            <div style={{marginTop:8,padding:'10px 12px',background: isBlog ? '#f5f3ff':'#f0f9ff',borderRadius:8,border:`1px solid ${isBlog ? '#ddd6fe':'#bfdbfe'}`}}>
+              <div style={{fontSize:11,fontWeight:700,color: isBlog ? '#6d28d9':'#1d4ed8',marginBottom:6}}>
+                ✏️ {isBlog ? '블로그' : '발행'} 글 제목 기록
+              </div>
+              <input
+                value={postTitle}
+                onChange={e=>setPostTitle(e.target.value)}
+                placeholder="글 제목 입력 (필수)"
+                autoFocus
+                onKeyDown={e=>{ if(e.key==='Enter') handleSubmitPost(); if(e.key==='Escape') setShowPost(false); }}
+                style={{width:'100%',boxSizing:'border-box',padding:'6px 10px',border:'1px solid #93c5fd',borderRadius:6,fontSize:12,fontFamily:'inherit',outline:'none',marginBottom:5}}
+              />
+              <div style={{display:'flex',gap:6,marginBottom:7}}>
+                <input
+                  value={postUrl}
+                  onChange={e=>setPostUrl(e.target.value)}
+                  placeholder="URL (선택)"
+                  style={{flex:1,padding:'6px 10px',border:'1px solid #93c5fd',borderRadius:6,fontSize:12,fontFamily:'inherit',outline:'none'}}
+                />
+                <input
+                  type="date"
+                  value={postDate}
+                  onChange={e=>setPostDate(e.target.value)}
+                  style={{flex:'0 0 140px',padding:'6px 8px',border:'1px solid #93c5fd',borderRadius:6,fontSize:12,fontFamily:'inherit',outline:'none'}}
+                />
+              </div>
+              <div style={{display:'flex',gap:6,alignItems:'center'}}>
+                <select
+                  value={postChannel}
+                  onChange={e=>setPostChannel(e.target.value)}
+                  style={{flex:1,padding:'5px 8px',border:'1px solid #93c5fd',borderRadius:6,fontSize:12,fontFamily:'inherit',outline:'none'}}>
+                  <option value="홈페이지">홈페이지</option>
+                  <option value="인스타그램">인스타그램</option>
+                  <option value="블로그">블로그</option>
+                  <option value="위챗">위챗</option>
+                  <option value="LINE">LINE</option>
+                  <option value="기타">기타</option>
+                </select>
+                <button onClick={handleSubmitPost}
+                  style={{padding:'5px 14px',background:'#1d4ed8',color:'#fff',border:'none',borderRadius:6,fontSize:12,cursor:'pointer',fontFamily:'inherit',fontWeight:700}}>
+                  기록
+                </button>
+                <button onClick={()=>{setShowPost(false);setPostTitle('');setPostUrl('');}}
+                  style={{padding:'5px 12px',background:'none',border:'1px solid #93c5fd',borderRadius:6,fontSize:12,cursor:'pointer',fontFamily:'inherit',color:'#6b7280'}}>
+                  취소
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* 발행 글 목록 (카운트 업무 + 블로그 업무) */}
+          {(isCount || isBlog) && jobLogs.length > 0 && (
+            <div style={{marginTop:7,paddingLeft:6,borderLeft:'2px solid #e5e7eb'}}>
+              {jobLogs.map(pl => (
+                <div key={pl.logId} style={{display:'flex',alignItems:'center',gap:6,padding:'3px 0',fontSize:11}}>
+                  <span style={{color:'#9ca3af',flexShrink:0}}>↳</span>
+                  {pl.url ? (
+                    <a href={pl.url} target="_blank" rel="noopener"
+                      style={{color:'#1d4ed8',textDecoration:'none',flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',fontWeight:600}}>
+                      {pl.title}
+                    </a>
+                  ) : (
+                    <span style={{flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',color:'#374151'}}>{pl.title}</span>
+                  )}
+                  {pl.publishedAt && (
+                    <span style={{color:'#9ca3af',flexShrink:0,fontSize:10}}>{fmtDate(pl.publishedAt)}</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    if(jobs.length === 0) return null;
+
+    return (
+      <div style={{background:'#fff',borderRadius:12,border:'1px solid #e5e7eb',padding:'18px 20px',marginBottom:20}}>
+        <div style={{marginBottom:14}}>
+          <div className="section-title" style={{marginBottom:0}}>이달의 업무</div>
+        </div>
+
+        <div style={{marginBottom: sub.length > 0 ? 16 : 0}}>
+          {essential.length > 0 && (
+            <div style={{fontSize:11,fontWeight:700,color:'#dc2626',marginBottom:2,letterSpacing:'0.5px'}}>● 필수 업무</div>
+          )}
+          {essential.map(j => <JobRow key={j.jobId} job={j} />)}
+          {/* 필수/순위업무 추가 UI */}
+          {showAddEss ? (
+            <div style={{marginTop:8,background:'#fef9f0',borderRadius:8,padding:'10px 12px',border:'1px solid #fde68a'}}>
+              <div style={{fontSize:11,fontWeight:700,color:'#b45309',marginBottom:6}}>업무 추가</div>
+              <input
+                value={newEssTitle}
+                onChange={e=>setNewEssTitle(e.target.value)}
+                placeholder="업무 제목 *"
+                autoFocus
+                onKeyDown={e=>{ if(e.key==='Escape') setShowAddEss(false); }}
+                style={{width:'100%',boxSizing:'border-box',padding:'6px 10px',border:'1px solid #fcd34d',borderRadius:6,fontSize:13,fontFamily:'inherit',outline:'none',marginBottom:6}}
+              />
+              <div style={{display:'flex',gap:6,marginBottom:6,flexWrap:'wrap'}}>
+                <select value={newEssKind} onChange={e=>setNewEssKind(e.target.value)}
+                  style={{padding:'5px 8px',border:'1px solid #fcd34d',borderRadius:6,fontSize:12,fontFamily:'inherit',outline:'none',background:'#fff'}}>
+                  <option value="필수">필수</option>
+                  <option value="순위">순위</option>
+                </select>
+                <input
+                  type="number" min="1" value={newEssCount}
+                  onChange={e=>setNewEssCount(e.target.value)}
+                  placeholder="목표 수 (없으면 공란)"
+                  style={{flex:1,minWidth:120,padding:'5px 8px',border:'1px solid #fcd34d',borderRadius:6,fontSize:12,fontFamily:'inherit',outline:'none'}}
+                />
+                {newEssCount && (
+                  <input
+                    value={newEssUnit} onChange={e=>setNewEssUnit(e.target.value)}
+                    placeholder="단위 (건/개)"
+                    style={{flex:'0 0 70px',padding:'5px 8px',border:'1px solid #fcd34d',borderRadius:6,fontSize:12,fontFamily:'inherit',outline:'none'}}
+                  />
+                )}
+              </div>
+              <div style={{display:'flex',gap:6}}>
+                <button onClick={handleAddEssentialJob}
+                  style={{padding:'5px 14px',background:'#b45309',color:'#fff',border:'none',borderRadius:6,fontSize:12,cursor:'pointer',fontFamily:'inherit',fontWeight:700}}>추가</button>
+                <button onClick={()=>{setShowAddEss(false);setNewEssTitle('');setNewEssCount('');}}
+                  style={{padding:'5px 12px',background:'none',border:'1px solid #fcd34d',borderRadius:6,fontSize:12,cursor:'pointer',fontFamily:'inherit',color:'#6b7280'}}>취소</button>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={()=>setShowAddEss(true)}
+              style={{marginTop: essential.length > 0 ? 6 : 0, fontSize:11, color:'#b45309', background:'none', border:'1px dashed #fcd34d', borderRadius:7, padding:'4px 12px', cursor:'pointer', fontFamily:'inherit'}}>
+              + 업무 추가
+            </button>
+          )}
+        </div>
+
+        {(sub.length > 0 || true) && (
+          <div>
+            {sub.length > 0 && (
+              <div style={{fontSize:11,fontWeight:700,color:'#6b7280',marginBottom:2,letterSpacing:'0.5px',
+                marginTop: essential.length > 0 ? 14 : 0}}>
+              {sub.some(j=>j.kind==='순위') && sub.some(j=>j.kind==='서브') ? '○ 서브 / 순위 업무' : sub.some(j=>j.kind==='순위') ? '○ 순위 업무' : '○ 서브 업무'}
+            </div>
+            )}
+            {sub.map(j => <JobRow key={j.jobId} job={j} />)}
+            {/* 서브업무 추가 UI */}
+            {!showAddSub ? (
+              <button
+                onClick={() => setShowAddSub(true)}
+                style={{marginTop: sub.length > 0 ? 8 : (essential.length > 0 ? 14 : 0), fontSize:12, color:'#9ca3af', background:'none', border:'1px dashed #d1d5db', borderRadius:8, padding:'5px 14px', cursor:'pointer', width:'100%', fontFamily:'inherit'}}>
+                + 서브업무 추가
+              </button>
+            ) : (
+              <div style={{marginTop:8, display:'flex', flexDirection:'column', gap:6}}>
+                <div style={{display:'flex', gap:6, flexWrap:'wrap'}}>
+                  <input
+                    value={newSubTitle}
+                    onChange={e => setNewSubTitle(e.target.value)}
+                    placeholder="서브업무 제목 입력"
+                    style={{flex:1, minWidth:160, padding:'6px 10px', border:'1px solid #d1d5db', borderRadius:6, fontSize:13, fontFamily:'inherit', outline:'none'}}
+                    onKeyDown={e => { if(e.key==='Enter') handleAddSubJob(); if(e.key==='Escape') { setShowAddSub(false); setNewSubTitle(''); setNewSubDue(''); } }}
+                    autoFocus
+                  />
+                  <input
+                    type="date"
+                    value={newSubDue}
+                    onChange={e => setNewSubDue(e.target.value)}
+                    title="마감일 (선택)"
+                    style={{flex:'0 0 140px', padding:'6px 10px', border:'1px solid #d1d5db', borderRadius:6, fontSize:12, fontFamily:'inherit', outline:'none', color: newSubDue ? '#374151' : '#9ca3af'}}
+                  />
+                </div>
+                {newSubDue && (
+                  <div style={{fontSize:11, color:'#6b7280', paddingLeft:2}}>📅 목표 마감일: <strong>{newSubDue.replace(/-/g,'/')} 까지</strong></div>
+                )}
+                <div style={{display:'flex', gap:6}}>
+                  <button onClick={handleAddSubJob} style={{padding:'6px 14px', background:'#1a1a2e', color:'#fff', border:'none', borderRadius:6, fontSize:12, cursor:'pointer', fontFamily:'inherit', fontWeight:700}}>추가</button>
+                  <button onClick={() => { setShowAddSub(false); setNewSubTitle(''); setNewSubDue(''); }} style={{padding:'6px 12px', background:'none', border:'1px solid #d1d5db', borderRadius:6, fontSize:12, cursor:'pointer', fontFamily:'inherit', color:'#6b7280'}}>취소</button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ═══════════════════════════════════════════════
+  //  MODAL (로그 추가 + 삭제 확인만)
+  // ═══════════════════════════════════════════════
+  function Modal({ modal, onClose, onSave, onDelete }) {
+    const [form, setForm] = useState(modal.formData || {});
+    const set = (k,v) => setForm(p=>({...p,[k]:v}));
+
+    if(!modal.open) return null;
+
+    return (
+      <div className="modal-bg" onClick={e=>{ if(e.target===e.currentTarget) onClose(); }}>
+        <div className="modal-box">
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:20}}>
+            <h2 style={{fontSize:16,fontWeight:800,color:'#1a1a2e'}}>
+              {modal.type==='log'        && '업데이트 로그 추가'}
+              {modal.type==='delete'     && '삭제 확인'}
+              {modal.type==='add-client' && '새 거래처 추가'}
+            </h2>
+            <button className="btn-icon" onClick={onClose}>✕</button>
+          </div>
+
+          {modal.type==='delete' && (
+            <div>
+              <p style={{fontSize:14,color:'#374151',marginBottom:8}}>
+                <b>"{modal.context?.name}"</b>을(를) 삭제하시겠습니까?
+              </p>
+              <p style={{fontSize:12,color:'#9ca3af',marginBottom:20}}>이 작업은 되돌릴 수 없습니다.</p>
+              <div style={{display:'flex',gap:10,justifyContent:'flex-end'}}>
+                <button className="btn-ghost" onClick={onClose}>취소</button>
+                <button className="btn-danger" onClick={()=>onDelete(modal.context)}>삭제</button>
+              </div>
+            </div>
+          )}
+
+          {modal.type==='log' && (
+            <div style={{display:'flex',flexDirection:'column',gap:14}}>
+              <div>
+                <label className="fi-label">업데이트 내용 *</label>
+                <textarea className="fi" rows={3} value={form.message||''} onChange={e=>set('message',e.target.value)} placeholder="예: 블로그 포스팅 3건 발행 완료" />
+              </div>
+              <div>
+                <label className="fi-label">날짜</label>
+                <input className="fi" type="date" value={form.createdAt||today()} onChange={e=>set('createdAt',e.target.value)} />
+              </div>
+              <div style={{display:'flex',gap:10,justifyContent:'flex-end',marginTop:4}}>
+                <button className="btn-ghost" onClick={onClose}>취소</button>
+                <button className="btn-primary" onClick={()=>onSave(modal.type, modal.mode, form, modal.context)}>저장</button>
+              </div>
+            </div>
+          )}
+
+          {modal.type==='add-client' && (
+            <div style={{display:'flex',flexDirection:'column',gap:14}}>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+                <div>
+                  <label className="fi-label">거래처명 *</label>
+                  <input className="fi" value={form.clientName||''} onChange={e=>set('clientName',e.target.value)} placeholder="예: 노형아름다운피부과" />
+                </div>
+                <div>
+                  <label className="fi-label">전문과목</label>
+                  <select className="fi" value={form.specialty||'기타'} onChange={e=>set('specialty',e.target.value)}>
+                    {SPECIALTIES.map(s=><option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+                <div>
+                  <label className="fi-label">담당자</label>
+                  <input className="fi" value={form.mainContact||''} onChange={e=>set('mainContact',e.target.value)} placeholder="담당자명" />
+                </div>
+                <div>
+                  <label className="fi-label">우선순위</label>
+                  <select className="fi" value={form.priorityLevel||'중간'} onChange={e=>set('priorityLevel',e.target.value)}>
+                    <option value="높음">높음</option>
+                    <option value="중간">중간</option>
+                    <option value="낮음">낮음</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="fi-label">보고서 파일명</label>
+                <input className="fi" value={form.reportFile||''} onChange={e=>set('reportFile',e.target.value)} placeholder="예: btskin.html" />
+              </div>
+              <div style={{display:'flex',gap:10,justifyContent:'flex-end',marginTop:4}}>
+                <button className="btn-ghost" onClick={onClose}>취소</button>
+                <button className="btn-primary" onClick={()=>{ if(!(form.clientName||'').trim()){ alert('거래처명을 입력하세요.'); return; } onSave(modal.type, modal.mode, form, modal.context); }}>거래처 추가</button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ═══════════════════════════════════════════════
+  //  HEADER
+  // ═══════════════════════════════════════════════
+  function Header({ view, selectedClient, onBack, onHome, syncStatus, onSync }) {
+    const d = new Date();
+    const dateStr = `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`;
+    const syncLabel = syncStatus === 'loading' ? '⏳ 동기화 중...'
+                    : syncStatus === 'ok'      ? '✓ 동기화 완료'
+                    : syncStatus === 'error'   ? '⚠ 재시도'
+                    : '☁️ 구글시트 동기화';
+    const syncBg    = syncStatus === 'loading' ? '#4b5563'
+                    : syncStatus === 'ok'      ? '#065f46'
+                    : syncStatus === 'error'   ? '#b91c1c'
+                    : '#2563eb';
+    return (
+      <header style={{background:'#1a1a2e',padding:'0 32px',height:60,display:'flex',alignItems:'center',justifyContent:'space-between',position:'sticky',top:0,zIndex:50}}>
+        <div style={{display:'flex',alignItems:'center',gap:12}}>
+          <div style={{width:36,height:36,background:'#c9a96e',borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',fontWeight:900,fontSize:13,color:'#fff',cursor:'pointer'}} onClick={onHome}>UP</div>
+          <div>
+            <div style={{fontSize:15,fontWeight:700,color:'#fff',lineHeight:1.3}}>어반플랜애드</div>
+            {view==='client' && selectedClient ? (
+              <div style={{display:'flex',alignItems:'center',gap:6}}>
+                <button onClick={onBack} style={{background:'none',border:'none',color:'rgba(255,255,255,0.5)',cursor:'pointer',fontSize:11,padding:0,fontFamily:'inherit'}}>← 전체</button>
+                <span style={{color:'rgba(255,255,255,0.3)',fontSize:11}}>/</span>
+                <span style={{color:'rgba(255,255,255,0.7)',fontSize:11,fontWeight:600}}>{selectedClient.clientName}</span>
+              </div>
+            ) : (
+              <div style={{fontSize:11,color:'rgba(255,255,255,0.4)'}}>이달의 업무 대시보드</div>
+            )}
+          </div>
+        </div>
+        <div style={{display:'flex',alignItems:'center',gap:14}}>
+          <button
+            onClick={onSync}
+            disabled={syncStatus === 'loading'}
+            style={{background:syncBg,color:'#fff',border:'none',borderRadius:8,padding:'7px 14px',fontSize:12,fontWeight:700,cursor: syncStatus==='loading' ? 'default':'pointer',fontFamily:'inherit',whiteSpace:'nowrap',transition:'background 0.2s'}}>
+            {syncLabel}
+          </button>
+          <div style={{fontSize:11,color:'rgba(255,255,255,0.35)'}}>{dateStr}</div>
+        </div>
+      </header>
+    );
+  }
+
+  // ═══════════════════════════════════════════════
+  //  COMMON TASKS CARD (내 사업 공통업무)
+  // ═══════════════════════════════════════════════
+  function CommonTasksCard({ tasks, onAdd, onToggle, onDelete, onEdit }) {
+    const [input, setInput] = useState('');
+    const [showDone, setShowDone] = useState(false);
+    const [editingId,  setEditingId]  = useState(null);
+    const [editingVal, setEditingVal] = useState('');
+
+    function startEdit(t) { setEditingId(t.taskId); setEditingVal(t.title); }
+    function saveCtEdit(taskId) {
+      if (editingVal.trim()) onEdit(taskId, editingVal.trim());
+      setEditingId(null);
+    }
+
+    const pending = tasks.filter(t => !t.done);
+    const done    = tasks.filter(t => t.done);
+    const visible = showDone ? tasks : pending;
+
+    function handleAdd() {
+      const v = input.trim();
+      if (!v) return;
+      onAdd(v);
+      setInput('');
+    }
+
+    return (
+      <div style={{
+        background:'#fff', borderRadius:14, border:'1px solid #e5e7eb',
+        padding:'18px 22px', marginBottom:20,
+        boxShadow:'0 1px 4px rgba(0,0,0,0.05)'
+      }}>
+        {/* Header */}
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14}}>
+          <div style={{display:'flex',alignItems:'center',gap:10}}>
+            <span style={{fontSize:18}}>🗂️</span>
+            <span style={{fontSize:14,fontWeight:700,color:'#1a1a2e'}}>내 사업 공통업무</span>
+            {pending.length > 0 && (
+              <span style={{fontSize:11,fontWeight:700,padding:'2px 8px',borderRadius:20,background:'#fef3c7',color:'#b45309'}}>
+                {pending.length}건 진행 중
+              </span>
+            )}
+          </div>
+          <button
+            onClick={() => setShowDone(s => !s)}
+            style={{fontSize:11,color:'#9ca3af',background:'transparent',border:'none',cursor:'pointer',fontFamily:'inherit',padding:'2px 6px'}}>
+            {showDone ? '완료 숨기기' : `완료 ${done.length}건 보기`}
+          </button>
+        </div>
+
+        {/* Task list */}
+        <div style={{display:'flex',flexDirection:'column',gap:2,marginBottom:12}}>
+          {visible.length === 0 && (
+            <div style={{fontSize:13,color:'#9ca3af',padding:'10px 10px',textAlign:'center'}}>
+              {showDone ? '업무가 없습니다.' : '진행 중인 업무가 없습니다.'}
+            </div>
+          )}
+          {visible.map(t => (
+            <div key={t.taskId} className={`ct-item${t.done ? ' done' : ''}`}>
+              {/* 체크박스 */}
+              <div
+                className={`ct-check${t.done ? ' done' : ''}`}
+                onClick={() => onToggle(t.taskId, !t.done)}
+                title={t.done ? '완료 취소' : '완료 처리'}>
+                {t.done && <span style={{fontSize:11,lineHeight:1}}>✓</span>}
+              </div>
+              {/* 제목 — 클릭 편집 */}
+              {editingId === t.taskId ? (
+                <input
+                  value={editingVal}
+                  onChange={e => setEditingVal(e.target.value)}
+                  onBlur={() => saveCtEdit(t.taskId)}
+                  onKeyDown={e => { if(e.key==='Enter') saveCtEdit(t.taskId); if(e.key==='Escape') setEditingId(null); }}
+                  autoFocus
+                  style={{flex:1,padding:'3px 8px',border:'1px solid #93c5fd',borderRadius:6,fontSize:13,fontFamily:'inherit',outline:'none'}}
+                />
+              ) : (
+                <span
+                  className="ct-title"
+                  onDoubleClick={() => !t.done && startEdit(t)}
+                  title={t.done ? '' : '더블클릭으로 수정'}
+                  style={{
+                    flex:1, fontSize:13, color: t.done ? '#9ca3af':'#374151',
+                    textDecoration: t.done ? 'line-through':'none',
+                    cursor: t.done ? 'default' : 'text'
+                  }}>
+                  {t.title}
+                </span>
+              )}
+              {/* 날짜 */}
+              {t.createdAt && editingId !== t.taskId && (
+                <span style={{fontSize:10,color:'#d1d5db',flexShrink:0}}>{fmtDate(t.createdAt)}</span>
+              )}
+              {/* 삭제 */}
+              <button
+                className="btn-icon"
+                onClick={() => { if(confirm(`"${t.title}" 업무를 삭제하시겠습니까?`)) onDelete(t.taskId); }}
+                title="삭제" style={{color:'#d1d5db',fontSize:13,padding:'2px 5px'}}>
+                ✕
+              </button>
+            </div>
+          ))}
+        </div>
+
+        {/* Add input */}
+        <div style={{display:'flex',gap:8}}>
+          <input
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={e => { if(e.key==='Enter') handleAdd(); }}
+            placeholder="새 업무 추가…"
+            style={{flex:1,padding:'7px 12px',border:'1px solid #e5e7eb',borderRadius:8,fontSize:13,fontFamily:'inherit',outline:'none'}}
+          />
+          <button
+            onClick={handleAdd}
+            disabled={!input.trim()}
+            style={{padding:'7px 16px',background: input.trim() ? '#1a1a2e':'#e5e7eb',color: input.trim() ? '#fff':'#9ca3af',border:'none',borderRadius:8,fontSize:13,fontWeight:700,cursor: input.trim() ? 'pointer':'default',fontFamily:'inherit',transition:'background 0.15s'}}>
+            추가
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ═══════════════════════════════════════════════
+  //  CREDENTIALS SECTION (거래처별 자격증명 메모)
+  // ═══════════════════════════════════════════════
+  function CredentialsSection({ clientId, credentials, onAdd, onDelete }) {
+    const [open,    setOpen]    = useState(false);   // 기본 접힘
+    const [showAdd, setShowAdd] = useState(false);
+    const [revealed, setRevealed] = useState({});
+    const [form, setForm]         = useState({ service:'', url:'', username:'', password:'' });
+
+    const creds = credentials[clientId] || [];
+
+    function handleAdd() {
+      if (!form.service.trim() || !form.username.trim()) return;
+      onAdd(clientId, { ...form });
+      setForm({ service:'', url:'', username:'', password:'' });
+      setShowAdd(false);
+    }
+
+    return (
+      <div style={{background:'#fff',borderRadius:12,border:'1px solid #e5e7eb',marginBottom:20,overflow:'hidden'}}>
+        {/* 헤더 — 항상 표시, 클릭으로 접기/펼치기 */}
+        <div
+          onClick={() => setOpen(o => !o)}
+          style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'13px 20px',cursor:'pointer',userSelect:'none'}}>
+          <div style={{display:'flex',alignItems:'center',gap:8}}>
+            <span style={{fontSize:13}}>🔐</span>
+            <span style={{fontSize:11,fontWeight:700,color:'#9ca3af',letterSpacing:'1px',textTransform:'uppercase'}}>계정 / 비밀번호 메모</span>
+            {creds.length > 0 && (
+              <span style={{fontSize:10,color:'#9ca3af',fontWeight:600}}>({creds.length}개)</span>
+            )}
+          </div>
+          <span style={{fontSize:11,color:'#9ca3af',transition:'transform 0.2s',display:'inline-block',transform: open ? 'rotate(180deg)':'rotate(0deg)'}}>▾</span>
+        </div>
+
+        {/* 본문 — open 시에만 렌더 */}
+        {open && (
+        <div style={{padding:'0 20px 18px'}}>
+          <div style={{display:'flex',justifyContent:'flex-end',marginBottom:10}}>
+            <button
+              onClick={e => { e.stopPropagation(); setShowAdd(s => !s); }}
+              style={{fontSize:11,fontWeight:700,padding:'4px 10px',borderRadius:8,border:'1px solid #e5e7eb',background: showAdd ? '#f3f4f6':'#fff',cursor:'pointer',fontFamily:'inherit',color:'#374151'}}>
+              {showAdd ? '취소' : '+ 추가'}
+            </button>
+          </div>
+
+        {/* 추가 폼 */}
+        {showAdd && (
+          <div style={{background:'#f9fafb',borderRadius:10,padding:'12px',marginBottom:12,border:'1px solid #e5e7eb'}}>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:8}}>
+              <input
+                placeholder="서비스명 *"
+                value={form.service}
+                onChange={e => setForm(f => ({...f,service:e.target.value}))}
+                style={{padding:'7px 10px',border:'1px solid #d1d5db',borderRadius:7,fontSize:12,fontFamily:'inherit',outline:'none'}}
+              />
+              <input
+                placeholder="URL (선택)"
+                value={form.url}
+                onChange={e => setForm(f => ({...f,url:e.target.value}))}
+                style={{padding:'7px 10px',border:'1px solid #d1d5db',borderRadius:7,fontSize:12,fontFamily:'inherit',outline:'none'}}
+              />
+              <input
+                placeholder="아이디 *"
+                value={form.username}
+                onChange={e => setForm(f => ({...f,username:e.target.value}))}
+                style={{padding:'7px 10px',border:'1px solid #d1d5db',borderRadius:7,fontSize:12,fontFamily:'inherit',outline:'none'}}
+              />
+              <input
+                placeholder="비밀번호"
+                value={form.password}
+                onChange={e => setForm(f => ({...f,password:e.target.value}))}
+                onKeyDown={e => { if(e.key==='Enter') handleAdd(); }}
+                style={{padding:'7px 10px',border:'1px solid #d1d5db',borderRadius:7,fontSize:12,fontFamily:'inherit',outline:'none'}}
+              />
+            </div>
+            <button
+              onClick={handleAdd}
+              disabled={!form.service.trim() || !form.username.trim()}
+              style={{padding:'7px 16px',background: (form.service.trim()&&form.username.trim()) ? '#1a1a2e':'#e5e7eb',color:(form.service.trim()&&form.username.trim())?'#fff':'#9ca3af',border:'none',borderRadius:7,fontSize:12,fontWeight:700,cursor:'pointer',fontFamily:'inherit'}}>
+              저장
+            </button>
+          </div>
+        )}
+
+        {/* 목록 */}
+        {creds.length === 0 && !showAdd && (
+          <div style={{fontSize:12,color:'#9ca3af',padding:'8px 0'}}>등록된 계정이 없습니다.</div>
+        )}
+        <div style={{display:'flex',flexDirection:'column',gap:6}}>
+          {creds.map(c => (
+            <div key={c.credId} className="cred-row">
+              <div style={{flex:'0 0 130px',minWidth:0}}>
+                <div style={{fontSize:12,fontWeight:700,color:'#374151',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{c.service}</div>
+                {c.url && (
+                  <a href={c.url} target="_blank" rel="noopener"
+                    style={{fontSize:10,color:'#6b7280',textDecoration:'none',display:'block',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
+                    {c.url.replace(/^https?:\/\//,'')}
+                  </a>
+                )}
+              </div>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:12,color:'#374151',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{c.username}</div>
+              </div>
+              <div
+                className="cred-pw"
+                onClick={() => setRevealed(r => ({...r,[c.credId]:!r[c.credId]}))}
+                title="클릭하면 비밀번호가 표시됩니다"
+                style={{
+                  flex:'0 0 120px',fontSize:12,fontFamily:'monospace',
+                  color: revealed[c.credId] ? '#1a1a2e':'#9ca3af',
+                  cursor:'pointer',textAlign:'right',userSelect: revealed[c.credId] ? 'text':'none'
+                }}>
+                {revealed[c.credId] ? c.password : '••••••••'}
+              </div>
+              <button
+                className="btn-icon"
+                onClick={() => { if(confirm(`"${c.service}" 계정을 삭제하시겠습니까?`)) onDelete(clientId, c.credId); }}
+                style={{color:'#d1d5db',fontSize:12,flexShrink:0}}>✕</button>
+            </div>
+          ))}
+        </div>
+        </div>
+        )}
+      </div>
+    );
+  }
+
+  // ═══════════════════════════════════════════════
+  //  CLIENT CARD (메인 뷰)
+  // ═══════════════════════════════════════════════
+  function ClientCard({ client, data, onSelect }) {
+    const allJobs    = (data.monthlyJobs||[]).filter(j => j.clientId===client.clientId);
+    const essential  = allJobs.filter(j => j.kind==='필수');
+    const rankJobs   = allJobs.filter(j => j.kind==='순위');
+    const subJobs    = allJobs.filter(j => j.kind==='서브');
+
+    const isDone = j => j.targetCount!=null ? j.currentCount>=j.targetCount : j.note==='완료';
+
+    const essentialDone = essential.filter(isDone).length;
+    const allDone = essential.length > 0 && essentialDone === essential.length;
+
+    const specCls = SPEC_CLS[client.specialty]||'기타';
+    const emoji   = SPEC_EMOJI[client.specialty]||'🏢';
+
+    // 카운터 업무 진행 상황
+    const countJobs     = essential.filter(j => j.targetCount != null);
+    // 필수업무 중 카운트 없는 업무 (노트/완료 표시용)
+    const noCountEssential = essential.filter(j => j.targetCount == null);
+
+    // 서브/순위 진행중 업무 (완료 제외)
+    const nonEssentialActive = [...subJobs, ...rankJobs].filter(j => !isDone(j));
+    const MAX_SUB = 4;
+    const visibleSub = nonEssentialActive.slice(0, MAX_SUB);
+    const hasMoreSub = nonEssentialActive.length > MAX_SUB;
+
+    const bgColor = specCls==='피부과'?'#fde8ec':specCls==='성형외과'?'#ede9fe':specCls==='안과'?'#dbeafe':specCls==='치과'?'#d1fae5':specCls==='한의원'?'#dcfce7':'#fef3c7';
+
+    return (
+      <div className="card-hover" onClick={()=>onSelect(client.clientId)}
+        style={{background:'#fff',borderRadius:14,border:'1px solid #e5e7eb',overflow:'hidden'}}>
+
+        {/* Top */}
+        <div style={{padding:'18px 20px 12px',display:'flex',alignItems:'flex-start',justifyContent:'space-between'}}>
+          <div style={{display:'flex',alignItems:'center',gap:12}}>
+            <div style={{width:42,height:42,borderRadius:12,flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:20,background:bgColor}}>
+              {emoji}
+            </div>
+            <div>
+              <div style={{fontSize:14,fontWeight:800,color:'#1a1a2e',lineHeight:1.3}}>{client.clientName}</div>
+              <SpecBadge specialty={client.specialty} />
+            </div>
+          </div>
+        </div>
+
+        {/* 카운터 업무 진행 바 */}
+        {countJobs.length > 0 && (
+          <div style={{padding:'0 20px 12px'}}>
+            {countJobs.map(j => {
+              const pct = Math.min(100, Math.round(((j.currentCount||0)/j.targetCount)*100));
+              const done = j.currentCount >= j.targetCount;
+              return (
+                <div key={j.jobId} style={{marginBottom: countJobs.length>1 ? 8 : 0}}>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:3}}>
+                    <span style={{fontSize:11,color:'#6b7280',fontWeight:600}}>{j.title}</span>
+                    <span style={{fontSize:11,fontWeight:700,
+                      color: (j.currentCount||0) > j.targetCount ? '#059669' : done ? '#10b981':'#1d4ed8'}}>
+                      {j.currentCount}/{j.targetCount}
+                      {(j.currentCount||0) > j.targetCount
+                        ? <span style={{fontSize:10,fontWeight:800,color:'#059669'}}>+{(j.currentCount||0)-j.targetCount}</span>
+                        : j.unit
+                      }
+                    </span>
+                  </div>
+                  <div className="prog-track">
+                    <div className="prog-fill" style={{
+                      width:`${pct}%`,
+                      background: done ? '#10b981' : pct > 60 ? '#3b82f6' : pct > 30 ? '#6366f1':'#94a3b8'
+                    }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* 필수업무 중 카운트 없는 업무 (노트 방식 — 순위유지 등) */}
+        {noCountEssential.length > 0 && (
+          <div style={{padding:'0 20px',paddingBottom: visibleSub.length > 0 ? 6 : 10,borderTop: countJobs.length>0 ? '1px solid #f9fafb':'none',paddingTop: countJobs.length>0 ? 8 : 0}}>
+            {noCountEssential.map(j => {
+              const done = j.note === '완료';
+              return (
+                <div key={j.jobId} style={{display:'flex',alignItems:'center',gap:6,padding:'3px 0'}}>
+                  <div style={{width:5,height:5,borderRadius:'50%',flexShrink:0,background:'#ef4444'}} />
+                  <span style={{fontSize:11,color: done ? '#9ca3af':'#374151',flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',fontWeight:600,
+                    textDecoration: done ? 'line-through':'none'}}>
+                    {j.title}
+                  </span>
+                  {j.note && j.note !== '완료' && (
+                    <span style={{fontSize:10,color:'#6b7280',flexShrink:0,maxWidth:80,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{j.note}</span>
+                  )}
+                  {done && <span style={{fontSize:10,color:'#10b981',flexShrink:0}}>✓</span>}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* 서브/순위 업무 진행중 목록 */}
+        {visibleSub.length > 0 && (
+          <div style={{padding:'0 20px 10px',borderTop:'1px solid #f9fafb',paddingTop:10}}>
+            <div style={{fontSize:10,fontWeight:700,color:'#9ca3af',letterSpacing:'0.5px',marginBottom:6}}>진행중 업무</div>
+            {visibleSub.map(j => (
+              <div key={j.jobId} style={{display:'flex',alignItems:'center',gap:6,padding:'4px 0',borderBottom:'1px solid #f9fafb'}}>
+                <div style={{width:5,height:5,borderRadius:'50%',flexShrink:0,
+                  background: j.kind==='순위' ? '#8b5cf6' : '#f59e0b'}} />
+                <span style={{fontSize:12,color:'#374151',flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
+                  {j.title}
+                </span>
+                {j.note && j.note !== '완료' && (
+                  <span style={{fontSize:10,color:'#9ca3af',flexShrink:0}}>{j.note}</span>
+                )}
+                {j.dueDate && <DueBadge dueDate={j.dueDate} />}
+              </div>
+            ))}
+            {hasMoreSub && (
+              <div style={{fontSize:11,color:'#6b7280',marginTop:6,textAlign:'center',fontWeight:600}}>
+                +{nonEssentialActive.length - MAX_SUB}개 더 · 카드 클릭해서 전체 보기 →
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Footer */}
+        <div style={{padding:'10px 20px 14px',borderTop:'1px solid #f9fafb',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+          <span style={{fontSize:10,color:'#9ca3af'}}>업데이트 {fmtDate(client.lastUpdated)}</span>
+          {client.reportFile ? (
+            <a href={client.reportFile} target="_blank" rel="noopener" onClick={e=>e.stopPropagation()}
+              style={{fontSize:11,fontWeight:700,color:'#1a1a2e',background:'#f0e6d3',padding:'4px 10px',borderRadius:6,textDecoration:'none'}}>
+              📋 보고서
+            </a>
+          ) : (
+            <span style={{fontSize:10,color:'#d1d5db'}}>보고서 없음</span>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ═══════════════════════════════════════════════
+  //  RECENT LOGS (메인 뷰 하단)
+  // ═══════════════════════════════════════════════
+  function RecentLogs({ data, onGoClient }) {
+    const sorted = [...(data.logs||[])].sort((a,b)=>b.createdAt>a.createdAt?1:-1).slice(0,8);
+    if(sorted.length===0) return null;
+    return (
+      <div style={{marginTop:32}}>
+        <div className="section-title">📋 최근 업데이트 로그</div>
+        <div style={{background:'#fff',borderRadius:12,border:'1px solid #e5e7eb',overflow:'hidden'}}>
+          {sorted.map((log,i)=>{
+            const client = data.clients.find(c=>c.clientId===log.clientId);
+            return (
+              <div key={log.logId} style={{display:'flex',gap:12,padding:'12px 16px',borderBottom:i<sorted.length-1?'1px solid #f3f4f6':undefined,cursor:'pointer',alignItems:'flex-start'}}
+                onClick={()=>client && onGoClient(client.clientId)}>
+                <span style={{fontSize:16,marginTop:1}}>{SPEC_EMOJI[client?.specialty]||'🏢'}</span>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:12,color:'#374151'}}>{log.message}</div>
+                  <div style={{fontSize:10,color:'#9ca3af',marginTop:2}}>{client?.clientName||''}</div>
+                </div>
+                <span style={{fontSize:10,color:'#9ca3af',whiteSpace:'nowrap',marginTop:2}}>{fmtDate(log.createdAt)}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  // ═══════════════════════════════════════════════
+  //  CLIENT DETAIL VIEW
+  // ═══════════════════════════════════════════════
+  function ClientDetailView({ client, data, mutate, onOpenModal, autoLog, onAddCredential, onDeleteCredential, onDeletePost, onUpdateClient, onDeleteClient }) {
+    const cDelivs = (data.deliverables||[]).filter(d=>d.clientId===client.clientId);
+    const cLogs   = (data.logs||[]).filter(l=>l.clientId===client.clientId).sort((a,b)=>b.createdAt>a.createdAt?1:-1);
+
+    // 이달 발행 글 (이 거래처의 전체 postLogs, 최신순)
+    const cPosts  = (data.postLogs||[])
+      .filter(p=>p.clientId===client.clientId)
+      .sort((a,b)=>b.publishedAt>a.publishedAt?1:-1);
+
+    const specCls = SPEC_CLS[client.specialty]||'기타';
+    const emoji   = SPEC_EMOJI[client.specialty]||'🏢';
+
+    // 발행 글 인라인 편집 상태
+    const [editingPost,    setEditingPost]    = useState(null);
+    const [editPostTitle,  setEditPostTitle]  = useState('');
+    const [editPostUrl,    setEditPostUrl]    = useState('');
+
+    function startEditPost(pl) {
+      setEditingPost(pl.logId);
+      setEditPostTitle(pl.title || '');
+      setEditPostUrl(pl.url    || '');
+    }
+    function saveEditPost(pl) {
+      if (!editPostTitle.trim()) { setEditingPost(null); return; }
+      mutate(d => ({
+        ...d,
+        postLogs: (d.postLogs||[]).map(p => p.logId===pl.logId
+          ? { ...p, title: editPostTitle.trim(), url: editPostUrl.trim() }
+          : p
+        )
+      }));
+      fetch(API_URL, {
+        method: 'POST', redirect: 'follow',
+        body: JSON.stringify({ action: 'updatePost', logId: pl.logId, title: editPostTitle.trim(), url: editPostUrl.trim() })
+      }).catch(e => console.warn('updatePost 오류:', e));
+      setEditingPost(null);
+    }
+
+    // 거래처 정보 인라인 편집 상태
+    const [editingClient,  setEditingClient]  = useState(false);
+    const [editCName,      setEditCName]      = useState(client.clientName);
+    const [editContact,    setEditContact]    = useState(client.mainContact    || '');
+    const [editReport,     setEditReport]     = useState(client.reportFile     || '');
+    const [editSpecialty,  setEditSpecialty]  = useState(client.specialty      || '기타');
+    const [editPriority,   setEditPriority]   = useState(client.priorityLevel  || '중간');
+
+    function saveClientInfo() {
+      onUpdateClient(client.clientId, {
+        clientName:    editCName.trim()   || client.clientName,
+        mainContact:   editContact.trim(),
+        reportFile:    editReport.trim(),
+        specialty:     editSpecialty,
+        priorityLevel: editPriority,
+      });
+      setEditingClient(false);
+    }
+
+    return (
+      <div style={{maxWidth:860,margin:'0 auto',padding:'28px 24px'}}>
+        {/* Client info card */}
+        <div style={{background:'#fff',borderRadius:14,border:'1px solid #e5e7eb',padding:'22px 24px',marginBottom:24}}>
+          {editingClient ? (
+            <div>
+              <div style={{fontSize:11,fontWeight:700,color:'#374151',marginBottom:10}}>거래처 정보 수정</div>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:8}}>
+                <input value={editCName}   onChange={e=>setEditCName(e.target.value)}   placeholder="거래처명 *"   style={{padding:'7px 10px',border:'1px solid #d1d5db',borderRadius:7,fontSize:13,fontFamily:'inherit',outline:'none'}} />
+                <input value={editContact} onChange={e=>setEditContact(e.target.value)} placeholder="담당자명"     style={{padding:'7px 10px',border:'1px solid #d1d5db',borderRadius:7,fontSize:13,fontFamily:'inherit',outline:'none'}} />
+              </div>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:8}}>
+                <select value={editSpecialty} onChange={e=>setEditSpecialty(e.target.value)}
+                  style={{padding:'7px 10px',border:'1px solid #d1d5db',borderRadius:7,fontSize:13,fontFamily:'inherit',outline:'none',background:'#fff'}}>
+                  {SPECIALTIES.map(s=><option key={s} value={s}>{s}</option>)}
+                </select>
+                <select value={editPriority} onChange={e=>setEditPriority(e.target.value)}
+                  style={{padding:'7px 10px',border:'1px solid #d1d5db',borderRadius:7,fontSize:13,fontFamily:'inherit',outline:'none',background:'#fff'}}>
+                  <option value="높음">우선순위: 높음</option>
+                  <option value="중간">우선순위: 중간</option>
+                  <option value="낮음">우선순위: 낮음</option>
+                </select>
+              </div>
+              <input value={editReport}  onChange={e=>setEditReport(e.target.value)}  placeholder="보고서 파일명 (예: btskin.html)" style={{width:'100%',boxSizing:'border-box',padding:'7px 10px',border:'1px solid #d1d5db',borderRadius:7,fontSize:13,fontFamily:'inherit',outline:'none',marginBottom:10}} />
+              <div style={{display:'flex',gap:8,justifyContent:'space-between',alignItems:'center'}}>
+                <div style={{display:'flex',gap:8}}>
+                  <button onClick={saveClientInfo} style={{padding:'6px 16px',background:'#1a1a2e',color:'#fff',border:'none',borderRadius:7,fontSize:12,cursor:'pointer',fontFamily:'inherit',fontWeight:700}}>저장</button>
+                  <button onClick={()=>setEditingClient(false)} style={{padding:'6px 12px',background:'none',border:'1px solid #d1d5db',borderRadius:7,fontSize:12,cursor:'pointer',fontFamily:'inherit',color:'#6b7280'}}>취소</button>
+                </div>
+                <button onClick={()=>{ if(confirm(`"${client.clientName}" 거래처를 삭제합니까? 관련 업무/로그도 모두 제거됩니다.`)) onDeleteClient(client.clientId); }}
+                  style={{padding:'6px 12px',background:'none',border:'1px solid #fca5a5',borderRadius:7,fontSize:12,cursor:'pointer',fontFamily:'inherit',color:'#dc2626'}}>
+                  🗑 거래처 삭제
+                </button>
+              </div>
+            </div>
+          ) : (
+          <div style={{display:'flex',alignItems:'center',gap:18,flexWrap:'wrap'}}>
+            <div style={{width:52,height:52,borderRadius:14,flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:24,
+              background: specCls==='피부과'?'#fde8ec':specCls==='성형외과'?'#ede9fe':specCls==='안과'?'#dbeafe':specCls==='치과'?'#d1fae5':specCls==='한의원'?'#dcfce7':'#fef3c7'}}>
+              {emoji}
+            </div>
+            <div style={{flex:1}}>
+              <div style={{display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}>
+                <h1 style={{fontSize:20,fontWeight:900,color:'#1a1a2e',margin:0}}>{client.clientName}</h1>
+                <SpecBadge specialty={client.specialty} />
+              </div>
+              <div style={{fontSize:11,color:'#9ca3af',marginTop:6}}>
+                최근 업데이트 {fmtDate(client.lastUpdated)} &nbsp;·&nbsp; {client.mainContact}
+              </div>
+            </div>
+            <div style={{display:'flex',gap:8,alignItems:'center',flexShrink:0}}>
+              {client.reportFile && (
+                <a href={client.reportFile} target="_blank" rel="noopener"
+                  style={{background:'#1a1a2e',color:'#fff',padding:'8px 16px',borderRadius:8,textDecoration:'none',fontSize:13,fontWeight:700}}>
+                  📋 보고서 열기
+                </a>
+              )}
+              <button
+                onClick={()=>{ setEditCName(client.clientName); setEditContact(client.mainContact||''); setEditReport(client.reportFile||''); setEditSpecialty(client.specialty||'기타'); setEditPriority(client.priorityLevel||'중간'); setEditingClient(true); }}
+                style={{padding:'7px 12px',background:'#f9fafb',border:'1px solid #e5e7eb',borderRadius:8,fontSize:12,cursor:'pointer',fontFamily:'inherit',color:'#6b7280',fontWeight:600}}>
+                ✎ 수정
+              </button>
+            </div>
+          </div>
+          )}
+        </div>
+
+        {/* 계정 / 비밀번호 메모 */}
+        <CredentialsSection
+          clientId={client.clientId}
+          credentials={data.credentials || {}}
+          onAdd={onAddCredential}
+          onDelete={onDeleteCredential}
+        />
+
+        {/* Monthly Jobs */}
+        <MonthlyJobsSection clientId={client.clientId} data={data} mutate={mutate} autoLog={autoLog} />
+
+        {/* 이달의 발행 글 (postLogs) */}
+        <div style={{background:'#fff',borderRadius:12,border:'1px solid #e5e7eb',padding:'18px 20px',marginBottom:20}}>
+          <div className="section-title">📝 발행 글 목록 ({cPosts.length}건)</div>
+          {cPosts.length === 0 && (
+            <div style={{fontSize:12,color:'#9ca3af',padding:'6px 0'}}>
+              각 업무 행의 ✏️ 버튼으로 발행 글을 기록하세요.
+            </div>
+          )}
+          <div style={{display:'flex',flexDirection:'column',gap:2}}>
+            {cPosts.map((pl,i)=>{
+              const job = (data.monthlyJobs||[]).find(j=>j.jobId===pl.jobId);
+              return (
+                <div key={pl.logId||i} style={{borderBottom: i<cPosts.length-1 ? '1px solid #f3f4f6':undefined}}>
+                  {editingPost === pl.logId ? (
+                    /* 인라인 편집 폼 */
+                    <div style={{padding:'8px 0',display:'flex',flexDirection:'column',gap:5}}>
+                      <input
+                        value={editPostTitle}
+                        onChange={e=>setEditPostTitle(e.target.value)}
+                        placeholder="글 제목 *"
+                        autoFocus
+                        onKeyDown={e=>{ if(e.key==='Enter') saveEditPost(pl); if(e.key==='Escape') setEditingPost(null); }}
+                        style={{width:'100%',boxSizing:'border-box',padding:'5px 9px',border:'1px solid #93c5fd',borderRadius:6,fontSize:12,fontFamily:'inherit',outline:'none'}}
+                      />
+                      <input
+                        value={editPostUrl}
+                        onChange={e=>setEditPostUrl(e.target.value)}
+                        placeholder="URL (선택)"
+                        style={{width:'100%',boxSizing:'border-box',padding:'5px 9px',border:'1px solid #93c5fd',borderRadius:6,fontSize:12,fontFamily:'inherit',outline:'none'}}
+                      />
+                      <div style={{display:'flex',gap:5}}>
+                        <button onClick={()=>saveEditPost(pl)}
+                          style={{padding:'4px 12px',background:'#1d4ed8',color:'#fff',border:'none',borderRadius:5,fontSize:11,cursor:'pointer',fontFamily:'inherit',fontWeight:700}}>저장</button>
+                        <button onClick={()=>setEditingPost(null)}
+                          style={{padding:'4px 10px',background:'none',border:'1px solid #d1d5db',borderRadius:5,fontSize:11,cursor:'pointer',fontFamily:'inherit',color:'#6b7280'}}>취소</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{display:'flex',alignItems:'center',gap:10,padding:'8px 0'}}>
+                      <div style={{width:6,height:6,borderRadius:'50%',background:'#3b82f6',flexShrink:0}} />
+                      <div style={{flex:1,minWidth:0}}>
+                        {pl.url ? (
+                          <a href={pl.url} target="_blank" rel="noopener"
+                            style={{fontSize:13,fontWeight:600,color:'#1d4ed8',textDecoration:'none',display:'block',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
+                            {pl.title}
+                          </a>
+                        ) : (
+                          <span style={{fontSize:13,fontWeight:600,color:'#374151',display:'block',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{pl.title}</span>
+                        )}
+                        <div style={{display:'flex',alignItems:'center',gap:6,marginTop:2}}>
+                          {job && <span style={{fontSize:10,color:'#9ca3af'}}>{job.title}</span>}
+                          {pl.channel && <span style={{fontSize:10,fontWeight:600,padding:'1px 6px',borderRadius:8,background:'#eff6ff',color:'#3b82f6'}}>{pl.channel}</span>}
+                        </div>
+                      </div>
+                      <div style={{display:'flex',alignItems:'center',gap:4,flexShrink:0}}>
+                        <span style={{fontSize:11,color:'#9ca3af'}}>{fmtDate(pl.publishedAt)}</span>
+                        <button className="btn-icon" onClick={()=>startEditPost(pl)} title="수정"
+                          style={{color:'#d1d5db',fontSize:11,padding:'2px 5px'}}>✎</button>
+                        <button className="btn-icon"
+                          onClick={() => onOpenModal('delete','del',{},{type:'post',id:pl.logId,name:'이 발행 글'})}
+                          title="삭제" style={{color:'#d1d5db',fontSize:12,padding:'2px 5px'}}>🗑</button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Deliverables */}
+        {cDelivs.length > 0 && (
+          <div style={{marginBottom:24}}>
+            <div className="section-title">산출물 / 보고서 링크</div>
+            <div style={{display:'flex',flexDirection:'column',gap:8}}>
+              {cDelivs.map(d=>(
+                <div key={d.deliverableId} style={{background:'#fff',border:'1px solid #e5e7eb',borderRadius:10,padding:'12px 16px',display:'flex',alignItems:'center',gap:12}}>
+                  <span style={{fontSize:20}}>📄</span>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:13,fontWeight:600,color:'#1a1a2e'}}>{d.title}</div>
+                    <div style={{fontSize:11,color:'#9ca3af',marginTop:2}}>{d.contentPreview} · {fmtDate(d.updatedAt)}</div>
+                  </div>
+                  <span style={{fontSize:11,background:'#f3f4f6',padding:'2px 8px',borderRadius:20,color:'#6b7280',fontWeight:600}}>{d.kind}</span>
+                  {d.reportFile && (
+                    <a href={d.reportFile} target="_blank" rel="noopener"
+                      style={{fontSize:12,fontWeight:700,color:'#1a1a2e',background:'#f0e6d3',padding:'5px 12px',borderRadius:6,textDecoration:'none',flexShrink:0}}>
+                      열기 →
+                    </a>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+      </div>
+    );
+  }
+
+  // ═══════════════════════════════════════════════
+  //  APP ROOT
+  // ═══════════════════════════════════════════════
+  function App() {
+    const [data,       setData]       = useState(()=>loadData());
+    const [view,       setView]       = useState('main');
+    const [selId,      setSelId]      = useState(null);
+    const [modal,      setModal]      = useState({ open:false });
+    const [syncStatus, setSyncStatus] = useState('idle');
+
+    useEffect(() => { saveData(data); }, [data]);
+
+    const mutate = useCallback((fn) => setData(prev => fn(prev)), []);
+
+    const handleSync = useCallback(() => {
+      setSyncStatus('loading');
+      fetchFromSheets()
+        .then(sheetsData => {
+          // credentials는 로컬 전용 — Sheets 동기화 시 덮어쓰지 않음
+          // clients: DEFAULT_DATA 순서 + reportFile을 유지하면서 Sheets 데이터로 업데이트
+          // commonTasks: Sheets가 비어있으면 로컬 값 유지 (API 호출 실패로 Sheets에 없는 경우 대비)
+          mutate(prev => ({
+            ...sheetsData,
+            // 3-way merge: DEFAULT_DATA 순서 기준, Sheets 데이터 우선, localStorage 거래처 보존
+            clients:      mergeClients(DEFAULT_DATA.clients, sheetsData.clients || [], prev.clients || []),
+            credentials:  prev.credentials ?? DEFAULT_CREDENTIALS,
+            commonTasks:  (sheetsData.commonTasks && sheetsData.commonTasks.length > 0)
+                            ? sheetsData.commonTasks
+                            : (prev.commonTasks && prev.commonTasks.length > 0)
+                              ? prev.commonTasks
+                              : sheetsData.commonTasks,
+            // 동기화 중 로컬 변경 보호: currentCount·note는 로컬 값 우선 유지
+            // (OpenClaw 등 외부 업데이트가 있으면 다음 수동 동기화 시 반영)
+            monthlyJobs: (sheetsData.monthlyJobs && sheetsData.monthlyJobs.length > 0)
+              ? sheetsData.monthlyJobs.map(sj => {
+                  const lj = (prev.monthlyJobs || []).find(j => j.jobId === sj.jobId);
+                  return lj ? { ...sj, currentCount: lj.currentCount, note: lj.note } : sj;
+                })
+              : (prev.monthlyJobs && prev.monthlyJobs.length > 0)
+                ? prev.monthlyJobs
+                : sheetsData.monthlyJobs,
+          }));
+          setSyncStatus('ok');
+        })
+        .catch(e => { console.error('Sheets 연동 오류:', e); setSyncStatus('error'); });
+    }, []);
+
+    // ── 월별 자동 초기화 ──
+    useEffect(() => {
+      const lastMonth = localStorage.getItem(MONTH_KEY);
+      const curMonth  = nowMonth();
+      if (lastMonth && lastMonth !== curMonth) {
+        // 완료된 서브업무 수집 → Sheets에서 삭제
+        const savedData = loadData();
+        const completedSubs = (savedData.monthlyJobs || []).filter(
+          j => j.kind === '서브' && j.note === '완료'
+        );
+        completedSubs.forEach(j => {
+          fetch(API_URL, {
+            method: 'POST', redirect: 'follow',
+            body: JSON.stringify({ action: 'deleteSubJob', jobId: j.jobId })
+          }).catch(() => {});
+        });
+
+        // 새 달 → 카운트/노트 초기화 + 완료된 서브업무 제거
+        setData(prev => ({
+          ...prev,
+          monthlyJobs: prev.monthlyJobs
+            .filter(j => !(j.kind === '서브' && j.note === '완료'))
+            .map(j => ({
+              ...j,
+              currentCount: j.targetCount != null ? 0 : j.currentCount,
+              note:         j.note === '완료' ? '' : j.note,
+            })),
+          postLogs: []
+        }));
+        fetch(API_URL, {
+          method: 'POST', redirect: 'follow',
+          body: JSON.stringify({ action: 'monthlyReset', month: curMonth })
+        }).catch(() => {});
+      }
+      localStorage.setItem(MONTH_KEY, curMonth);
+    }, []);
+
+    // 페이지 로드 시 자동 동기화 (loading 상태 즉시 표시)
+    useEffect(() => { setSyncStatus('loading'); handleSync(); }, []);
+
+    // ── 자동 로그 (업무 완료/카운트 시 자동 기록) ──
+    function autoLog(clientId, message) {
+      const newLog = { logId: `l-${uid()}`, clientId, createdAt: today(), message };
+      mutate(d => ({ ...d, logs: [...(d.logs||[]), newLog] }));
+      mutate(d => ({ ...d, clients: d.clients.map(c => c.clientId===clientId ? {...c, lastUpdated:today()} : c) }));
+      fetch(API_URL, {
+        method: 'POST', redirect: 'follow',
+        body: JSON.stringify({ action: 'addLog', clientId, message })
+      }).catch(e => console.warn('autoLog 오류:', e));
+    }
+
+    // ── 로그 CRUD ──
+    function addLog(logData, context) {
+      const newL = { logId:`l-${uid()}`, clientId:context.clientId, createdAt:today(), ...logData };
+      mutate(d=>({...d, logs:[...d.logs, newL]}));
+      mutate(d=>({...d, clients:d.clients.map(c=>c.clientId===context.clientId?{...c,lastUpdated:today()}:c)}));
+      // Sheets 동기화 (수동 로그도 저장)
+      fetch(API_URL, {
+        method: 'POST', redirect: 'follow',
+        body: JSON.stringify({ action: 'addLog', clientId: context.clientId, message: logData.message || '' })
+      }).catch(e => console.warn('addLog Sheets 오류:', e));
+    }
+    function deleteLog(id) {
+      mutate(d=>({...d, logs:d.logs.filter(l=>l.logId!==id)}));
+      fetch(API_URL, {
+        method: 'POST', redirect: 'follow',
+        body: JSON.stringify({ action: 'deleteLog', logId: id })
+      }).catch(e => console.warn('deleteLog Sheets 오류:', e));
+    }
+
+    // ── Modal ──
+    function openModal(type, mode, formData, context) {
+      setModal({ open:true, type, mode, formData, context });
+    }
+    function closeModal() { setModal({ open:false }); }
+
+    function handleSave(type, mode, form, context) {
+      if(type==='log')        addLog(form, context);
+      if(type==='add-client') addClient(form);
+      closeModal();
+    }
+    function handleDelete(context) {
+      if(context.type==='log')  deleteLog(context.id);
+      if(context.type==='post') deletePost(context.id);
+      closeModal();
+    }
+
+    // ── 발행 글 삭제 ──
+    function deletePost(logId) {
+      mutate(d => ({ ...d, postLogs: (d.postLogs||[]).filter(p => p.logId !== logId) }));
+      fetch(API_URL, {
+        method: 'POST', redirect: 'follow',
+        body: JSON.stringify({ action: 'deletePost', logId })
+      }).catch(e => console.warn('deletePost Sheets 오류:', e));
+    }
+
+    // ── 공통업무 CRUD ──
+    function addCommonTask(title) {
+      const taskId = 'ct-' + uid();
+      const newTask = { taskId, title, done: false, createdAt: today() };
+      mutate(d => ({ ...d, commonTasks: [...(d.commonTasks||[]), newTask] }));
+      fetch(API_URL, {
+        method: 'POST', redirect: 'follow',
+        body: JSON.stringify({ action: 'commonTaskAdd', taskId, title })
+      }).catch(e => console.warn('commonTaskAdd 오류:', e));
+    }
+    function toggleCommonTask(taskId, done) {
+      mutate(d => ({
+        ...d,
+        commonTasks: (d.commonTasks||[]).map(t => t.taskId===taskId ? {...t, done} : t)
+      }));
+      fetch(API_URL, {
+        method: 'POST', redirect: 'follow',
+        body: JSON.stringify({ action: 'commonTaskToggle', taskId, done })
+      }).catch(e => console.warn('commonTaskToggle 오류:', e));
+    }
+    function deleteCommonTask(taskId) {
+      mutate(d => ({ ...d, commonTasks: (d.commonTasks||[]).filter(t => t.taskId!==taskId) }));
+      fetch(API_URL, {
+        method: 'POST', redirect: 'follow',
+        body: JSON.stringify({ action: 'commonTaskDelete', taskId })
+      }).catch(e => console.warn('commonTaskDelete 오류:', e));
+    }
+    function editCommonTask(taskId, title) {
+      mutate(d => ({
+        ...d,
+        commonTasks: (d.commonTasks||[]).map(t => t.taskId===taskId ? { ...t, title } : t)
+      }));
+      fetch(API_URL, {
+        method: 'POST', redirect: 'follow',
+        body: JSON.stringify({ action: 'commonTaskUpdate', taskId, title })
+      }).catch(e => console.warn('commonTaskUpdate 오류:', e));
+    }
+
+    // ── 자격증명 CRUD (로컬 전용) ──
+    function addCredential(clientId, cred) {
+      const credId = 'cr-' + uid();
+      mutate(d => ({
+        ...d,
+        credentials: {
+          ...(d.credentials||{}),
+          [clientId]: [...((d.credentials||{})[clientId]||[]), { credId, ...cred }]
+        }
+      }));
+    }
+    function deleteCredential(clientId, credId) {
+      mutate(d => ({
+        ...d,
+        credentials: {
+          ...(d.credentials||{}),
+          [clientId]: ((d.credentials||{})[clientId]||[]).filter(c => c.credId!==credId)
+        }
+      }));
+    }
+
+    // ── 거래처 CRUD ──
+    function addClient(fields) {
+      const clientId = 'cl-' + uid();
+      const newClient = {
+        clientId,
+        clientName:    (fields.clientName||'').trim(),
+        specialty:     fields.specialty || '기타',
+        mainContact:   (fields.mainContact||'').trim(),
+        priorityLevel: fields.priorityLevel || '중간',
+        reportFile:    (fields.reportFile||'').trim(),
+        lastUpdated:   today(),
+      };
+      mutate(d => ({ ...d, clients: [...d.clients, newClient] }));
+      // Sheets에도 저장 — sync 후에도 유지되도록
+      fetch(API_URL, {
+        method: 'POST', redirect: 'follow',
+        body: JSON.stringify({ action: 'addClient', ...newClient })
+      }).catch(e => console.warn('addClient Sheets 오류:', e));
+    }
+    function updateClient(clientId, fields) {
+      mutate(d => ({
+        ...d,
+        clients: d.clients.map(c => c.clientId===clientId ? { ...c, ...fields } : c)
+      }));
+      // Sheets 업데이트
+      fetch(API_URL, {
+        method: 'POST', redirect: 'follow',
+        body: JSON.stringify({ action: 'updateClient', clientId, ...fields })
+      }).catch(e => console.warn('updateClient Sheets 오류:', e));
+    }
+    function handleDeleteClient(clientId) {
+      mutate(d => ({
+        ...d,
+        clients:     d.clients.filter(c => c.clientId !== clientId),
+        monthlyJobs: d.monthlyJobs.filter(j => j.clientId !== clientId),
+        logs:        d.logs.filter(l => l.clientId !== clientId),
+        postLogs:    (d.postLogs||[]).filter(p => p.clientId !== clientId),
+      }));
+      setView('main');
+      // Sheets에서도 삭제
+      fetch(API_URL, {
+        method: 'POST', redirect: 'follow',
+        body: JSON.stringify({ action: 'deleteClient', clientId })
+      }).catch(e => console.warn('deleteClient Sheets 오류:', e));
+    }
+
+    // ── Client 그룹 분리 ──
+    const { topClients, bottomClients } = useMemo(() => {
+      const hasFessential = (c) => (data.monthlyJobs||[]).some(j => j.clientId===c.clientId && j.kind==='필수');
+      return {
+        topClients:    data.clients.filter(hasFessential),
+        bottomClients: data.clients.filter(c => !hasFessential(c)),
+      };
+    }, [data.clients, data.monthlyJobs]);
+
+    const selectedClient = selId ? data.clients.find(c=>c.clientId===selId) : null;
+
+    const cardGrid = (clients) => (
+      <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(320px,1fr))',gap:16}}>
+        {clients.map(client=>(
+          <ClientCard
+            key={client.clientId}
+            client={client}
+            data={data}
+            onSelect={(id)=>{ setSelId(id); setView('client'); }}
+          />
+        ))}
+      </div>
+    );
+
+    return (
+      <div style={{minHeight:'100vh'}}>
+        <Header
+          view={view}
+          selectedClient={selectedClient}
+          onBack={()=>setView('main')}
+          onHome={()=>setView('main')}
+          syncStatus={syncStatus}
+          onSync={handleSync}
+        />
+
+        {view==='main' && (
+          <div style={{maxWidth:1200,margin:'0 auto',padding:'24px 24px'}}>
+
+            {/* 내 사업 공통업무 */}
+            <CommonTasksCard
+              tasks={data.commonTasks || []}
+              onAdd={addCommonTask}
+              onToggle={toggleCommonTask}
+              onDelete={deleteCommonTask}
+              onEdit={editCommonTask}
+            />
+
+            {/* 필수업무 거래처 */}
+            {topClients.length > 0 && cardGrid(topClients)}
+
+            {/* 구분선 */}
+            {topClients.length > 0 && bottomClients.length > 0 && (
+              <div style={{display:'flex',alignItems:'center',gap:12,margin:'24px 0'}}>
+                <div style={{flex:1,height:1,background:'#d1d5db'}} />
+                <span style={{fontSize:11,fontWeight:700,color:'#9ca3af',letterSpacing:'1px',whiteSpace:'nowrap'}}>순위 관리 거래처</span>
+                <div style={{flex:1,height:1,background:'#d1d5db'}} />
+              </div>
+            )}
+
+            {/* 순위작업만 거래처 */}
+            {bottomClients.length > 0 && cardGrid(bottomClients)}
+
+            {/* 거래처 추가 버튼 */}
+            <div style={{display:'flex',justifyContent:'center',marginTop:20,marginBottom:4}}>
+              <button
+                onClick={()=>openModal('add-client','add',{specialty:'기타',priorityLevel:'중간'},{})}
+                style={{background:'none',border:'2px dashed #d1d5db',borderRadius:12,padding:'10px 28px',fontSize:13,fontWeight:700,color:'#9ca3af',cursor:'pointer',fontFamily:'inherit',transition:'all 0.15s'}}
+                onMouseOver={e=>{e.target.style.borderColor='#c9a96e';e.target.style.color='#c9a96e';}}
+                onMouseOut={e=>{e.target.style.borderColor='#d1d5db';e.target.style.color='#9ca3af';}}>
+                + 거래처 추가
+              </button>
+            </div>
+
+          </div>
+        )}
+
+        {view==='client' && selectedClient && (
+          <ClientDetailView
+            client={selectedClient}
+            data={data}
+            mutate={mutate}
+            onOpenModal={openModal}
+            autoLog={autoLog}
+            onAddCredential={addCredential}
+            onDeleteCredential={deleteCredential}
+            onDeletePost={deletePost}
+            onUpdateClient={updateClient}
+            onDeleteClient={handleDeleteClient}
+          />
+        )}
+
+        {modal.open && (
+          <Modal modal={modal} onClose={closeModal} onSave={handleSave} onDelete={handleDelete} />
+        )}
+
+        {/* 관리 버튼 */}
+        <div style={{position:'fixed',bottom:20,right:20,display:'flex',flexDirection:'column',gap:8,alignItems:'flex-end'}}>
+          {view==='main' && (
+            <button
+              style={{background:'rgba(26,26,46,0.85)',color:'rgba(255,255,255,0.6)',border:'none',borderRadius:20,padding:'6px 14px',fontSize:11,cursor:'pointer',fontFamily:'inherit'}}
+              onClick={()=>{ if(confirm('⚠️ 로컬 데이터를 기본값으로 초기화합니다. 계속하시겠습니까?') && confirm('정말 초기화하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) { localStorage.removeItem(STORAGE_KEY); setData({...DEFAULT_DATA}); } }}>
+              ↺ 데이터 초기화
+            </button>
+          )}
+          <button
+            style={{background:'#c9a96e',color:'#fff',border:'none',borderRadius:20,padding:'6px 14px',fontSize:11,cursor:'pointer',fontFamily:'inherit'}}
+            onClick={()=>{
+              const json=JSON.stringify(window.dashboardData,null,2);
+              const blob=new Blob([json],{type:'application/json'});
+              const a=document.createElement('a');
+              a.href=URL.createObjectURL(blob);
+              a.download='dashboard_data.json';
+              a.click();
+            }}>
+            ⬇ JSON 내보내기
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
