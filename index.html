@@ -211,9 +211,10 @@
         body: JSON.stringify({ action: 'updateJobCount', jobId, delta })
       }).then(r => r.json()),
       // 공통업무 — OpenClaw 외부 호출용
-      commonTaskAdd:    (title) => fetch(API_URL, {
+      // kind: 'group'|'task'  parentId: 그룹 taskId (task일 때)  dueDate: 'YYYY-MM-DD'
+      commonTaskAdd:    (title, kind, parentId, dueDate) => fetch(API_URL, {
         method: 'POST', redirect: 'follow',
-        body: JSON.stringify({ action: 'commonTaskAdd', title })
+        body: JSON.stringify({ action: 'commonTaskAdd', title, kind: kind||'task', parentId: parentId||null, dueDate: dueDate||null })
       }).then(r => r.json()),
       commonTaskToggle: (taskId, done) => fetch(API_URL, {
         method: 'POST', redirect: 'follow',
@@ -222,6 +223,10 @@
       commonTaskDelete: (taskId) => fetch(API_URL, {
         method: 'POST', redirect: 'follow',
         body: JSON.stringify({ action: 'commonTaskDelete', taskId })
+      }).then(r => r.json()),
+      commonTaskUpdate: (taskId, title, dueDate) => fetch(API_URL, {
+        method: 'POST', redirect: 'follow',
+        body: JSON.stringify({ action: 'commonTaskUpdate', taskId, title, dueDate: dueDate||null })
       }).then(r => r.json()),
     };
   }
@@ -979,123 +984,214 @@
   // ═══════════════════════════════════════════════
   //  COMMON TASKS CARD (내 사업 공통업무)
   // ═══════════════════════════════════════════════
-  function CommonTasksCard({ tasks, onAdd, onToggle, onDelete, onEdit }) {
-    const [input, setInput] = useState('');
-    const [showDone, setShowDone] = useState(false);
-    const [editingId,  setEditingId]  = useState(null);
-    const [editingVal, setEditingVal] = useState('');
+  function CommonTasksCard({ tasks, onAddGroup, onAddTask, onToggle, onDelete, onEdit }) {
+    const [showDone,          setShowDone]          = useState(false);
+    const [addingGroup,       setAddingGroup]       = useState(false);
+    const [newGroupTitle,     setNewGroupTitle]     = useState('');
+    const [addingStandalone,  setAddingStandalone]  = useState(false);
+    const [newStandaloneTitle,setNewStandaloneTitle]= useState('');
+    const [newStandaloneDue,  setNewStandaloneDue]  = useState('');
 
-    function startEdit(t) { setEditingId(t.taskId); setEditingVal(t.title); }
-    function saveCtEdit(taskId) {
-      if (editingVal.trim()) onEdit(taskId, editingVal.trim());
-      setEditingId(null);
+    const groups     = tasks.filter(t => t.kind === 'group');
+    // 하위호환: kind 없는 구버전 태스크도 standalone으로 처리
+    const standalone = tasks.filter(t => t.kind !== 'group' && !t.parentId);
+    const allTaskItems = tasks.filter(t => t.kind !== 'group');
+    const pendingCount = allTaskItems.filter(t => !t.done).length;
+    const doneCount    = allTaskItems.filter(t => t.done).length;
+
+    function handleAddGroup() {
+      if (!newGroupTitle.trim()) return;
+      onAddGroup(newGroupTitle.trim());
+      setNewGroupTitle(''); setAddingGroup(false);
+    }
+    function handleAddStandalone() {
+      if (!newStandaloneTitle.trim()) return;
+      onAddTask(null, newStandaloneTitle.trim(), newStandaloneDue || null);
+      setNewStandaloneTitle(''); setNewStandaloneDue(''); setAddingStandalone(false);
     }
 
-    const pending = tasks.filter(t => !t.done);
-    const done    = tasks.filter(t => t.done);
-    const visible = showDone ? tasks : pending;
+    // ── 개별 태스크 행 ──
+    function TaskRow({ task, indent }) {
+      const [editing, setEditing] = useState(false);
+      const [editVal, setEditVal] = useState(task.title);
+      const [editDue, setEditDue] = useState(task.dueDate || '');
+      function saveEdit() {
+        if (editVal.trim()) onEdit(task.taskId, editVal.trim(), editDue || null);
+        setEditing(false);
+      }
+      return (
+        <div style={{display:'flex',alignItems:'flex-start',gap:8,padding:'6px 8px',marginLeft:indent?16:0,borderRadius:8,opacity:task.done?0.65:1}}>
+          <div onClick={() => onToggle(task.taskId, !task.done)} style={{width:16,height:16,borderRadius:4,flexShrink:0,marginTop:2,cursor:'pointer',border:task.done?'none':'2px solid #d1d5db',background:task.done?'#10b981':'transparent',display:'flex',alignItems:'center',justifyContent:'center'}}>
+            {task.done && <span style={{fontSize:10,color:'#fff',lineHeight:1}}>✓</span>}
+          </div>
+          <div style={{flex:1,minWidth:0}}>
+            {editing ? (
+              <div style={{display:'flex',flexDirection:'column',gap:4}}>
+                <input value={editVal} onChange={e=>setEditVal(e.target.value)} autoFocus
+                  onKeyDown={e=>{if(e.key==='Enter')saveEdit();if(e.key==='Escape')setEditing(false);}}
+                  style={{width:'100%',boxSizing:'border-box',padding:'4px 8px',border:'1px solid #93c5fd',borderRadius:6,fontSize:13,fontFamily:'inherit',outline:'none'}}/>
+                <div style={{display:'flex',gap:6}}>
+                  <input type="date" value={editDue} onChange={e=>setEditDue(e.target.value)}
+                    style={{flex:1,padding:'3px 8px',border:'1px solid #d1d5db',borderRadius:6,fontSize:12,fontFamily:'inherit',outline:'none'}}/>
+                  <button onClick={saveEdit} style={{padding:'3px 10px',background:'#1a1a2e',color:'#fff',border:'none',borderRadius:6,fontSize:12,cursor:'pointer',fontFamily:'inherit',fontWeight:700}}>저장</button>
+                  <button onClick={()=>setEditing(false)} style={{padding:'3px 8px',background:'none',border:'1px solid #d1d5db',borderRadius:6,fontSize:12,cursor:'pointer',fontFamily:'inherit',color:'#6b7280'}}>취소</button>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <span onDoubleClick={()=>!task.done&&setEditing(true)} title={task.done?'':'더블클릭으로 수정'}
+                  style={{fontSize:13,color:task.done?'#9ca3af':'#374151',textDecoration:task.done?'line-through':'none',cursor:task.done?'default':'text'}}>
+                  {task.title}
+                </span>
+                {task.dueDate && !task.done && <div style={{marginTop:2}}><DueBadge dueDate={task.dueDate}/></div>}
+                {task.done && task.dueDate && <div style={{fontSize:10,color:'#9ca3af',marginTop:1}}>~{task.dueDate.slice(5).replace('-','/')}</div>}
+              </div>
+            )}
+          </div>
+          {!editing && (
+            <div style={{display:'flex',gap:2,flexShrink:0}}>
+              {!task.done && (
+                <button onClick={()=>{setEditVal(task.title);setEditDue(task.dueDate||'');setEditing(true);}}
+                  style={{background:'none',border:'none',cursor:'pointer',fontSize:12,color:'#9ca3af',padding:'2px 4px'}} title="수정">✏️</button>
+              )}
+              <button onClick={()=>{if(confirm(`"${task.title}" 삭제?`))onDelete(task.taskId);}}
+                style={{background:'none',border:'none',cursor:'pointer',fontSize:12,color:'#d1d5db',padding:'2px 4px'}} title="삭제">✕</button>
+            </div>
+          )}
+        </div>
+      );
+    }
 
-    function handleAdd() {
-      const v = input.trim();
-      if (!v) return;
-      onAdd(v);
-      setInput('');
+    // ── 그룹 섹션 ──
+    function GroupSection({ group }) {
+      const children      = tasks.filter(t => t.parentId === group.taskId);
+      const pendingKids   = children.filter(c => !c.done);
+      const doneKids      = children.filter(c => c.done);
+      const visibleKids   = showDone ? children : pendingKids;
+      const [collapsed,   setCollapsed]   = useState(false);
+      const [addingTask,  setAddingTask]  = useState(false);
+      const [newTitle,    setNewTitle]    = useState('');
+      const [newDue,      setNewDue]      = useState('');
+      function handleAddTask() {
+        if (!newTitle.trim()) return;
+        onAddTask(group.taskId, newTitle.trim(), newDue || null);
+        setNewTitle(''); setNewDue(''); setAddingTask(false);
+      }
+      return (
+        <div style={{marginBottom:8,border:'1px solid #e5e7eb',borderRadius:10,overflow:'hidden'}}>
+          <div style={{display:'flex',alignItems:'center',gap:8,padding:'10px 12px',background:'#f9fafb',cursor:'pointer',userSelect:'none'}}
+            onClick={()=>setCollapsed(c=>!c)}>
+            <span style={{fontSize:14}}>📁</span>
+            <span style={{fontSize:13,fontWeight:700,color:'#1a1a2e',flex:1}}>{group.title}</span>
+            {pendingKids.length > 0 && (
+              <span style={{fontSize:10,fontWeight:700,padding:'1px 6px',borderRadius:12,background:'#fef3c7',color:'#b45309'}}>{pendingKids.length}건</span>
+            )}
+            {doneKids.length > 0 && (
+              <span style={{fontSize:10,color:'#10b981',fontWeight:600}}>✓{doneKids.length}</span>
+            )}
+            <div onClick={e=>e.stopPropagation()} style={{display:'flex',gap:2,marginLeft:4}}>
+              <button onClick={()=>setAddingTask(t=>!t)}
+                style={{background:'none',border:'none',cursor:'pointer',fontSize:11,color:'#6b7280',padding:'2px 8px',borderRadius:4}}>+ 추가</button>
+              <button onClick={()=>{if(confirm(`"${group.title}" 그룹과 하위 태스크 모두 삭제?`))onDelete(group.taskId);}}
+                style={{background:'none',border:'none',cursor:'pointer',fontSize:12,color:'#d1d5db',padding:'2px 4px'}}>✕</button>
+            </div>
+            <span style={{fontSize:11,color:'#9ca3af',marginLeft:2}}>{collapsed?'▸':'▾'}</span>
+          </div>
+          {!collapsed && (
+            <div style={{padding:'6px 8px'}}>
+              {visibleKids.length === 0 && !addingTask && (
+                <div style={{fontSize:12,color:'#9ca3af',padding:'8px',textAlign:'center'}}>태스크가 없습니다</div>
+              )}
+              {visibleKids.map(c => <TaskRow key={c.taskId} task={c} indent={true}/>)}
+              {addingTask && (
+                <div style={{padding:'8px',background:'#f0f9ff',borderRadius:8,marginTop:4}}>
+                  <input value={newTitle} onChange={e=>setNewTitle(e.target.value)} placeholder="태스크 제목" autoFocus
+                    onKeyDown={e=>{if(e.key==='Enter')handleAddTask();if(e.key==='Escape'){setAddingTask(false);setNewTitle('');setNewDue('');}}}
+                    style={{width:'100%',boxSizing:'border-box',padding:'6px 10px',border:'1px solid #bae6fd',borderRadius:6,fontSize:13,fontFamily:'inherit',outline:'none',marginBottom:5}}/>
+                  <div style={{display:'flex',gap:6}}>
+                    <input type="date" value={newDue} onChange={e=>setNewDue(e.target.value)}
+                      style={{flex:1,padding:'5px 8px',border:'1px solid #d1d5db',borderRadius:6,fontSize:12,fontFamily:'inherit',outline:'none'}}/>
+                    <button onClick={handleAddTask} style={{padding:'5px 12px',background:'#1a1a2e',color:'#fff',border:'none',borderRadius:6,fontSize:12,cursor:'pointer',fontFamily:'inherit',fontWeight:700}}>추가</button>
+                    <button onClick={()=>{setAddingTask(false);setNewTitle('');setNewDue('');}} style={{padding:'5px 8px',background:'none',border:'1px solid #d1d5db',borderRadius:6,fontSize:12,cursor:'pointer',fontFamily:'inherit',color:'#6b7280'}}>취소</button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      );
     }
 
     return (
-      <div style={{
-        background:'#fff', borderRadius:14, border:'1px solid #e5e7eb',
-        padding:'18px 22px', marginBottom:20,
-        boxShadow:'0 1px 4px rgba(0,0,0,0.05)'
-      }}>
+      <div style={{background:'#fff',borderRadius:14,border:'1px solid #e5e7eb',padding:'18px 22px',marginBottom:20,boxShadow:'0 1px 4px rgba(0,0,0,0.05)'}}>
         {/* Header */}
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14}}>
           <div style={{display:'flex',alignItems:'center',gap:10}}>
             <span style={{fontSize:18}}>🗂️</span>
             <span style={{fontSize:14,fontWeight:700,color:'#1a1a2e'}}>내 사업 공통업무</span>
-            {pending.length > 0 && (
-              <span style={{fontSize:11,fontWeight:700,padding:'2px 8px',borderRadius:20,background:'#fef3c7',color:'#b45309'}}>
-                {pending.length}건 진행 중
-              </span>
+            {pendingCount > 0 && (
+              <span style={{fontSize:11,fontWeight:700,padding:'2px 8px',borderRadius:20,background:'#fef3c7',color:'#b45309'}}>{pendingCount}건 진행 중</span>
             )}
           </div>
-          <button
-            onClick={() => setShowDone(s => !s)}
+          <button onClick={()=>setShowDone(s=>!s)}
             style={{fontSize:11,color:'#9ca3af',background:'transparent',border:'none',cursor:'pointer',fontFamily:'inherit',padding:'2px 6px'}}>
-            {showDone ? '완료 숨기기' : `완료 ${done.length}건 보기`}
+            {showDone ? '완료 숨기기' : `완료 ${doneCount}건 보기`}
           </button>
         </div>
 
-        {/* Task list */}
-        <div style={{display:'flex',flexDirection:'column',gap:2,marginBottom:12}}>
-          {visible.length === 0 && (
-            <div style={{fontSize:13,color:'#9ca3af',padding:'10px 10px',textAlign:'center'}}>
-              {showDone ? '업무가 없습니다.' : '진행 중인 업무가 없습니다.'}
-            </div>
-          )}
-          {visible.map(t => (
-            <div key={t.taskId} className={`ct-item${t.done ? ' done' : ''}`}>
-              {/* 체크박스 */}
-              <div
-                className={`ct-check${t.done ? ' done' : ''}`}
-                onClick={() => onToggle(t.taskId, !t.done)}
-                title={t.done ? '완료 취소' : '완료 처리'}>
-                {t.done && <span style={{fontSize:11,lineHeight:1}}>✓</span>}
-              </div>
-              {/* 제목 — 클릭 편집 */}
-              {editingId === t.taskId ? (
-                <input
-                  value={editingVal}
-                  onChange={e => setEditingVal(e.target.value)}
-                  onBlur={() => saveCtEdit(t.taskId)}
-                  onKeyDown={e => { if(e.key==='Enter') saveCtEdit(t.taskId); if(e.key==='Escape') setEditingId(null); }}
-                  autoFocus
-                  style={{flex:1,padding:'3px 8px',border:'1px solid #93c5fd',borderRadius:6,fontSize:13,fontFamily:'inherit',outline:'none'}}
-                />
-              ) : (
-                <span
-                  className="ct-title"
-                  onDoubleClick={() => !t.done && startEdit(t)}
-                  title={t.done ? '' : '더블클릭으로 수정'}
-                  style={{
-                    flex:1, fontSize:13, color: t.done ? '#9ca3af':'#374151',
-                    textDecoration: t.done ? 'line-through':'none',
-                    cursor: t.done ? 'default' : 'text'
-                  }}>
-                  {t.title}
-                </span>
-              )}
-              {/* 날짜 */}
-              {t.createdAt && editingId !== t.taskId && (
-                <span style={{fontSize:10,color:'#d1d5db',flexShrink:0}}>{fmtDate(t.createdAt)}</span>
-              )}
-              {/* 삭제 */}
-              <button
-                className="btn-icon"
-                onClick={() => { if(confirm(`"${t.title}" 업무를 삭제하시겠습니까?`)) onDelete(t.taskId); }}
-                title="삭제" style={{color:'#d1d5db',fontSize:13,padding:'2px 5px'}}>
-                ✕
-              </button>
-            </div>
-          ))}
-        </div>
+        {/* 그룹 목록 */}
+        {groups.map(g => <GroupSection key={g.taskId} group={g}/>)}
 
-        {/* Add input */}
-        <div style={{display:'flex',gap:8}}>
-          <input
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={e => { if(e.key==='Enter') handleAdd(); }}
-            placeholder="새 업무 추가…"
-            style={{flex:1,padding:'7px 12px',border:'1px solid #e5e7eb',borderRadius:8,fontSize:13,fontFamily:'inherit',outline:'none'}}
-          />
-          <button
-            onClick={handleAdd}
-            disabled={!input.trim()}
-            style={{padding:'7px 16px',background: input.trim() ? '#1a1a2e':'#e5e7eb',color: input.trim() ? '#fff':'#9ca3af',border:'none',borderRadius:8,fontSize:13,fontWeight:700,cursor: input.trim() ? 'pointer':'default',fontFamily:'inherit',transition:'background 0.15s'}}>
-            추가
-          </button>
-        </div>
+        {/* 단독 태스크 */}
+        {(showDone ? standalone : standalone.filter(t=>!t.done)).map(t => (
+          <TaskRow key={t.taskId} task={t} indent={false}/>
+        ))}
+
+        {groups.length === 0 && standalone.length === 0 && !addingGroup && !addingStandalone && (
+          <div style={{fontSize:13,color:'#9ca3af',padding:'16px',textAlign:'center'}}>그룹이나 업무를 추가해보세요</div>
+        )}
+
+        {/* 그룹 추가 폼 */}
+        {addingGroup && (
+          <div style={{marginTop:10,padding:'12px',background:'#f9fafb',borderRadius:8,border:'1px solid #e5e7eb'}}>
+            <input value={newGroupTitle} onChange={e=>setNewGroupTitle(e.target.value)} placeholder="그룹 이름 (예: 인사이트메디 앱 출시)" autoFocus
+              onKeyDown={e=>{if(e.key==='Enter')handleAddGroup();if(e.key==='Escape'){setAddingGroup(false);setNewGroupTitle('');}}}
+              style={{width:'100%',boxSizing:'border-box',padding:'7px 12px',border:'1px solid #d1d5db',borderRadius:8,fontSize:13,fontFamily:'inherit',outline:'none',marginBottom:8}}/>
+            <div style={{display:'flex',gap:6}}>
+              <button onClick={handleAddGroup} style={{padding:'6px 14px',background:'#1a1a2e',color:'#fff',border:'none',borderRadius:6,fontSize:12,cursor:'pointer',fontFamily:'inherit',fontWeight:700}}>생성</button>
+              <button onClick={()=>{setAddingGroup(false);setNewGroupTitle('');}} style={{padding:'6px 10px',background:'none',border:'1px solid #d1d5db',borderRadius:6,fontSize:12,cursor:'pointer',fontFamily:'inherit',color:'#6b7280'}}>취소</button>
+            </div>
+          </div>
+        )}
+
+        {/* 단독 업무 추가 폼 */}
+        {addingStandalone && (
+          <div style={{marginTop:10,padding:'12px',background:'#f9fafb',borderRadius:8,border:'1px solid #e5e7eb'}}>
+            <input value={newStandaloneTitle} onChange={e=>setNewStandaloneTitle(e.target.value)} placeholder="단독 업무 제목" autoFocus
+              onKeyDown={e=>{if(e.key==='Enter')handleAddStandalone();if(e.key==='Escape'){setAddingStandalone(false);setNewStandaloneTitle('');setNewStandaloneDue('');}}}
+              style={{width:'100%',boxSizing:'border-box',padding:'7px 12px',border:'1px solid #d1d5db',borderRadius:8,fontSize:13,fontFamily:'inherit',outline:'none',marginBottom:6}}/>
+            <div style={{display:'flex',gap:6}}>
+              <input type="date" value={newStandaloneDue} onChange={e=>setNewStandaloneDue(e.target.value)}
+                style={{flex:1,padding:'6px 10px',border:'1px solid #d1d5db',borderRadius:6,fontSize:12,fontFamily:'inherit',outline:'none'}}/>
+              <button onClick={handleAddStandalone} style={{padding:'6px 14px',background:'#1a1a2e',color:'#fff',border:'none',borderRadius:6,fontSize:12,cursor:'pointer',fontFamily:'inherit',fontWeight:700}}>추가</button>
+              <button onClick={()=>{setAddingStandalone(false);setNewStandaloneTitle('');setNewStandaloneDue('');}} style={{padding:'6px 10px',background:'none',border:'1px solid #d1d5db',borderRadius:6,fontSize:12,cursor:'pointer',fontFamily:'inherit',color:'#6b7280'}}>취소</button>
+            </div>
+          </div>
+        )}
+
+        {/* 하단 액션 버튼 */}
+        {!addingGroup && !addingStandalone && (
+          <div style={{display:'flex',gap:8,marginTop:14}}>
+            <button onClick={()=>setAddingGroup(true)}
+              style={{flex:1,padding:'7px',background:'none',border:'1px dashed #d1d5db',borderRadius:8,fontSize:12,color:'#6b7280',cursor:'pointer',fontFamily:'inherit'}}>
+              📁 그룹 추가
+            </button>
+            <button onClick={()=>setAddingStandalone(true)}
+              style={{flex:1,padding:'7px',background:'none',border:'1px dashed #d1d5db',borderRadius:8,fontSize:12,color:'#6b7280',cursor:'pointer',fontFamily:'inherit'}}>
+              ✚ 단독 업무 추가
+            </button>
+          </div>
+        )}
       </div>
     );
   }
@@ -1352,6 +1448,19 @@
           </div>
         )}
 
+        {/* 완료된 업무 기록 */}
+        {(() => {
+          const completedJobs = [
+            ...countJobs.filter(j => j.currentCount >= j.targetCount),
+            ...noCountEssential.filter(j => j.note === '완료'),
+            ...[...subJobs, ...rankJobs].filter(j => isDone(j)),
+          ];
+          if (completedJobs.length === 0) return null;
+          return (
+            <CompletedJobsSection jobs={completedJobs} />
+          );
+        })()}
+
         {/* Footer */}
         <div style={{padding:'10px 20px 14px',borderTop:'1px solid #f9fafb',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
           <span style={{fontSize:10,color:'#9ca3af'}}>업데이트 {fmtDate(client.lastUpdated)}</span>
@@ -1364,6 +1473,36 @@
             <span style={{fontSize:10,color:'#d1d5db'}}>보고서 없음</span>
           )}
         </div>
+      </div>
+    );
+  }
+
+  function CompletedJobsSection({ jobs }) {
+    const [open, setOpen] = useState(false);
+    return (
+      <div style={{borderTop:'1px solid #f3f4f6'}} onClick={e=>e.stopPropagation()}>
+        <div
+          onClick={()=>setOpen(o=>!o)}
+          style={{display:'flex',alignItems:'center',gap:6,padding:'7px 20px',cursor:'pointer',userSelect:'none',background:'#fafafa'}}>
+          <span style={{fontSize:10,fontWeight:700,color:'#10b981'}}>✓ 완료</span>
+          <span style={{fontSize:10,color:'#9ca3af',fontWeight:600}}>{jobs.length}건</span>
+          <span style={{fontSize:10,color:'#d1d5db',marginLeft:'auto'}}>{open?'▴':'▾'}</span>
+        </div>
+        {open && (
+          <div style={{padding:'4px 20px 10px',background:'#fafafa'}}>
+            {jobs.map(j => (
+              <div key={j.jobId} style={{display:'flex',alignItems:'center',gap:6,padding:'3px 0',borderBottom:'1px solid #f3f4f6'}}>
+                <span style={{fontSize:10,color:'#10b981',flexShrink:0}}>✓</span>
+                <span style={{fontSize:11,color:'#9ca3af',flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',textDecoration:'line-through'}}>
+                  {j.title}
+                </span>
+                {j.targetCount != null && (
+                  <span style={{fontSize:10,color:'#9ca3af',flexShrink:0}}>{j.currentCount}/{j.targetCount}{j.unit}</span>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     );
   }
@@ -1670,7 +1809,9 @@
             monthlyJobs: (sheetsData.monthlyJobs && sheetsData.monthlyJobs.length > 0)
               ? sheetsData.monthlyJobs.map(sj => {
                   const lj = (prev.monthlyJobs || []).find(j => j.jobId === sj.jobId);
-                  return lj ? { ...sj, currentCount: lj.currentCount, note: lj.note } : sj;
+                  // currentCount·note·dueDate는 로컬 값 우선 보존
+                  // (Sheets에 저장 안 된 로컬 변경 사항을 동기화가 덮어쓰지 않도록)
+                  return lj ? { ...sj, currentCount: lj.currentCount, note: lj.note, dueDate: lj.dueDate ?? sj.dueDate } : sj;
                 })
               : (prev.monthlyJobs && prev.monthlyJobs.length > 0)
                 ? prev.monthlyJobs
@@ -1778,14 +1919,23 @@
     }
 
     // ── 공통업무 CRUD ──
-    function addCommonTask(title) {
+    function addCommonGroup(title) {
+      const taskId = 'ct-g-' + uid();
+      const newGroup = { taskId, title, kind: 'group', parentId: null, done: false, dueDate: null, createdAt: today() };
+      mutate(d => ({ ...d, commonTasks: [...(d.commonTasks||[]), newGroup] }));
+      fetch(API_URL, {
+        method: 'POST', redirect: 'follow',
+        body: JSON.stringify({ action: 'commonTaskAdd', taskId, title, kind: 'group', parentId: null })
+      }).catch(e => console.warn('commonTaskAdd(group) 오류:', e));
+    }
+    function addCommonTask(parentId, title, dueDate) {
       const taskId = 'ct-' + uid();
-      const newTask = { taskId, title, done: false, createdAt: today() };
+      const newTask = { taskId, title, kind: 'task', parentId: parentId || null, done: false, dueDate: dueDate || null, createdAt: today() };
       mutate(d => ({ ...d, commonTasks: [...(d.commonTasks||[]), newTask] }));
       fetch(API_URL, {
         method: 'POST', redirect: 'follow',
-        body: JSON.stringify({ action: 'commonTaskAdd', taskId, title })
-      }).catch(e => console.warn('commonTaskAdd 오류:', e));
+        body: JSON.stringify({ action: 'commonTaskAdd', taskId, title, kind: 'task', parentId: parentId || null, dueDate: dueDate || null })
+      }).catch(e => console.warn('commonTaskAdd(task) 오류:', e));
     }
     function toggleCommonTask(taskId, done) {
       mutate(d => ({
@@ -1798,20 +1948,33 @@
       }).catch(e => console.warn('commonTaskToggle 오류:', e));
     }
     function deleteCommonTask(taskId) {
-      mutate(d => ({ ...d, commonTasks: (d.commonTasks||[]).filter(t => t.taskId!==taskId) }));
+      // 그룹 삭제 시 하위 태스크도 함께 제거
+      mutate(d => {
+        const target = (d.commonTasks||[]).find(t => t.taskId === taskId);
+        const toDelete = new Set([taskId]);
+        if (target && target.kind === 'group') {
+          (d.commonTasks||[]).forEach(t => { if (t.parentId === taskId) toDelete.add(t.taskId); });
+        }
+        toDelete.forEach(id => {
+          if (id !== taskId) {
+            fetch(API_URL, { method:'POST', redirect:'follow', body: JSON.stringify({ action:'commonTaskDelete', taskId: id }) }).catch(()=>{});
+          }
+        });
+        return { ...d, commonTasks: (d.commonTasks||[]).filter(t => !toDelete.has(t.taskId)) };
+      });
       fetch(API_URL, {
         method: 'POST', redirect: 'follow',
         body: JSON.stringify({ action: 'commonTaskDelete', taskId })
       }).catch(e => console.warn('commonTaskDelete 오류:', e));
     }
-    function editCommonTask(taskId, title) {
+    function editCommonTask(taskId, title, dueDate) {
       mutate(d => ({
         ...d,
-        commonTasks: (d.commonTasks||[]).map(t => t.taskId===taskId ? { ...t, title } : t)
+        commonTasks: (d.commonTasks||[]).map(t => t.taskId===taskId ? { ...t, title, dueDate: dueDate !== undefined ? dueDate : t.dueDate } : t)
       }));
       fetch(API_URL, {
         method: 'POST', redirect: 'follow',
-        body: JSON.stringify({ action: 'commonTaskUpdate', taskId, title })
+        body: JSON.stringify({ action: 'commonTaskUpdate', taskId, title, dueDate: dueDate || null })
       }).catch(e => console.warn('commonTaskUpdate 오류:', e));
     }
 
@@ -1923,7 +2086,8 @@
             {/* 내 사업 공통업무 */}
             <CommonTasksCard
               tasks={data.commonTasks || []}
-              onAdd={addCommonTask}
+              onAddGroup={addCommonGroup}
+              onAddTask={addCommonTask}
               onToggle={toggleCommonTask}
               onDelete={deleteCommonTask}
               onEdit={editCommonTask}
