@@ -141,10 +141,10 @@
   //  HELPERS
   // ═══════════════════════════════════════════════
   const uid     = () => Math.random().toString(36).slice(2,10);
-  const today   = () => new Date().toISOString().split('T')[0];
-  const nowMonth= () => new Date().toISOString().slice(0,7); // yyyy-MM
+  const today   = () => { const n=new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`; };
+  const nowMonth= () => { const n=new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}`; };
   const fmtDate = (d) => { if(!d) return '—'; const p=d.split('-'); return `${p[0].slice(2)}.${p[1]}.${p[2]}`; };
-  const daysLeft= (d) => { if(!d) return null; return Math.ceil((new Date(d)-new Date(today()))/(86400000)); };
+  const daysLeft= (d) => { if(!d) return null; const due=new Date(d+'T00:00:00'); const n=new Date(); const tod=new Date(n.getFullYear(),n.getMonth(),n.getDate()); return Math.ceil((due-tod)/86400000); };
 
   // DEFAULT_DATA 순서를 유지하면서 primary·fallback 데이터를 병합하는 함수
   // - primary  : Sheets 데이터 (sync 시) 또는 localStorage 데이터 (loadData 시)
@@ -551,7 +551,7 @@
               }}>
                 {job.title}
               </div>
-              {job.dueDate && (
+              {job.dueDate && !isDone && (
                 <div style={{fontSize:11,marginTop:2}}><DueBadge dueDate={job.dueDate} /></div>
               )}
               {!isCount && job.note && job.note !== '완료' && (
