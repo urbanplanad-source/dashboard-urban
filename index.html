@@ -1804,14 +1804,14 @@
                             : (prev.commonTasks && prev.commonTasks.length > 0)
                               ? prev.commonTasks
                               : sheetsData.commonTasks,
-            // 동기화 중 로컬 변경 보호: currentCount·note는 로컬 값 우선 유지
-            // (OpenClaw 등 외부 업데이트가 있으면 다음 수동 동기화 시 반영)
+            // 동기화: currentCount·note는 Sheets 값 우선 (source of truth)
+            // dueDate만 로컬 값 보존 (UI에서 편집 중일 수 있음)
             monthlyJobs: (sheetsData.monthlyJobs && sheetsData.monthlyJobs.length > 0)
               ? sheetsData.monthlyJobs.map(sj => {
                   const lj = (prev.monthlyJobs || []).find(j => j.jobId === sj.jobId);
-                  // currentCount·note·dueDate는 로컬 값 우선 보존
-                  // (Sheets에 저장 안 된 로컬 변경 사항을 동기화가 덮어쓰지 않도록)
-                  return lj ? { ...sj, currentCount: lj.currentCount, note: lj.note, dueDate: lj.dueDate ?? sj.dueDate } : sj;
+                  // currentCount·note는 Sheets 값 사용 (항상 최신 반영)
+                  // dueDate는 로컬 편집 중인 값 보존
+                  return lj ? { ...sj, dueDate: lj.dueDate ?? sj.dueDate } : sj;
                 })
               : (prev.monthlyJobs && prev.monthlyJobs.length > 0)
                 ? prev.monthlyJobs
