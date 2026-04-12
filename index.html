@@ -135,6 +135,7 @@
     ],
     postLogs: [],
     commonTasks: [],
+    contracts: [],
   };
 
   // ═══════════════════════════════════════════════
@@ -184,6 +185,7 @@
           postLogs:     s.postLogs     ?? [],
           commonTasks:  s.commonTasks  ?? [],
           credentials:  s.credentials  ?? DEFAULT_CREDENTIALS,
+          contracts:    s.contracts    ?? [],
         };
       }
     } catch(e) {}
@@ -251,8 +253,19 @@
         ...t,
         done: t.done === true || t.done === 'TRUE' || t.done === '1',
       })),
+      contracts: (d.contracts || []).map(c => ({
+        ...c,
+        monthlyFee: Number(c.monthlyFee) || 0,
+      })),
+      expenses: (d.expenses || []).map(e => ({
+        ...e,
+        amount:      Number(e.amount) || 0,
+        isRecurring: e.isRecurring === true || e.isRecurring === 'true' || e.isRecurring === 'TRUE',
+      })),
+      drafts: (d.drafts || []),
     };
   }
+
 
   // ═══════════════════════════════════════════════
   //  BADGE COMPONENTS
@@ -940,7 +953,7 @@
   // ═══════════════════════════════════════════════
   //  HEADER
   // ═══════════════════════════════════════════════
-  function Header({ view, selectedClient, onBack, onHome, syncStatus, onSync }) {
+  function Header({ view, selectedClient, onBack, onHome, onRevenue, onDrafts, syncStatus, onSync }) {
     const d = new Date();
     const dateStr = `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`;
     const syncLabel = syncStatus === 'loading' ? '⏳ 동기화 중...'
@@ -951,6 +964,12 @@
                     : syncStatus === 'ok'      ? '#065f46'
                     : syncStatus === 'error'   ? '#b91c1c'
                     : '#2563eb';
+
+    const subLabel = view==='revenue' ? '💰 수익 관리'
+                   : view==='drafts'  ? '📝 글 보관함'
+                   : view==='client' && selectedClient ? selectedClient.clientName
+                   : '이달의 업무 대시보드';
+
     return (
       <header style={{background:'#1a1a2e',padding:'0 32px',height:60,display:'flex',alignItems:'center',justifyContent:'space-between',position:'sticky',top:0,zIndex:50}}>
         <div style={{display:'flex',alignItems:'center',gap:12}}>
@@ -961,14 +980,24 @@
               <div style={{display:'flex',alignItems:'center',gap:6}}>
                 <button onClick={onBack} style={{background:'none',border:'none',color:'rgba(255,255,255,0.5)',cursor:'pointer',fontSize:11,padding:0,fontFamily:'inherit'}}>← 전체</button>
                 <span style={{color:'rgba(255,255,255,0.3)',fontSize:11}}>/</span>
-                <span style={{color:'rgba(255,255,255,0.7)',fontSize:11,fontWeight:600}}>{selectedClient.clientName}</span>
+                <span style={{color:'rgba(255,255,255,0.7)',fontSize:11,fontWeight:600}}>{subLabel}</span>
               </div>
             ) : (
-              <div style={{fontSize:11,color:'rgba(255,255,255,0.4)'}}>이달의 업무 대시보드</div>
+              <div style={{fontSize:11,color:'rgba(255,255,255,0.4)'}}>{subLabel}</div>
             )}
           </div>
         </div>
-        <div style={{display:'flex',alignItems:'center',gap:14}}>
+        <div style={{display:'flex',alignItems:'center',gap:10}}>
+          <button
+            onClick={onDrafts}
+            style={{background: view==='drafts' ? '#6366f1' : 'rgba(99,102,241,0.12)', color: view==='drafts' ? '#fff' : '#818cf8', border:'1px solid rgba(99,102,241,0.35)', borderRadius:8, padding:'7px 14px', fontSize:12, fontWeight:700, cursor:'pointer', fontFamily:'inherit', whiteSpace:'nowrap', transition:'all 0.2s'}}>
+            📝 글 보관함
+          </button>
+          <button
+            onClick={onRevenue}
+            style={{background: view==='revenue' ? '#c9a96e' : 'rgba(201,169,110,0.15)', color: view==='revenue' ? '#fff' : '#c9a96e', border:'1px solid rgba(201,169,110,0.4)', borderRadius:8, padding:'7px 14px', fontSize:12, fontWeight:700, cursor:'pointer', fontFamily:'inherit', whiteSpace:'nowrap', transition:'all 0.2s'}}>
+            💰 수익 관리
+          </button>
           <button
             onClick={onSync}
             disabled={syncStatus === 'loading'}
@@ -1774,14 +1803,825 @@
   }
 
   // ═══════════════════════════════════════════════
+  //  DRAFTS VIEW (글 보관함)
+  // ═══════════════════════════════════════════════
+  const DRAFT_CLIENT_MAP = {
+    btskin:'노형아름다운피부과', belrmon:'벨르몬성형외과', eyecare:'눈사랑안과',
+    seoulup:'서울UP치과', echi:'이치과', igochi:'이고치과',
+    jejuexpress:'제주인익스프레스', kyunghee:'365경희부부한의원'
+  };
+  const DRAFT_CHANNELS = ['홈페이지','블로그','위챗','인스타','라인','기타'];
+  const DRAFT_CH_COLOR = {
+    '홈페이지':'#1d4ed8','블로그':'#16a34a','위챗':'#15803d',
+    '인스타':'#9333ea','라인':'#65a30d','기타':'#6b7280'
+  };
+
+  function DraftsView() {
+    const [drafts,        setDrafts]        = useState([]);
+    const [loading,       setLoading]       = useState(true);
+    const [filterClient,  setFilterClient]  = useState('');
+    const [filterChannel, setFilterChannel] = useState('');
+    const [expandedId,    setExpandedId]    = useState(null);
+    const [showAdd,       setShowAdd]       = useState(false);
+    const [copied,        setCopied]        = useState(null);
+    const [addForm,       setAddForm]       = useState({ clientId:'', channel:'홈페이지', title:'', content:'', memo:'' });
+
+    function loadDrafts() {
+      setLoading(true);
+      fetch(API_URL + '?action=summary')
+        .then(r => r.json())
+        .then(d => {
+          const list = (d.data?.drafts || []).slice().reverse();
+          setDrafts(list);
+          setLoading(false);
+        })
+        .catch(() => setLoading(false));
+    }
+
+    useEffect(() => { loadDrafts(); }, []);
+
+    const allClients = [...new Set(drafts.map(d => d.clientId).filter(Boolean))];
+    const filtered = drafts.filter(d =>
+      (!filterClient  || d.clientId === filterClient) &&
+      (!filterChannel || d.channel  === filterChannel)
+    );
+
+    function handleCopy(draft) {
+      const text = draft.content || '';
+      navigator.clipboard.writeText(text).then(() => {
+        setCopied(draft.draftId);
+        setTimeout(() => setCopied(null), 2000);
+      }).catch(() => {
+        const el = document.createElement('textarea');
+        el.value = text; document.body.appendChild(el);
+        el.select(); document.execCommand('copy'); document.body.removeChild(el);
+        setCopied(draft.draftId);
+        setTimeout(() => setCopied(null), 2000);
+      });
+    }
+
+    function handleDelete(draftId) {
+      if (!confirm('이 초안을 삭제하시겠습니까?')) return;
+      setDrafts(prev => prev.filter(d => d.draftId !== draftId));
+      fetch(API_URL, { method:'POST', redirect:'follow',
+        body: JSON.stringify({ action:'deleteDraft', draftId })
+      }).catch(e => console.warn('deleteDraft 오류:', e));
+    }
+
+    function handleAdd() {
+      if (!addForm.title.trim()) { alert('제목을 입력하세요.'); return; }
+      if (!addForm.content.trim()) { alert('내용을 입력하세요.'); return; }
+      const now = new Date();
+      const kst = new Date(now.getTime() + 9*60*60*1000);
+      const createdAt = kst.toISOString().slice(0,10);
+      const draftId = 'dr-' + Date.now().toString(36);
+      const newDraft = { ...addForm, draftId, createdAt, status:'draft' };
+      setDrafts(prev => [newDraft, ...prev]);
+      fetch(API_URL, { method:'POST', redirect:'follow',
+        body: JSON.stringify({ action:'addDraft', ...addForm })
+      }).catch(e => console.warn('addDraft 오류:', e));
+      setAddForm({ clientId:'', channel:'홈페이지', title:'', content:'', memo:'' });
+      setShowAdd(false);
+    }
+
+    const iS = { fontFamily:'inherit', fontSize:13, border:'1px solid #e5e7eb', borderRadius:6, padding:'7px 10px', outline:'none', background:'#fff' };
+
+    return (
+      <div style={{maxWidth:960, margin:'0 auto', padding:'28px 24px'}}>
+
+        {/* 헤더 행 */}
+        <div style={{display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:20}}>
+          <div>
+            <h2 style={{margin:0, fontSize:20, fontWeight:800, color:'#1a1a2e'}}>📝 글 보관함</h2>
+            <p style={{margin:'4px 0 0', fontSize:12, color:'#9ca3af'}}>오픈클로가 작성한 초안을 거래처별로 보관합니다. 복사 후 직접 발행하세요.</p>
+          </div>
+          <div style={{display:'flex', gap:8}}>
+            <button onClick={loadDrafts}
+              style={{background:'#f3f4f6', border:'none', borderRadius:8, padding:'8px 14px', fontSize:12, fontWeight:700, color:'#374151', cursor:'pointer', fontFamily:'inherit'}}>
+              ↻ 새로고침
+            </button>
+            <button onClick={() => setShowAdd(v => !v)}
+              style={{background: showAdd ? '#6366f1' : '#6366f1', color:'#fff', border:'none', borderRadius:8, padding:'8px 16px', fontSize:12, fontWeight:700, cursor:'pointer', fontFamily:'inherit'}}>
+              {showAdd ? '✕ 닫기' : '+ 직접 등록'}
+            </button>
+          </div>
+        </div>
+
+        {/* 직접 등록 폼 */}
+        {showAdd && (
+          <div style={{background:'#f9fafb', border:'1px solid #e5e7eb', borderRadius:12, padding:'20px', marginBottom:20}}>
+            <div style={{fontWeight:700, fontSize:14, color:'#374151', marginBottom:14}}>새 초안 등록</div>
+            <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:10, marginBottom:10}}>
+              <div>
+                <div style={{fontSize:11, fontWeight:600, color:'#6b7280', marginBottom:4}}>거래처</div>
+                <select value={addForm.clientId} onChange={e => setAddForm(f => ({...f, clientId:e.target.value}))} style={{...iS, width:'100%'}}>
+                  <option value="">공통 / 없음</option>
+                  {Object.entries(DRAFT_CLIENT_MAP).map(([id,name]) => <option key={id} value={id}>{name}</option>)}
+                </select>
+              </div>
+              <div>
+                <div style={{fontSize:11, fontWeight:600, color:'#6b7280', marginBottom:4}}>채널</div>
+                <select value={addForm.channel} onChange={e => setAddForm(f => ({...f, channel:e.target.value}))} style={{...iS, width:'100%'}}>
+                  {DRAFT_CHANNELS.map(ch => <option key={ch} value={ch}>{ch}</option>)}
+                </select>
+              </div>
+            </div>
+            <div style={{marginBottom:10}}>
+              <div style={{fontSize:11, fontWeight:600, color:'#6b7280', marginBottom:4}}>제목</div>
+              <input value={addForm.title} onChange={e => setAddForm(f => ({...f, title:e.target.value}))} style={{...iS, width:'100%', boxSizing:'border-box'}} placeholder="글 제목" />
+            </div>
+            <div style={{marginBottom:10}}>
+              <div style={{fontSize:11, fontWeight:600, color:'#6b7280', marginBottom:4}}>본문</div>
+              <textarea value={addForm.content} onChange={e => setAddForm(f => ({...f, content:e.target.value}))}
+                style={{...iS, width:'100%', boxSizing:'border-box', minHeight:140, resize:'vertical', lineHeight:1.6}}
+                placeholder="글 본문 전체 내용을 붙여넣으세요" />
+            </div>
+            <div style={{marginBottom:14}}>
+              <div style={{fontSize:11, fontWeight:600, color:'#6b7280', marginBottom:4}}>메모 (선택)</div>
+              <input value={addForm.memo} onChange={e => setAddForm(f => ({...f, memo:e.target.value}))} style={{...iS, width:'100%', boxSizing:'border-box'}} placeholder="키워드, 참고사항 등" />
+            </div>
+            <div style={{display:'flex', gap:8, justifyContent:'flex-end'}}>
+              <button onClick={() => { setShowAdd(false); setAddForm({ clientId:'', channel:'홈페이지', title:'', content:'', memo:'' }); }}
+                style={{background:'#f3f4f6', border:'none', borderRadius:7, padding:'8px 18px', fontSize:13, fontWeight:600, color:'#374151', cursor:'pointer', fontFamily:'inherit'}}>취소</button>
+              <button onClick={handleAdd}
+                style={{background:'#6366f1', border:'none', borderRadius:7, padding:'8px 20px', fontSize:13, fontWeight:700, color:'#fff', cursor:'pointer', fontFamily:'inherit'}}>저장</button>
+            </div>
+          </div>
+        )}
+
+        {/* 필터 행 */}
+        <div style={{display:'flex', gap:8, flexWrap:'wrap', marginBottom:20}}>
+          {/* 거래처 필터 */}
+          <button onClick={() => setFilterClient('')}
+            style={{background: filterClient==='' ? '#1a1a2e' : '#f3f4f6', color: filterClient==='' ? '#fff' : '#6b7280', border:'none', borderRadius:20, padding:'5px 14px', fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:'inherit'}}>
+            전체
+          </button>
+          {allClients.map(cid => (
+            <button key={cid} onClick={() => setFilterClient(cid === filterClient ? '' : cid)}
+              style={{background: filterClient===cid ? '#1a1a2e' : '#f3f4f6', color: filterClient===cid ? '#fff' : '#6b7280', border:'none', borderRadius:20, padding:'5px 14px', fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:'inherit'}}>
+              {DRAFT_CLIENT_MAP[cid] || cid}
+            </button>
+          ))}
+          <div style={{width:1, background:'#e5e7eb', margin:'0 4px'}} />
+          {/* 채널 필터 */}
+          {DRAFT_CHANNELS.map(ch => (
+            <button key={ch} onClick={() => setFilterChannel(ch === filterChannel ? '' : ch)}
+              style={{background: filterChannel===ch ? DRAFT_CH_COLOR[ch]||'#374151' : '#f3f4f6', color: filterChannel===ch ? '#fff' : '#6b7280', border:'none', borderRadius:20, padding:'5px 14px', fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:'inherit'}}>
+              {ch}
+            </button>
+          ))}
+        </div>
+
+        {/* 카운트 */}
+        <div style={{fontSize:12, color:'#9ca3af', marginBottom:12}}>
+          {loading ? '불러오는 중...' : `총 ${filtered.length}건${filterClient||filterChannel ? ' (필터 적용됨)' : ''}`}
+        </div>
+
+        {/* 초안 목록 */}
+        {loading ? (
+          <div style={{textAlign:'center', padding:'60px 0', color:'#9ca3af', fontSize:13}}>⏳ 보관함 로딩 중...</div>
+        ) : filtered.length === 0 ? (
+          <div style={{textAlign:'center', padding:'60px 0', color:'#9ca3af', fontSize:13}}>
+            {drafts.length === 0 ? '저장된 초안이 없습니다. 오픈클로에게 글 작성 후 저장을 요청하세요.' : '해당 조건의 초안이 없습니다.'}
+          </div>
+        ) : (
+          <div style={{display:'flex', flexDirection:'column', gap:12}}>
+            {filtered.map(draft => {
+              const isExpanded = expandedId === draft.draftId;
+              const clientName = DRAFT_CLIENT_MAP[draft.clientId] || draft.clientId || '공통';
+              const chColor = DRAFT_CH_COLOR[draft.channel] || '#6b7280';
+              const preview = (draft.content || '').slice(0, 120);
+              const isCopied = copied === draft.draftId;
+              return (
+                <div key={draft.draftId} style={{background:'#fff', border:'1px solid #e5e7eb', borderRadius:12, overflow:'hidden', boxShadow:'0 1px 4px rgba(0,0,0,0.05)'}}>
+                  {/* 카드 헤더 */}
+                  <div style={{display:'flex', alignItems:'center', gap:10, padding:'14px 18px', borderBottom: isExpanded ? '1px solid #f3f4f6' : 'none', cursor:'pointer'}}
+                    onClick={() => setExpandedId(isExpanded ? null : draft.draftId)}>
+                    <div style={{flex:1, minWidth:0}}>
+                      <div style={{display:'flex', alignItems:'center', gap:8, marginBottom:4, flexWrap:'wrap'}}>
+                        <span style={{background:chColor+'22', color:chColor, fontSize:11, fontWeight:700, borderRadius:10, padding:'2px 9px'}}>{draft.channel||'기타'}</span>
+                        <span style={{background:'#f3f4f6', color:'#374151', fontSize:11, fontWeight:600, borderRadius:10, padding:'2px 9px'}}>{clientName}</span>
+                        <span style={{fontSize:11, color:'#9ca3af'}}>{draft.createdAt||''}</span>
+                        {draft.memo && <span style={{fontSize:11, color:'#9ca3af', fontStyle:'italic'}}>| {draft.memo}</span>}
+                      </div>
+                      <div style={{fontSize:14, fontWeight:700, color:'#1a1a2e', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis'}}>{draft.title||'(제목 없음)'}</div>
+                      {!isExpanded && <div style={{fontSize:12, color:'#6b7280', marginTop:3, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis'}}>{preview}{(draft.content||'').length>120?'…':''}</div>}
+                    </div>
+                    <div style={{display:'flex', gap:6, flexShrink:0}} onClick={e => e.stopPropagation()}>
+                      <button onClick={() => handleCopy(draft)}
+                        style={{background: isCopied ? '#16a34a' : '#6366f1', color:'#fff', border:'none', borderRadius:7, padding:'7px 14px', fontSize:12, fontWeight:700, cursor:'pointer', fontFamily:'inherit', minWidth:70, transition:'background 0.2s'}}>
+                        {isCopied ? '✓ 복사됨' : '📋 복사'}
+                      </button>
+                      <button onClick={() => handleDelete(draft.draftId)}
+                        style={{background:'#fef2f2', color:'#dc2626', border:'1px solid #fecaca', borderRadius:7, padding:'7px 10px', fontSize:12, fontWeight:700, cursor:'pointer', fontFamily:'inherit'}}>
+                        삭제
+                      </button>
+                    </div>
+                  </div>
+                  {/* 본문 확장 */}
+                  {isExpanded && (
+                    <div style={{padding:'16px 18px', background:'#fafafa'}}>
+                      <pre style={{margin:0, fontFamily:'inherit', fontSize:13, lineHeight:1.75, color:'#374151', whiteSpace:'pre-wrap', wordBreak:'break-word'}}>{draft.content||''}</pre>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ═══════════════════════════════════════════════
   //  APP ROOT
   // ═══════════════════════════════════════════════
+  // ═══════════════════════════════════════════════
+  //  REVENUE VIEW (수익 관리)
+  // ═══════════════════════════════════════════════
+  const fmtMoney = (n) => {
+    if (!n && n !== 0) return '—';
+    return '₩ ' + Number(n).toLocaleString('ko-KR');
+  };
+
+  // ═══════════════════════════════════════════════
+  //  REVENUE VIEW — 손익 관리
+  // ═══════════════════════════════════════════════
+
+  const REV_KEY = 'rev-data-v1';
+  function loadRevData() {
+    try { return JSON.parse(localStorage.getItem(REV_KEY)) || getDefaultRevData(); } catch { return getDefaultRevData(); }
+  }
+  function saveRevData(d) { try { localStorage.setItem(REV_KEY, JSON.stringify(d)); } catch {} }
+
+  const EXPENSE_CATS = ['인건비','외주비','광고비','촬영/디자인 제작비','툴/구독료','사무운영비','세무/수수료','기타비용'];
+  const PAY_METHODS  = ['카드','계좌이체','현금','기타'];
+  const CAT_COLORS   = {
+    '인건비':'#6366f1','외주비':'#8b5cf6','광고비':'#ec4899',
+    '촬영/디자인 제작비':'#f59e0b','툴/구독료':'#3b82f6',
+    '사무운영비':'#10b981','세무/수수료':'#64748b','기타비용':'#d1d5db',
+  };
+
+  function getDefaultRevData() {
+    const now = new Date();
+    const months = [];
+    for (let i=5; i>=0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+      months.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);
+    }
+    const [m0,m1,m2,m3,m4,m5] = months;
+    const clientRevenue = [
+      {clientId:'btskin',    monthlyFee:1200000, additionalRevenue:{[m4]:300000,[m5]:150000}, allocatedCosts:{}, contractStart:'2024-06-01', memo:'홈페이지+블로그+SNS'},
+      {clientId:'bellemont', monthlyFee:800000,  additionalRevenue:{[m5]:200000},             allocatedCosts:{}, contractStart:'2024-09-01', memo:'홈페이지+블로그'},
+      {clientId:'kyunghee',  monthlyFee:600000,  additionalRevenue:{},                        allocatedCosts:{}, contractStart:'2025-01-01', memo:'블로그+SNS'},
+      {clientId:'eyeclinic', monthlyFee:500000,  additionalRevenue:{},                        allocatedCosts:{}, contractStart:'2024-11-01', memo:'홈페이지'},
+      {clientId:'igo',       monthlyFee:450000,  additionalRevenue:{},                        allocatedCosts:{}, contractStart:'2025-03-01', memo:'블로그'},
+    ];
+    const base = [
+      {category:'인건비',            type:'고정비', description:'프리랜서 작가',          amount:400000, clientId:'', payMethod:'계좌이체', isRecurring:true},
+      {category:'툴/구독료',         type:'고정비', description:'Figma · Notion · Adobe', amount:89000,  clientId:'', payMethod:'카드',     isRecurring:true},
+      {category:'툴/구독료',         type:'고정비', description:'ChatGPT · Claude Pro',  amount:65000,  clientId:'', payMethod:'카드',     isRecurring:true},
+      {category:'세무/수수료',       type:'고정비', description:'세무기장료',             amount:150000, clientId:'', payMethod:'계좌이체', isRecurring:true},
+      {category:'사무운영비',        type:'고정비', description:'인터넷 · 통신비',        amount:55000,  clientId:'', payMethod:'카드',     isRecurring:true},
+    ];
+    const vars = [
+      [{category:'촬영/디자인 제작비',type:'변동비',description:'노형 촬영',      amount:350000,clientId:'btskin',   payMethod:'계좌이체',isRecurring:false},
+       {category:'외주비',            type:'변동비',description:'중국어 번역',    amount:120000,clientId:'btskin',   payMethod:'계좌이체',isRecurring:false}],
+      [{category:'광고비',            type:'변동비',description:'네이버 파워링크', amount:200000,clientId:'bellemont',payMethod:'카드',    isRecurring:false}],
+      [{category:'촬영/디자인 제작비',type:'변동비',description:'벨르몬 촬영',    amount:280000,clientId:'bellemont',payMethod:'계좌이체',isRecurring:false},
+       {category:'외주비',            type:'변동비',description:'일본어 번역',    amount:90000, clientId:'btskin',   payMethod:'계좌이체',isRecurring:false}],
+      [{category:'광고비',            type:'변동비',description:'인스타그램 광고', amount:150000,clientId:'kyunghee', payMethod:'카드',    isRecurring:false},
+       {category:'기타비용',          type:'변동비',description:'명함 인쇄',      amount:45000, clientId:'',         payMethod:'카드',    isRecurring:false}],
+      [{category:'촬영/디자인 제작비',type:'변동비',description:'봄 시즌 촬영',   amount:420000,clientId:'btskin',   payMethod:'계좌이체',isRecurring:false},
+       {category:'외주비',            type:'변동비',description:'영어 카피라이팅', amount:80000, clientId:'btskin',   payMethod:'계좌이체',isRecurring:false}],
+      [{category:'광고비',            type:'변동비',description:'블로그 광고',    amount:180000,clientId:'btskin',   payMethod:'카드',    isRecurring:false},
+       {category:'촬영/디자인 제작비',type:'변동비',description:'경희 촬영',      amount:200000,clientId:'kyunghee', payMethod:'계좌이체',isRecurring:false}],
+    ];
+    const expenses = []; let eid=1;
+    months.forEach((month,mi) => {
+      base.forEach(e => expenses.push({expenseId:`exp-${String(eid++).padStart(3,'0')}`,date:`${month}-05`,...e,memo:''}));
+      (vars[mi]||[]).forEach((e,ei) => expenses.push({expenseId:`exp-${String(eid++).padStart(3,'0')}`,date:`${month}-${String(10+ei*4).padStart(2,'0')}`,...e,memo:''}));
+    });
+    return { clientRevenue, expenses };
+  }
+
+  // ── SVG 차트: 손익 흐름 ──
+  function ProfitChart({ data6 }) {
+    const W=520, H=180, PL=52, PR=12, PT=20, PB=28;
+    const cW=W-PL-PR, cH=H-PT-PB;
+    const maxV = Math.max(...data6.flatMap(d=>[d.revenue,d.costs]), 1);
+    const gW = cW / data6.length;
+    const bW = gW * 0.28;
+    const toY = v => PT + cH - (Math.max(0,v)/maxV)*cH;
+    const profPts = data6.map((d,i) => `${PL+i*gW+gW/2},${toY(d.profit)}`).join(' ');
+    const fK = v => v>=1000000?(v/1000000).toFixed(1)+'M':v>=1000?(v/1000).toFixed(0)+'K':'0';
+    return (
+      <svg viewBox={`0 0 ${W} ${H}`} style={{width:'100%',height:'auto'}}>
+        {[0,0.25,0.5,0.75,1].map(r=>(
+          <g key={r}>
+            <line x1={PL} x2={W-PR} y1={toY(maxV*r)} y2={toY(maxV*r)} stroke={r===0?'#e5e7eb':'#f3f4f6'} strokeWidth="1"/>
+            {r>0&&<text x={PL-4} y={toY(maxV*r)+4} textAnchor="end" fontSize="8" fill="#9ca3af">{fK(maxV*r)}</text>}
+          </g>
+        ))}
+        {data6.map((d,i) => {
+          const cx=PL+i*gW;
+          return (
+            <g key={i}>
+              <rect x={cx+gW*0.08}      y={toY(d.revenue)} width={bW} height={(d.revenue/maxV)*cH} fill="#3b82f6" opacity="0.75" rx="2"/>
+              <rect x={cx+gW*0.08+bW+2} y={toY(d.costs)}   width={bW} height={(d.costs/maxV)*cH}   fill="#f59e0b" opacity="0.75" rx="2"/>
+              <text x={cx+gW/2} y={H-6} textAnchor="middle" fontSize="9" fill="#9ca3af">{d.month.slice(5)}월</text>
+            </g>
+          );
+        })}
+        <polyline points={profPts} fill="none" stroke="#10b981" strokeWidth="2"/>
+        {data6.map((d,i) => (
+          <circle key={i} cx={PL+i*gW+gW/2} cy={toY(d.profit)} r="3.5" fill="#10b981" stroke="#fff" strokeWidth="1.5"/>
+        ))}
+        <rect x={PL} y={3} width={7} height={7} fill="#3b82f6" opacity="0.75" rx="1"/>
+        <text x={PL+10} y={10} fontSize="8.5" fill="#6b7280">매출</text>
+        <rect x={PL+40} y={3} width={7} height={7} fill="#f59e0b" opacity="0.75" rx="1"/>
+        <text x={PL+50} y={10} fontSize="8.5" fill="#6b7280">비용</text>
+        <circle cx={PL+82} cy={7} r="3" fill="#10b981"/>
+        <text x={PL+88} y={10} fontSize="8.5" fill="#6b7280">순이익</text>
+      </svg>
+    );
+  }
+
+  // ── SVG 차트: 비용 도넛 ──
+  function CostDonut({ expenses }) {
+    const byCat = EXPENSE_CATS.map(cat=>({
+      label:cat,
+      value:expenses.filter(e=>e.category===cat).reduce((s,e)=>s+Number(e.amount||0),0),
+      color:CAT_COLORS[cat]||'#d1d5db',
+    })).filter(c=>c.value>0);
+    const total=byCat.reduce((s,c)=>s+c.value,0);
+    if (total===0) return <div style={{textAlign:'center',color:'#9ca3af',fontSize:12,padding:'40px 0'}}>이번 달 비용 없음</div>;
+    const R=68, r=44, CX=80, CY=80;
+    let ang=-Math.PI/2;
+    const segs=byCat.map(c=>{
+      const a=(c.value/total)*2*Math.PI;
+      const x1=CX+R*Math.cos(ang), y1=CY+R*Math.sin(ang);
+      ang+=a;
+      const x2=CX+R*Math.cos(ang), y2=CY+R*Math.sin(ang);
+      const xi1=CX+r*Math.cos(ang), yi1=CY+r*Math.sin(ang);
+      const xi2=CX+r*Math.cos(ang-a), yi2=CY+r*Math.sin(ang-a);
+      const lg=a>Math.PI?1:0;
+      return {...c, path:`M${x1},${y1}A${R},${R},0,${lg},1,${x2},${y2}L${xi1},${yi1}A${r},${r},0,${lg},0,${xi2},${yi2}Z`};
+    });
+    return (
+      <div style={{display:'flex',alignItems:'flex-start',gap:10}}>
+        <svg viewBox="0 0 160 160" style={{width:130,flexShrink:0}}>
+          {segs.map((s,i)=><path key={i} d={s.path} fill={s.color}/>)}
+          <text x={CX} y={CY-7}  textAnchor="middle" fontSize="9"  fill="#9ca3af">총비용</text>
+          <text x={CX} y={CY+7}  textAnchor="middle" fontSize="12" fontWeight="700" fill="#374151">{(total/10000).toFixed(0)}만</text>
+        </svg>
+        <div style={{fontSize:10,lineHeight:'19px',paddingTop:6,flex:1}}>
+          {segs.map((s,i)=>(
+            <div key={i} style={{display:'flex',alignItems:'center',gap:5}}>
+              <span style={{width:7,height:7,borderRadius:1,background:s.color,display:'inline-block',flexShrink:0}}/>
+              <span style={{color:'#6b7280',flex:1,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{s.label}</span>
+              <span style={{color:'#374151',fontWeight:700,paddingLeft:4}}>{(s.value/10000).toFixed(1)}만</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // ── 메인 컴포넌트 ──
+  function RevenueView({ data }) {
+    const clients = data.clients || [];
+    const [revData,     setRevData]    = useState(()=>loadRevData());
+    const [selMonth,    setSelMonth]   = useState(nowMonth);
+    const [activeTab,   setActiveTab]  = useState('profit');
+    const [editingCid,  setEditingCid] = useState(null);
+    const [editCForm,   setEditCForm]  = useState({});
+    const [showAddExp,  setShowAddExp] = useState(false);
+    const [editingEid,  setEditingEid] = useState(null);
+    const blankExp = { date:today(), category:'인건비', description:'', amount:'', type:'고정비', clientId:'', payMethod:'카드', isRecurring:false, memo:'' };
+    const [expForm, setExpForm] = useState(blankExp);
+
+    // localStorage 저장
+    useEffect(()=>{ saveRevData(revData); }, [revData]);
+    const mutRev = fn => setRevData(prev=>fn(prev));
+
+    // Sheets에서 비용 데이터 동기화 (마운트 시)
+    useEffect(()=>{
+      fetchFromSheets().then(sheetsData=>{
+        if (sheetsData.expenses && sheetsData.expenses.length > 0) {
+          mutRev(prev=>({ ...prev, expenses: sheetsData.expenses }));
+        }
+      }).catch(()=>{});
+    }, []);
+
+    const cr = revData.clientRevenue || [];
+    const selExpenses = (revData.expenses||[]).filter(e=>e.date&&e.date.startsWith(selMonth));
+
+    // 거래처별 수익 계산 — 귀속비용은 비용기록에서 자동 집계
+    const clientRows = clients.map(c=>{
+      const rv = cr.find(r=>r.clientId===c.clientId)||{monthlyFee:0,additionalRevenue:{},contractStart:'',memo:''};
+      const base  = Number(rv.monthlyFee)||0;
+      const extra = Number((rv.additionalRevenue||{})[selMonth])||0;
+      const totalRev = base+extra;
+      // 비용 기록에서 이 거래처에 귀속된 비용 자동 합산
+      const allocCost = selExpenses.filter(e=>e.clientId===c.clientId).reduce((s,e)=>s+Number(e.amount||0),0);
+      const profit = totalRev-allocCost;
+      const margin = totalRev>0 ? profit/totalRev*100 : 0;
+      return {...c, monthlyFee:base, additionalRevenue:extra, totalRevenue:totalRev, allocatedCosts:allocCost, profit, margin, contractStart:rv.contractStart||'', memo:rv.memo||''};
+    });
+
+    const totalRevenue = clientRows.reduce((s,r)=>s+r.totalRevenue, 0);
+    const totalCosts   = selExpenses.reduce((s,e)=>s+Number(e.amount||0), 0);
+    const netProfit    = totalRevenue-totalCosts;
+    const profitMargin = totalRevenue>0 ? netProfit/totalRevenue*100 : 0;
+    const fixedCosts   = selExpenses.filter(e=>e.type==='고정비').reduce((s,e)=>s+Number(e.amount||0),0);
+    const varCosts     = selExpenses.filter(e=>e.type==='변동비').reduce((s,e)=>s+Number(e.amount||0),0);
+
+    // 전월 비교
+    const prevM = (()=>{ const d=new Date(); d.setDate(1); d.setMonth(d.getMonth()-1); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; })();
+    const prevRevenue = clients.reduce((s,c)=>{ const rv=cr.find(r=>r.clientId===c.clientId)||{monthlyFee:0,additionalRevenue:{}}; return s+(Number(rv.monthlyFee)||0)+(Number((rv.additionalRevenue||{})[prevM])||0); },0);
+    const prevCosts   = (revData.expenses||[]).filter(e=>e.date&&e.date.startsWith(prevM)).reduce((s,e)=>s+Number(e.amount||0),0);
+    const profitDiff  = netProfit-(prevRevenue-prevCosts);
+
+    // 6개월 추이
+    const now6 = Array.from({length:6},(_,i)=>{
+      const d=new Date(); d.setDate(1); d.setMonth(d.getMonth()-(5-i));
+      const m=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+      const rev=clients.reduce((s,c)=>{ const rv=cr.find(r=>r.clientId===c.clientId)||{monthlyFee:0,additionalRevenue:{}}; return s+(Number(rv.monthlyFee)||0)+(Number((rv.additionalRevenue||{})[m])||0); },0);
+      const cost=(revData.expenses||[]).filter(e=>e.date&&e.date.startsWith(m)).reduce((s,e)=>s+Number(e.amount||0),0);
+      return {month:m, revenue:rev, costs:cost, profit:rev-cost};
+    });
+
+    // 상위 5 비용
+    const top5 = [...selExpenses].sort((a,b)=>Number(b.amount)-Number(a.amount)).slice(0,5);
+
+    // 월 선택지 (최근 12개월)
+    const monthOptions = Array.from({length:12},(_,i)=>{
+      const d=new Date(); d.setDate(1); d.setMonth(d.getMonth()-i);
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    });
+
+    // ── 거래처 수익 편집 ──
+    function startEditClient(row) {
+      setEditingCid(row.clientId);
+      const rv=cr.find(r=>r.clientId===row.clientId)||{};
+      setEditCForm({ monthlyFee:rv.monthlyFee||0, additionalRevenue:(rv.additionalRevenue||{})[selMonth]||0, contractStart:rv.contractStart||'', memo:rv.memo||'' });
+    }
+    function saveEditClient(clientId) {
+      mutRev(prev=>{
+        const idx=prev.clientRevenue.findIndex(r=>r.clientId===clientId);
+        const ex=prev.clientRevenue[idx]||{clientId,additionalRevenue:{}};
+        const updated={...ex, monthlyFee:Number(editCForm.monthlyFee)||0, additionalRevenue:{...(ex.additionalRevenue||{}),[selMonth]:Number(editCForm.additionalRevenue)||0}, contractStart:editCForm.contractStart||'', memo:editCForm.memo||''};
+        return {...prev, clientRevenue: idx>=0 ? prev.clientRevenue.map((r,i)=>i===idx?updated:r) : [...prev.clientRevenue,updated]};
+      });
+      setEditingCid(null);
+    }
+
+    // ── 비용 CRUD (로컬 + Sheets 동기화) ──
+    function addExpense() {
+      const eid = 'exp-' + Date.now().toString(36);
+      const newExp = { expenseId:eid, ...expForm, amount:Number(expForm.amount)||0 };
+      mutRev(prev=>({...prev, expenses:[...prev.expenses, newExp]}));
+      fetch(API_URL, {
+        method:'POST', redirect:'follow',
+        body: JSON.stringify({ action:'addExpense', ...newExp })
+      }).catch(e=>console.warn('addExpense Sheets 오류:', e));
+      setExpForm(blankExp); setShowAddExp(false);
+    }
+    function startEditExp(e) { setEditingEid(e.expenseId); setExpForm({...e,amount:String(e.amount)}); setShowAddExp(false); }
+    function saveEditExp() {
+      const updated = { ...expForm, expenseId:editingEid, amount:Number(expForm.amount)||0 };
+      mutRev(prev=>({...prev, expenses:prev.expenses.map(e=>e.expenseId===editingEid?updated:e)}));
+      fetch(API_URL, {
+        method:'POST', redirect:'follow',
+        body: JSON.stringify({ action:'updateExpense', ...updated })
+      }).catch(e=>console.warn('updateExpense Sheets 오류:', e));
+      setEditingEid(null); setExpForm(blankExp);
+    }
+    function deleteExp(eid) {
+      if(!confirm('이 비용 항목을 삭제하시겠습니까?')) return;
+      mutRev(prev=>({...prev, expenses:prev.expenses.filter(e=>e.expenseId!==eid)}));
+      fetch(API_URL, {
+        method:'POST', redirect:'follow',
+        body: JSON.stringify({ action:'deleteExpense', expenseId:eid })
+      }).catch(e=>console.warn('deleteExpense Sheets 오류:', e));
+    }
+
+    const iS = {padding:'5px 8px',border:'1px solid #d1d5db',borderRadius:6,fontSize:12,fontFamily:'inherit',outline:'none',background:'#fff'};
+    const diffColor = profitDiff>=0?'#065f46':'#b91c1c';
+
+    return (
+      <div style={{maxWidth:1200,margin:'0 auto',padding:'24px 20px'}}>
+
+        {/* 헤더 + 월 선택 */}
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20}}>
+          <h2 style={{fontSize:16,fontWeight:800,color:'#1a1a2e',margin:0}}>손익 관리</h2>
+          <div style={{display:'flex',alignItems:'center',gap:8}}>
+            <span style={{fontSize:12,color:'#6b7280',fontWeight:600}}>기준 월</span>
+            <select value={selMonth} onChange={e=>setSelMonth(e.target.value)} style={{...iS,fontWeight:700,color:'#1a1a2e',padding:'7px 10px'}}>
+              {monthOptions.map(m=><option key={m} value={m}>{m.replace('-','년 ')}월</option>)}
+            </select>
+          </div>
+        </div>
+
+        {/* KPI 카드 4개 */}
+        <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:14,marginBottom:22}}>
+          {[
+            {label:'이번 달 총매출',  value:fmtMoney(totalRevenue), icon:'💰', color:'#1d4ed8', bg:'#dbeafe', sub:`활성 거래처 ${clients.length}곳`},
+            {label:'이번 달 총비용',  value:fmtMoney(totalCosts),   icon:'📤', color:'#b45309', bg:'#fef3c7', sub:`고정 ${(fixedCosts/10000).toFixed(0)}만 · 변동 ${(varCosts/10000).toFixed(0)}만`},
+            {label:'이번 달 순이익',  value:fmtMoney(netProfit),    icon:netProfit>=0?'📈':'📉', color:netProfit>=0?'#065f46':'#b91c1c', bg:netProfit>=0?'#d1fae5':'#fee2e2',
+              sub:<span style={{color:diffColor}}>{profitDiff>=0?'▲':'▼'} {fmtMoney(Math.abs(profitDiff))} 전월 대비</span>},
+            {label:'순이익률',        value:`${profitMargin.toFixed(1)}%`, icon:'📊', color:'#6d28d9', bg:'#ede9fe', sub:`목표 30% ${profitMargin>=30?'✅ 달성':'— 미달성'}`},
+          ].map((k,i)=>(
+            <div key={i} style={{background:'#fff',borderRadius:12,border:'1px solid #e5e7eb',padding:'16px 18px'}}>
+              <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:10}}>
+                <div style={{width:36,height:36,borderRadius:9,background:k.bg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,flexShrink:0}}>{k.icon}</div>
+                <span style={{fontSize:11,color:'#9ca3af',fontWeight:700,lineHeight:'14px'}}>{k.label}</span>
+              </div>
+              <div style={{fontSize:20,fontWeight:800,color:k.color,marginBottom:4}}>{k.value}</div>
+              <div style={{fontSize:10,color:'#9ca3af'}}>{k.sub}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* 보조 지표 바 */}
+        <div style={{display:'flex',gap:10,marginBottom:22}}>
+          {[
+            {label:'고정비 총액', value:fmtMoney(fixedCosts), color:'#1d4ed8'},
+            {label:'변동비 총액', value:fmtMoney(varCosts),   color:'#b45309'},
+            {label:'활성 거래처', value:`${clients.length}곳`, color:'#374151'},
+            {label:'비용 항목',   value:`${selExpenses.length}건`, color:'#374151'},
+          ].map((s,i)=>(
+            <div key={i} style={{background:'#fff',borderRadius:9,border:'1px solid #e5e7eb',padding:'10px 16px',display:'flex',alignItems:'center',gap:10,flex:1}}>
+              <span style={{fontSize:11,color:'#9ca3af'}}>{s.label}</span>
+              <span style={{fontSize:13,fontWeight:800,color:s.color,marginLeft:'auto'}}>{s.value}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* 중단: 차트 2개 */}
+        <div style={{display:'grid',gridTemplateColumns:'1.65fr 1fr',gap:14,marginBottom:22}}>
+          {/* 손익 흐름 */}
+          <div style={{background:'#fff',borderRadius:12,border:'1px solid #e5e7eb',padding:'18px 20px'}}>
+            <div style={{fontSize:12,fontWeight:700,color:'#374151',marginBottom:14}}>📈 최근 6개월 손익 흐름</div>
+            <ProfitChart data6={now6}/>
+          </div>
+          {/* 비용 구조 */}
+          <div style={{background:'#fff',borderRadius:12,border:'1px solid #e5e7eb',padding:'18px 20px'}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
+              <span style={{fontSize:12,fontWeight:700,color:'#374151'}}>📊 이번 달 비용 구조</span>
+              <span style={{fontSize:10,color:'#9ca3af'}}>
+                고정 {totalCosts>0?(fixedCosts/totalCosts*100).toFixed(0):0}% · 변동 {totalCosts>0?(varCosts/totalCosts*100).toFixed(0):0}%
+              </span>
+            </div>
+            <CostDonut expenses={selExpenses}/>
+            {top5.length>0&&(
+              <div style={{marginTop:12,borderTop:'1px solid #f3f4f6',paddingTop:10}}>
+                <div style={{fontSize:10,fontWeight:700,color:'#9ca3af',marginBottom:6}}>상위 비용 5개</div>
+                {top5.map((e,i)=>(
+                  <div key={e.expenseId} style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:4}}>
+                    <div style={{display:'flex',alignItems:'center',gap:5}}>
+                      <span style={{fontSize:10,color:'#9ca3af',width:12}}>{i+1}.</span>
+                      <span style={{width:7,height:7,borderRadius:1,background:CAT_COLORS[e.category]||'#d1d5db',display:'inline-block',flexShrink:0}}/>
+                      <span style={{fontSize:11,color:'#374151'}}>{e.description}</span>
+                    </div>
+                    <span style={{fontSize:11,fontWeight:700,color:'#374151',flexShrink:0}}>{fmtMoney(e.amount)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* 하단 탭 테이블 */}
+        <div style={{background:'#fff',borderRadius:12,border:'1px solid #e5e7eb',overflow:'hidden'}}>
+          {/* 탭 헤더 */}
+          <div style={{display:'flex',borderBottom:'1px solid #e5e7eb',alignItems:'center'}}>
+            {[{key:'profit',label:'📋 거래처별 수익성'},{key:'expenses',label:'💳 비용 기록'}].map(t=>(
+              <button key={t.key} onClick={()=>setActiveTab(t.key)}
+                style={{padding:'12px 20px',border:'none',background:'none',fontSize:13,fontWeight:700,cursor:'pointer',fontFamily:'inherit',
+                  color:activeTab===t.key?'#1a1a2e':'#9ca3af',
+                  borderBottom:activeTab===t.key?'2px solid #1a1a2e':'2px solid transparent',
+                  transition:'all 0.15s'}}>
+                {t.label}
+              </button>
+            ))}
+            {activeTab==='expenses'&&(
+              <button onClick={()=>{setExpForm({...blankExp,date:today()});setShowAddExp(true);setEditingEid(null);}}
+                style={{marginLeft:'auto',marginRight:14,background:'#1a1a2e',color:'#fff',border:'none',borderRadius:7,padding:'6px 14px',fontSize:11,fontWeight:700,cursor:'pointer',fontFamily:'inherit'}}>
+                + 비용 추가
+              </button>
+            )}
+          </div>
+
+          {/* 탭 A: 거래처별 수익성 */}
+          {activeTab==='profit'&&(
+            <div>
+              <div style={{display:'grid',gridTemplateColumns:'1.3fr 74px 100px 110px 100px 110px 110px 1fr 72px',gap:0,background:'#f9fafb',borderBottom:'1px solid #f3f4f6',padding:'8px 20px'}}>
+                {['거래처','진료과','계약 시작일','월 기본계약금','당월 추가매출','거래처별 총매출','귀속비용','이익률',''].map((h,i)=>(
+                  <span key={i} style={{fontSize:10,fontWeight:700,color:'#9ca3af'}}>{h}</span>
+                ))}
+              </div>
+              {clientRows.map((row,idx)=>{
+                const mc=row.margin>=30?'#065f46':row.margin>=20?'#b45309':'#b91c1c';
+                return (
+                  <div key={row.clientId} style={{borderBottom:idx<clientRows.length-1?'1px solid #f3f4f6':'none'}}>
+                    {editingCid===row.clientId?(
+                      <div style={{padding:'10px 20px',background:'#fffbeb',display:'grid',gridTemplateColumns:'1.3fr 74px 100px 110px 100px 110px 110px 1fr 72px',gap:6,alignItems:'center'}}>
+                        <div style={{fontSize:13,fontWeight:700,color:'#1a1a2e'}}>{row.clientName}</div>
+                        <SpecBadge specialty={row.specialty}/>
+                        <input type="date"   value={editCForm.contractStart}     onChange={e=>setEditCForm(f=>({...f,contractStart:e.target.value}))}     style={{...iS,width:'100%'}}/>
+                        <input type="number" value={editCForm.monthlyFee}         onChange={e=>setEditCForm(f=>({...f,monthlyFee:e.target.value}))}         style={{...iS,width:'100%'}} placeholder="0"/>
+                        <input type="number" value={editCForm.additionalRevenue}  onChange={e=>setEditCForm(f=>({...f,additionalRevenue:e.target.value}))}  style={{...iS,width:'100%'}} placeholder="0"/>
+                        <span style={{fontSize:11,fontWeight:700,color:'#1d4ed8'}}>{fmtMoney(Number(editCForm.monthlyFee||0)+Number(editCForm.additionalRevenue||0))}</span>
+                        <span style={{fontSize:11,color:'#b45309',fontWeight:600}}>{fmtMoney(row.allocatedCosts)}<span style={{fontSize:9,color:'#9ca3af',marginLeft:3}}>자동</span></span>
+                        <input type="text"   value={editCForm.memo}               onChange={e=>setEditCForm(f=>({...f,memo:e.target.value}))}               style={{...iS,width:'100%'}} placeholder="메모"/>
+                        <div style={{display:'flex',gap:4}}>
+                          <button onClick={()=>saveEditClient(row.clientId)} style={{background:'#1a1a2e',color:'#fff',border:'none',borderRadius:5,padding:'4px 9px',fontSize:10,fontWeight:700,cursor:'pointer',fontFamily:'inherit'}}>저장</button>
+                          <button onClick={()=>setEditingCid(null)} style={{background:'#f3f4f6',color:'#6b7280',border:'none',borderRadius:5,padding:'4px 7px',fontSize:10,cursor:'pointer',fontFamily:'inherit'}}>취소</button>
+                        </div>
+                      </div>
+                    ):(
+                      <div onClick={()=>startEditClient(row)}
+                        style={{padding:'11px 20px',display:'grid',gridTemplateColumns:'1.3fr 74px 100px 110px 100px 110px 110px 1fr 72px',gap:8,alignItems:'center',cursor:'pointer',transition:'background 0.12s'}}
+                        onMouseOver={e=>e.currentTarget.style.background='#f9fafb'}
+                        onMouseOut={e=>e.currentTarget.style.background=''}>
+                        <div>
+                          <div style={{fontSize:13,fontWeight:700,color:'#1a1a2e'}}>{row.clientName}</div>
+                          {row.memo&&<div style={{fontSize:10,color:'#9ca3af',marginTop:1}}>{row.memo}</div>}
+                        </div>
+                        <SpecBadge specialty={row.specialty}/>
+                        <span style={{fontSize:11,color:'#6b7280'}}>{row.contractStart?fmtDate(row.contractStart):'—'}</span>
+                        <span style={{fontSize:12,fontWeight:700,color:row.monthlyFee?'#374151':'#d1d5db'}}>{row.monthlyFee?fmtMoney(row.monthlyFee):'미입력'}</span>
+                        <span style={{fontSize:12,color:row.additionalRevenue>0?'#1d4ed8':'#9ca3af'}}>{row.additionalRevenue>0?'+'+fmtMoney(row.additionalRevenue):'—'}</span>
+                        <span style={{fontSize:12,fontWeight:700,color:'#1d4ed8'}}>{fmtMoney(row.totalRevenue)}</span>
+                        <span style={{fontSize:11,color:row.allocatedCosts>0?'#b45309':'#9ca3af'}}>{row.allocatedCosts>0?fmtMoney(row.allocatedCosts):'—'}</span>
+                        <div style={{display:'flex',alignItems:'center',gap:6}}>
+                          <div style={{flex:1,background:'#f3f4f6',borderRadius:99,height:5,overflow:'hidden'}}>
+                            <div style={{width:`${Math.min(100,Math.max(0,row.margin))}%`,height:'100%',background:mc,borderRadius:99}}/>
+                          </div>
+                          <span style={{fontSize:10,fontWeight:800,color:mc,minWidth:32,textAlign:'right'}}>{row.margin.toFixed(0)}%</span>
+                        </div>
+                        <span style={{fontSize:11,color:'#c9a96e',fontWeight:600}}>편집 ✎</span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+              {/* 합계 행 */}
+              <div style={{background:'#f8fafc',borderTop:'2px solid #e5e7eb',padding:'10px 20px',display:'grid',gridTemplateColumns:'1.3fr 74px 100px 110px 100px 110px 110px 1fr 72px',gap:8,alignItems:'center'}}>
+                <span style={{fontSize:12,fontWeight:800,color:'#1a1a2e'}}>합계</span>
+                <span/><span/>
+                <span style={{fontSize:12,fontWeight:700}}>{fmtMoney(clientRows.reduce((s,r)=>s+r.monthlyFee,0))}</span>
+                <span style={{fontSize:12,fontWeight:700,color:'#1d4ed8'}}>{fmtMoney(clientRows.reduce((s,r)=>s+r.additionalRevenue,0))}</span>
+                <span style={{fontSize:13,fontWeight:800,color:'#1d4ed8'}}>{fmtMoney(totalRevenue)}</span>
+                <span style={{fontSize:12,fontWeight:700,color:'#b45309'}}>{fmtMoney(clientRows.reduce((s,r)=>s+r.allocatedCosts,0))}</span>
+                <span style={{fontSize:12,fontWeight:700,color:'#6d28d9'}}>{profitMargin.toFixed(1)}%</span>
+                <span/>
+              </div>
+            </div>
+          )}
+
+          {/* 탭 B: 비용 기록 */}
+          {activeTab==='expenses'&&(
+            <div>
+              {/* 비용 추가/수정 인라인 폼 */}
+              {(showAddExp||editingEid)&&(
+                <div style={{background:'#fffbeb',borderBottom:'1px solid #fef3c7',padding:'14px 20px'}}>
+                  <div style={{fontSize:12,fontWeight:700,color:'#374151',marginBottom:10}}>{editingEid?'비용 수정':'새 비용 추가'}</div>
+                  {/* 1행: 날짜 / 카테고리 / 세부내용 / 금액 / 구분 */}
+                  <div style={{display:'grid',gridTemplateColumns:'120px 150px 1fr 130px 80px',gap:7,marginBottom:7}}>
+                    <div>
+                      <div style={{fontSize:10,color:'#9ca3af',fontWeight:600,marginBottom:3}}>지출일</div>
+                      <input type="date" value={expForm.date} onChange={e=>setExpForm(f=>({...f,date:e.target.value}))} style={{...iS,width:'100%'}}/>
+                    </div>
+                    <div>
+                      <div style={{fontSize:10,color:'#9ca3af',fontWeight:600,marginBottom:3}}>비용 항목</div>
+                      <select value={expForm.category} onChange={e=>setExpForm(f=>({...f,category:e.target.value}))} style={{...iS,width:'100%'}}>
+                        {EXPENSE_CATS.map(c=><option key={c}>{c}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <div style={{fontSize:10,color:'#9ca3af',fontWeight:600,marginBottom:3}}>세부 내용</div>
+                      <input type="text" value={expForm.description} onChange={e=>setExpForm(f=>({...f,description:e.target.value}))} style={{...iS,width:'100%'}} placeholder="세부 내용을 입력하세요"/>
+                    </div>
+                    <div>
+                      <div style={{fontSize:10,color:'#9ca3af',fontWeight:600,marginBottom:3}}>금액 (원)</div>
+                      <input type="number" value={expForm.amount} onChange={e=>setExpForm(f=>({...f,amount:e.target.value}))} style={{...iS,width:'100%'}} placeholder="0"/>
+                    </div>
+                    <div>
+                      <div style={{fontSize:10,color:'#9ca3af',fontWeight:600,marginBottom:3}}>구분</div>
+                      <select value={expForm.type} onChange={e=>setExpForm(f=>({...f,type:e.target.value}))} style={{...iS,width:'100%'}}>
+                        <option>고정비</option><option>변동비</option>
+                      </select>
+                    </div>
+                  </div>
+                  {/* 2행: 관련 거래처 / 결제수단 / 정기 / 메모 / 버튼 */}
+                  <div style={{display:'grid',gridTemplateColumns:'160px 110px 100px 1fr auto',gap:7,alignItems:'end'}}>
+                    <div>
+                      <div style={{fontSize:10,color:'#9ca3af',fontWeight:600,marginBottom:3}}>관련 거래처</div>
+                      <select value={expForm.clientId} onChange={e=>setExpForm(f=>({...f,clientId:e.target.value}))} style={{...iS,width:'100%'}}>
+                        <option value="">거래처 없음</option>
+                        {clients.map(c=><option key={c.clientId} value={c.clientId}>{c.clientName}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <div style={{fontSize:10,color:'#9ca3af',fontWeight:600,marginBottom:3}}>결제수단</div>
+                      <select value={expForm.payMethod} onChange={e=>setExpForm(f=>({...f,payMethod:e.target.value}))} style={{...iS,width:'100%'}}>
+                        {PAY_METHODS.map(m=><option key={m}>{m}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <div style={{fontSize:10,color:'#9ca3af',fontWeight:600,marginBottom:3}}>정기지출</div>
+                      <label style={{display:'flex',alignItems:'center',gap:6,fontSize:12,color:'#374151',cursor:'pointer',padding:'6px 0'}}>
+                        <input type="checkbox" checked={expForm.isRecurring} onChange={e=>setExpForm(f=>({...f,isRecurring:e.target.checked}))} style={{width:14,height:14}}/>
+                        정기지출 여부
+                      </label>
+                    </div>
+                    <div>
+                      <div style={{fontSize:10,color:'#9ca3af',fontWeight:600,marginBottom:3}}>메모</div>
+                      <input type="text" value={expForm.memo} onChange={e=>setExpForm(f=>({...f,memo:e.target.value}))} style={{...iS,width:'100%'}} placeholder="메모 (선택)"/>
+                    </div>
+                    <div style={{display:'flex',gap:6,paddingBottom:1}}>
+                      <button onClick={editingEid?saveEditExp:addExpense} style={{background:'#1a1a2e',color:'#fff',border:'none',borderRadius:7,padding:'8px 18px',fontSize:12,fontWeight:700,cursor:'pointer',fontFamily:'inherit',whiteSpace:'nowrap'}}>{editingEid?'수정 완료':'추가'}</button>
+                      <button onClick={()=>{setShowAddExp(false);setEditingEid(null);setExpForm(blankExp);}} style={{background:'#f3f4f6',color:'#6b7280',border:'none',borderRadius:7,padding:'8px 12px',fontSize:12,cursor:'pointer',fontFamily:'inherit'}}>취소</button>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {/* 테이블 헤더 */}
+              <div style={{display:'grid',gridTemplateColumns:'100px 120px 1fr 120px 68px 130px 88px 58px 1fr 70px',gap:0,background:'#f9fafb',borderBottom:'1px solid #f3f4f6',padding:'8px 20px'}}>
+                {['지출일','비용 항목','세부 내용','금액','구분','관련 거래처','결제수단','정기','메모',''].map((h,i)=>(
+                  <span key={i} style={{fontSize:10,fontWeight:700,color:'#9ca3af'}}>{h}</span>
+                ))}
+              </div>
+              {selExpenses.length===0&&(
+                <div style={{padding:'36px',textAlign:'center',color:'#9ca3af',fontSize:12}}>
+                  {selMonth.replace('-','년 ')}월 비용 내역이 없습니다.<br/>상단 [+ 비용 추가] 버튼으로 기록을 시작하세요.
+                </div>
+              )}
+              {selExpenses.map((e,idx)=>(
+                <div key={e.expenseId}
+                  style={{borderBottom:idx<selExpenses.length-1?'1px solid #f3f4f6':'none',display:'grid',gridTemplateColumns:'100px 120px 1fr 120px 68px 130px 88px 58px 1fr 70px',gap:8,alignItems:'center',padding:'10px 20px',transition:'background 0.12s'}}
+                  onMouseOver={ev=>ev.currentTarget.style.background='#f9fafb'}
+                  onMouseOut={ev=>ev.currentTarget.style.background=''}>
+                  <span style={{fontSize:11,color:'#6b7280'}}>{e.date?fmtDate(e.date):'—'}</span>
+                  <div style={{display:'flex',alignItems:'center',gap:5}}>
+                    <span style={{width:7,height:7,borderRadius:1,background:CAT_COLORS[e.category]||'#d1d5db',display:'inline-block',flexShrink:0}}/>
+                    <span style={{fontSize:11,fontWeight:600,color:'#374151'}}>{e.category}</span>
+                  </div>
+                  <span style={{fontSize:12,color:'#374151'}}>{e.description}</span>
+                  <span style={{fontSize:12,fontWeight:700,color:'#1a1a2e'}}>{fmtMoney(e.amount)}</span>
+                  <span style={{fontSize:10,fontWeight:700,padding:'2px 6px',borderRadius:4,background:e.type==='고정비'?'#dbeafe':'#fef3c7',color:e.type==='고정비'?'#1d4ed8':'#b45309',whiteSpace:'nowrap'}}>{e.type}</span>
+                  <span style={{fontSize:11,color:'#6b7280'}}>{e.clientId?(clients.find(c=>c.clientId===e.clientId)||{clientName:'—'}).clientName:'—'}</span>
+                  <span style={{fontSize:11,color:'#6b7280'}}>{e.payMethod}</span>
+                  <span style={{fontSize:10,color:e.isRecurring?'#6d28d9':'#d1d5db',fontWeight:e.isRecurring?700:400}}>{e.isRecurring?'🔁':'—'}</span>
+                  <span style={{fontSize:11,color:'#9ca3af',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{e.memo||'—'}</span>
+                  <div style={{display:'flex',gap:3}}>
+                    <button onClick={()=>startEditExp(e)} className="btn-icon" style={{fontSize:13}}>✎</button>
+                    <button onClick={()=>deleteExp(e.expenseId)} className="btn-icon" style={{fontSize:13,color:'#ef4444'}}>✕</button>
+                  </div>
+                </div>
+              ))}
+              {selExpenses.length>0&&(
+                <div style={{background:'#f8fafc',borderTop:'2px solid #e5e7eb',padding:'9px 20px',display:'flex',justifyContent:'flex-end',gap:24,alignItems:'center'}}>
+                  <span style={{fontSize:11,color:'#9ca3af'}}>고정비 <strong style={{color:'#1d4ed8'}}>{fmtMoney(fixedCosts)}</strong></span>
+                  <span style={{fontSize:11,color:'#9ca3af'}}>변동비 <strong style={{color:'#b45309'}}>{fmtMoney(varCosts)}</strong></span>
+                  <span style={{fontSize:12,fontWeight:800,color:'#374151'}}>총비용 {fmtMoney(totalCosts)}</span>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+      </div>
+    );
+  }
+
   function App() {
     const [data,       setData]       = useState(()=>loadData());
     const [view,       setView]       = useState('main');
     const [selId,      setSelId]      = useState(null);
     const [modal,      setModal]      = useState({ open:false });
     const [syncStatus, setSyncStatus] = useState('idle');
+
+    // ── 계약 upsert ──
+    function upsertContract(clientId, fields) {
+      mutate(d => {
+        const existing = (d.contracts||[]).findIndex(c => c.clientId === clientId);
+        let updated;
+        if (existing >= 0) {
+          updated = (d.contracts||[]).map(c => c.clientId === clientId ? { ...c, ...fields } : c);
+        } else {
+          updated = [...(d.contracts||[]), { clientId, ...fields }];
+        }
+        return { ...d, contracts: updated };
+      });
+      fetch(API_URL, {
+        method: 'POST', redirect: 'follow',
+        body: JSON.stringify({ action: 'upsertContract', clientId, ...fields })
+      }).catch(e => console.warn('upsertContract Sheets 오류:', e));
+    }
 
     useEffect(() => { saveData(data); }, [data]);
 
@@ -1799,6 +2639,11 @@
             // 3-way merge: DEFAULT_DATA 순서 기준, Sheets 데이터 우선, localStorage 거래처 보존
             clients:      mergeClients(DEFAULT_DATA.clients, sheetsData.clients || [], prev.clients || []),
             credentials:  prev.credentials ?? DEFAULT_CREDENTIALS,
+            contracts:    (sheetsData.contracts && sheetsData.contracts.length > 0)
+                            ? sheetsData.contracts
+                            : (prev.contracts && prev.contracts.length > 0)
+                              ? prev.contracts
+                              : [],
             commonTasks:  (sheetsData.commonTasks && sheetsData.commonTasks.length > 0)
                             ? sheetsData.commonTasks
                             : (prev.commonTasks && prev.commonTasks.length > 0)
@@ -2076,6 +2921,8 @@
           selectedClient={selectedClient}
           onBack={()=>setView('main')}
           onHome={()=>setView('main')}
+          onDrafts={()=>setView(v => v==='drafts' ? 'main' : 'drafts')}
+          onRevenue={()=>setView(v => v==='revenue' ? 'main' : 'revenue')}
           syncStatus={syncStatus}
           onSync={handleSync}
         />
@@ -2120,6 +2967,14 @@
             </div>
 
           </div>
+        )}
+
+        {view==='drafts' && (
+          <DraftsView />
+        )}
+
+        {view==='revenue' && (
+          <RevenueView data={data} />
         )}
 
         {view==='client' && selectedClient && (
