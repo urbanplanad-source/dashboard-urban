@@ -270,14 +270,209 @@
 
   <!-- MONTH TABS -->
   <div class="month-tabs">
-    <div class="month-tab active" onclick="switchTab('mar')">2026년 3월</div>
-    <div class="month-tab" onclick="switchTab('feb')">2026년 2월</div>
+    <div class="month-tab active" onclick="switchTab('apr',event)">2026년 4월</div>
+    <div class="month-tab" onclick="switchTab('mar',event)">2026년 3월</div>
+    <div class="month-tab" onclick="switchTab('feb',event)">2026년 2월</div>
   </div>
+
+  <!-- ══════════════════════════════════
+       4월 보고서
+  ══════════════════════════════════ -->
+  <div class="report-panel active" id="panel-apr">
+
+    <!-- 요약 배너 -->
+    <div class="summary-band">
+      <div class="band-title">MONTHLY SUMMARY</div>
+      <div class="band-month">2026년 4월 마케팅 결과보고</div>
+      <div class="band-points">
+        <div class="band-point"><div class="dot"></div><p><strong>홈페이지 총 유입 2,386건</strong> — 3월 1,817건 대비 +31% 성장, 직접방문 1,725건(72%) 견고 유지</p></div>
+        <div class="band-point"><div class="dot"></div><p><strong>블로그 본격 운영 시작</strong> — 4월 블로그 5건 발행, 조회수 93→191건 +105% 성장</p></div>
+        <div class="band-point"><div class="dot"></div><p><strong>콘텐츠 6건 발행</strong> — 홈페이지 1건 + 블로그 5건, 노안·백내장·녹내장·소아시력 핵심 키워드 커버</p></div>
+      </div>
+    </div>
+
+    <!-- 핵심 지표 -->
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="mc-label">홈페이지 총 유입</div>
+        <div class="mc-value">2,386</div>
+        <div class="mc-sub">3월 1,817건 대비 +31%↑</div>
+      </div>
+      <div class="metric-card">
+        <div class="mc-label">직접 방문</div>
+        <div class="mc-value">1,725</div>
+        <div class="mc-sub">전체 유입의 72%</div>
+      </div>
+      <div class="metric-card">
+        <div class="mc-label">네이버 검색 유입</div>
+        <div class="mc-value">440</div>
+        <div class="mc-sub">전체 유입의 18%</div>
+      </div>
+      <div class="metric-card highlight">
+        <div class="mc-label">블로그 조회수</div>
+        <div class="mc-value">191</div>
+        <div class="mc-sub">3월 93건 대비 +105%↑</div>
+      </div>
+    </div>
+
+    <!-- 유입 채널 분석 + 블로그 조회수 성장 -->
+    <div class="two-col">
+      <div class="section-card">
+        <div class="section-header">
+          <div class="icon icon-blue">📊</div>
+          <h3>홈페이지 유입 채널 분석</h3>
+        </div>
+        <div class="section-body">
+          <div style="margin-bottom:10px;">
+            <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:4px;"><span>직접방문</span><span style="color:var(--primary);font-weight:800;">1,725 · 72%</span></div>
+            <div style="background:#f0f0f0;border-radius:4px;height:9px;"><div style="background:var(--primary);height:9px;border-radius:4px;width:72%;"></div></div>
+          </div>
+          <div style="margin-bottom:10px;">
+            <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:4px;"><span>네이버 검색</span><span style="color:var(--accent);font-weight:800;">440 · 18%</span></div>
+            <div style="background:#f0f0f0;border-radius:4px;height:9px;"><div style="background:var(--accent);height:9px;border-radius:4px;width:18%;"></div></div>
+          </div>
+          <div style="margin-bottom:10px;">
+            <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:4px;"><span>구글(Google)</span><span style="color:#ea4335;font-weight:800;">90 · 4%</span></div>
+            <div style="background:#f0f0f0;border-radius:4px;height:9px;"><div style="background:#ea4335;height:9px;border-radius:4px;width:4%;"></div></div>
+          </div>
+          <div style="margin-bottom:10px;">
+            <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:4px;"><span>네이버 플레이스</span><span style="color:#c9a96e;font-weight:800;">85 · 4%</span></div>
+            <div style="background:#f0f0f0;border-radius:4px;height:9px;"><div style="background:#c9a96e;height:9px;border-radius:4px;width:4%;"></div></div>
+          </div>
+          <div style="margin-bottom:14px;">
+            <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:4px;"><span>다음·빙·카카오·기타</span><span style="color:var(--muted);font-weight:800;">46 · 2%</span></div>
+            <div style="background:#f0f0f0;border-radius:4px;height:9px;"><div style="background:#a0aec0;height:9px;border-radius:4px;width:2%;"></div></div>
+          </div>
+          <div class="status-item" style="margin-top:4px;">
+            <div class="status-dot dot-blue"></div>
+            <p style="font-size:13px;">m.booking.naver.com 4건 — 네이버 예약 유입 발생, 플레이스 예약 기능 활성화 확인</p>
+          </div>
+          <div style="margin-top:14px;background:#f0f7ff;border-left:4px solid var(--accent);border-radius:0 10px 10px 0;padding:14px 16px;">
+            <div style="font-size:12px;font-weight:800;color:var(--blue);margin-bottom:8px;">💡 직접방문 72%가 높다는 것의 의미</div>
+            <p style="font-size:13px;line-height:1.8;color:var(--text);">직접방문이란 URL을 직접 입력하거나, 즐겨찾기, 앱 등을 통해 들어오는 유입입니다. 비율이 높을수록 <strong>브랜드 인지도와 재방문율이 높다</strong>는 신호입니다. 광고나 검색 없이도 병원을 기억하고 찾아온다는 뜻으로, 기존 환자 재방문·지인 소개·오프라인 입소문이 활발하게 작동하고 있다는 의미입니다. <strong>신규 환자 유입(검색·플레이스)과 함께 기반 트래픽이 탄탄하게 유지되고 있는 긍정적 상태</strong>입니다.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-header">
+          <div class="icon icon-gold">📈</div>
+          <h3>네이버 블로그 조회수 성장</h3>
+        </div>
+        <div class="section-body">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px;">
+            <div style="background:var(--bg);border-radius:12px;padding:16px;text-align:center;border:1px solid var(--border);">
+              <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;">3월 조회수</div>
+              <div style="font-size:30px;font-weight:800;color:var(--primary);">93</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:4px;">블로그 미운영</div>
+            </div>
+            <div style="background:var(--accent-light);border-radius:12px;padding:16px;text-align:center;border:2px solid var(--accent);">
+              <div style="font-size:11px;font-weight:700;color:#1a5a8a;margin-bottom:6px;">4월 조회수</div>
+              <div style="font-size:30px;font-weight:800;color:#1a5a8a;">191</div>
+              <div style="font-size:12px;color:#1a5a8a;margin-top:4px;font-weight:700;">+105% ↑</div>
+            </div>
+          </div>
+          <div style="background:var(--bg);border-radius:10px;padding:14px 16px;margin-bottom:12px;">
+            <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:10px;">주요 유입 키워드</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;">
+              <span style="background:#fff;border:1.5px solid var(--accent);color:var(--blue);font-size:11px;font-weight:700;padding:4px 10px;border-radius:8px;">우성안</span>
+              <span style="background:#fff;border:1.5px solid var(--border);color:var(--text);font-size:11px;font-weight:600;padding:4px 10px;border-radius:8px;">컬러렌즈 눈동자 작아짐</span>
+              <span style="background:#fff;border:1.5px solid var(--border);color:var(--text);font-size:11px;font-weight:600;padding:4px 10px;border-radius:8px;">제주 안과</span>
+              <span style="background:#fff;border:1.5px solid var(--border);color:var(--text);font-size:11px;font-weight:600;padding:4px 10px;border-radius:8px;">제주 마이봄샘</span>
+              <span style="background:#fff;border:1.5px solid var(--border);color:var(--text);font-size:11px;font-weight:600;padding:4px 10px;border-radius:8px;">제주 비문증</span>
+              <span style="background:#fff;border:1.5px solid var(--border);color:var(--text);font-size:11px;font-weight:600;padding:4px 10px;border-radius:8px;">노안 근시 관계</span>
+            </div>
+          </div>
+          <div class="status-item">
+            <div class="status-dot dot-blue"></div>
+            <p style="font-size:13px;">네이버 블로그_PC 18.87% + 모바일 7.55% — 블로그 채널 유입 비중 26%로 즉시 반응</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 콘텐츠 발행 내역 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-blue">📝</div>
+        <h3>콘텐츠 발행 내역 <span class="count-chip">6건</span></h3>
+      </div>
+      <div class="section-body" style="padding:0;">
+        <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;">
+            <thead>
+              <tr>
+                <th style="text-align:left;padding:10px 14px;font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.5px;background:var(--bg);border-bottom:1px solid var(--border);">#</th>
+                <th style="text-align:left;padding:10px 14px;font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.5px;background:var(--bg);border-bottom:1px solid var(--border);">제목</th>
+                <th style="text-align:left;padding:10px 14px;font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.5px;background:var(--bg);border-bottom:1px solid var(--border);">채널</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:11px 14px;font-size:13px;">1</td>
+                <td style="padding:11px 14px;font-size:13px;">제주시 안과, 눈이 시리고 따가운 증상 안구건조증일까요?</td>
+                <td style="padding:11px 14px;"><span style="display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;background:#f3e5f5;color:#6a1b9a;">홈페이지</span></td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:11px 14px;font-size:13px;">2</td>
+                <td style="padding:11px 14px;font-size:13px;">노안은 언제부터 시작될까요? 근시가 있으면 더 늦게 오는 걸까요?</td>
+                <td style="padding:11px 14px;"><span style="display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;background:#fff3e0;color:#e65100;">블로그</span></td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:11px 14px;font-size:13px;">3</td>
+                <td style="padding:11px 14px;font-size:13px;">제주 백내장, 나이 들면 다 생기나요? 수술이 필요한 시점은 따로 있습니다</td>
+                <td style="padding:11px 14px;"><span style="display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;background:#fff3e0;color:#e65100;">블로그</span></td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:11px 14px;font-size:13px;">4</td>
+                <td style="padding:11px 14px;font-size:13px;">제주 안과 정기 검진이 중요한 이유｜조용히 진행되는 녹내장</td>
+                <td style="padding:11px 14px;"><span style="display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;background:#fff3e0;color:#e65100;">블로그</span></td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:11px 14px;font-size:13px;">5</td>
+                <td style="padding:11px 14px;font-size:13px;">제주 소아 시력검사 우리 아이 시력, 안경만 잘 쓰면 될까요?</td>
+                <td style="padding:11px 14px;"><span style="display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;background:#fff3e0;color:#e65100;">블로그</span></td>
+              </tr>
+              <tr>
+                <td style="padding:11px 14px;font-size:13px;">6</td>
+                <td style="padding:11px 14px;font-size:13px;">제주 녹내장, 시야가 서서히 좁아진다면 꼭 알아야 할 것들</td>
+                <td style="padding:11px 14px;"><span style="display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;background:#fff3e0;color:#e65100;">블로그</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="padding:12px 20px;background:var(--bg);font-size:12px;color:var(--muted);">
+          ※ 홈페이지(안구건조증) 1건 + 블로그 5건 — 노안·백내장·녹내장·소아시력 핵심 시술 키워드 고르게 커버
+        </div>
+      </div>
+    </div>
+
+    <!-- 5월 중점방향 -->
+    <div style="background:var(--primary);border-radius:16px;padding:28px 32px;margin-bottom:28px;color:#fff;">
+      <div style="font-size:13px;color:rgba(255,255,255,0.5);font-weight:600;letter-spacing:0.5px;margin-bottom:6px;">NEXT MONTH PLAN</div>
+      <div style="font-size:20px;font-weight:800;color:var(--accent);margin-bottom:20px;">5월 중점 방향</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;">
+        <div style="display:flex;gap:10px;align-items:flex-start;">
+          <div style="width:24px;height:24px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;margin-top:1px;">1</div>
+          <p style="font-size:14px;line-height:1.6;color:rgba(255,255,255,0.85);">블로그 발행 지속 강화 — 검색 키워드 반응 확인된 노안·백내장·녹내장 중심 심화 콘텐츠 확대</p>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start;">
+          <div style="width:24px;height:24px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;margin-top:1px;">2</div>
+          <p style="font-size:14px;line-height:1.6;color:rgba(255,255,255,0.85);">홈페이지 주요 키워드 순위 유지 — 백내장·소아안과·드림렌즈 상위 노출 방어 콘텐츠 지속</p>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start;">
+          <div style="width:24px;height:24px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;margin-top:1px;">3</div>
+          <p style="font-size:14px;line-height:1.6;color:rgba(255,255,255,0.85);">마이봄샘·비문증 등 롱테일 키워드 블로그 확장 — 검색 유입 다각화 및 조회수 추가 성장 목표</p>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /panel-apr -->
 
   <!-- ══════════════════════════════════
        3월 보고서 (동적 로드)
   ══════════════════════════════════ -->
-  <div class="report-panel active" id="panel-mar">
+  <div class="report-panel" id="panel-mar">
 
     <!-- 요약 배너 -->
     <div class="summary-band">
@@ -536,17 +731,15 @@
       '</table></div>';
   }
 
-  function switchTab(id) {
+  function switchTab(id, e) {
     document.querySelectorAll('.month-tab').forEach(t => t.classList.remove('active'));
-    event.currentTarget.classList.add('active');
+    (e ? e.currentTarget : document.querySelector('.month-tab')).classList.add('active');
     document.querySelectorAll('.report-panel').forEach(p => p.classList.remove('active'));
     document.getElementById('panel-' + id).classList.add('active');
-
     if (id === 'mar') loadMarchContent();
   }
 
-  // 페이지 로드 시 3월 탭이 기본이므로 즉시 로드
-  document.addEventListener('DOMContentLoaded', loadMarchContent);
+  document.addEventListener('DOMContentLoaded', () => {});
 </script>
 
 </body>

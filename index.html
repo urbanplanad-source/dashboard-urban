@@ -92,6 +92,20 @@
   const SPEC_CLS   = { '피부과':'피부과','성형외과':'성형외과','안과':'안과','치과':'치과','한의원':'한의원','이사/운송':'이사','기타':'기타' };
 
   // ═══════════════════════════════════════════════
+  //  SAFE STORAGE — Edge Tracking Prevention 우회
+  //  localStorage 차단 시 in-memory fallback 자동 전환
+  // ═══════════════════════════════════════════════
+  const _mem = {};
+  let _lsAvail = (()=>{ try { localStorage.setItem('__t','1'); localStorage.removeItem('__t'); return true; } catch(e){ return false; } })();
+  const safeStorage = {
+    getItem:    (k)      => { if(_lsAvail){ try{ return localStorage.getItem(k); }catch(e){ _lsAvail=false; } } return _mem[k]??null; },
+    setItem:    (k,v)    => { if(_lsAvail){ try{ localStorage.setItem(k,v); return; }catch(e){ _lsAvail=false; } } _mem[k]=v; },
+    removeItem: (k)      => { if(_lsAvail){ try{ localStorage.removeItem(k); return; }catch(e){ _lsAvail=false; } } delete _mem[k]; },
+    get length(){ if(_lsAvail){ try{ return localStorage.length; }catch(e){ _lsAvail=false; } } return Object.keys(_mem).length; },
+    key:        (i)      => { if(_lsAvail){ try{ return localStorage.key(i); }catch(e){ _lsAvail=false; } } return Object.keys(_mem)[i]??null; },
+  };
+
+  // ═══════════════════════════════════════════════
   //  DEFAULT CREDENTIALS (로컬 전용 — Sheets 미동기)
   // ═══════════════════════════════════════════════
   const DEFAULT_CREDENTIALS = {
@@ -127,11 +141,34 @@
     logs: [],
     monthlyJobs: [
       // ── 365경희부부한의원 피부센터 (kyunghee) ──
-      { jobId:'mj-kgh-001', clientId:'kyunghee', title:'네이버 블로그 의학정보 발행', kind:'서브', targetCount:5,    currentCount:3,    unit:'건', dueDate:null, note:'' },
-      { jobId:'mj-kgh-002', clientId:'kyunghee', title:'병원 공식 홈페이지 제작',     kind:'서브', targetCount:null, currentCount:null, unit:null, dueDate:null, note:'진행중' },
-      { jobId:'mj-kgh-003', clientId:'kyunghee', title:'외벽 현수막 디자인 시안 제작',kind:'서브', targetCount:null, currentCount:null, unit:null, dueDate:null, note:'진행중' },
-      { jobId:'mj-kgh-004', clientId:'kyunghee', title:'카카오채널 매장사진 변경',    kind:'서브', targetCount:null, currentCount:null, unit:null, dueDate:null, note:'사진 미수령' },
-      { jobId:'mj-kgh-005', clientId:'kyunghee', title:'카카오 고객센터 매장연결 해제 문의', kind:'서브', targetCount:null, currentCount:null, unit:null, dueDate:null, note:'답변 대기 중' },
+      // [완료] 3월
+      { jobId:'mj-kgh-001', clientId:'kyunghee', title:'네이버 블로그 의학정보 발행',     kind:'서브', targetCount:5,    currentCount:5,    unit:'건',  dueDate:null, note:'완료 (5/5건)' },
+      { jobId:'mj-kgh-010', clientId:'kyunghee', title:'네이버 플레이스 사진·정보 업데이트', kind:'서브', targetCount:null, currentCount:null, unit:null, dueDate:null, note:'완료 (3/9)' },
+      { jobId:'mj-kgh-011', clientId:'kyunghee', title:'명함 디자인 제작 및 인쇄 발주',    kind:'서브', targetCount:null, currentCount:null, unit:null, dueDate:null, note:'완료 (500장, 3/12)' },
+      { jobId:'mj-kgh-012', clientId:'kyunghee', title:'가오픈 이벤트 안내문 제작 2종',    kind:'서브', targetCount:null, currentCount:null, unit:null, dueDate:null, note:'완료 (3/16)' },
+      { jobId:'mj-kgh-013', clientId:'kyunghee', title:'시술 주의사항 안내문 디자인 8종',  kind:'서브', targetCount:null, currentCount:null, unit:null, dueDate:null, note:'완료 (3/18-19)' },
+      { jobId:'mj-kgh-014', clientId:'kyunghee', title:'카카오맵 피부센터 매장정보 생성',  kind:'서브', targetCount:null, currentCount:null, unit:null, dueDate:null, note:'완료 (3/18)' },
+      { jobId:'mj-kgh-015', clientId:'kyunghee', title:'네이버 리뷰 이벤트 안내문 3종',   kind:'서브', targetCount:null, currentCount:null, unit:null, dueDate:null, note:'완료 (3/24)' },
+      { jobId:'mj-kgh-016', clientId:'kyunghee', title:'외벽 현수막 시안 제작 (화북/조천)', kind:'서브', targetCount:null, currentCount:null, unit:null, dueDate:null, note:'완료 → 제스트 전달 (3/23)' },
+      { jobId:'mj-kgh-017', clientId:'kyunghee', title:'카카오채널 웰컴이미지·메시지 변경', kind:'서브', targetCount:null, currentCount:null, unit:null, dueDate:null, note:'완료 (3/30)' },
+      { jobId:'mj-kgh-018', clientId:'kyunghee', title:'4월 오픈 이벤트 안내문 PDF 4종',   kind:'서브', targetCount:null, currentCount:null, unit:null, dueDate:null, note:'완료 (3/30)' },
+      // [완료] 4월
+      { jobId:'mj-kgh-020', clientId:'kyunghee', title:'3월 업무 보고서 전달',              kind:'서브', targetCount:null, currentCount:null, unit:null, dueDate:null, note:'완료 (4/2)' },
+      { jobId:'mj-kgh-021', clientId:'kyunghee', title:'가격표 엑셀 파일 제작',             kind:'서브', targetCount:null, currentCount:null, unit:null, dueDate:null, note:'완료 (4/3-10, 최종본 4/8)' },
+      { jobId:'mj-kgh-022', clientId:'kyunghee', title:'전단지 디자인 제작 (삼화지구 배포용)', kind:'서브', targetCount:null, currentCount:null, unit:null, dueDate:null, note:'완료 (4/6)' },
+      { jobId:'mj-kgh-023', clientId:'kyunghee', title:'네이버 플레이스 피부클리닉 명칭 변경', kind:'서브', targetCount:null, currentCount:null, unit:null, dueDate:null, note:'완료 (4/7)' },
+      { jobId:'mj-kgh-024', clientId:'kyunghee', title:'블로그 전화번호 오류 수정',         kind:'서브', targetCount:null, currentCount:null, unit:null, dueDate:null, note:'완료 (4/11)' },
+      { jobId:'mj-kgh-025', clientId:'kyunghee', title:'맘카페 댓글 작업 및 플레이스 노출 세팅', kind:'서브', targetCount:null, currentCount:null, unit:null, dueDate:null, note:'완료 (4/14)' },
+      { jobId:'mj-kgh-026', clientId:'kyunghee', title:'카톡채널 추가 안내문 제작',         kind:'서브', targetCount:null, currentCount:null, unit:null, dueDate:null, note:'완료 (4/16)' },
+      { jobId:'mj-kgh-027', clientId:'kyunghee', title:'네이버 리뷰 이벤트 시안 배경색 변경 3종', kind:'서브', targetCount:null, currentCount:null, unit:null, dueDate:null, note:'완료 (4/16)' },
+      { jobId:'mj-kgh-028', clientId:'kyunghee', title:'홈페이지 1차 구축 완료 (도메인+SSL)', kind:'서브', targetCount:null, currentCount:null, unit:null, dueDate:null, note:'완료 (4/21, 365kbhani.com)' },
+      { jobId:'mj-kgh-029', clientId:'kyunghee', title:'당근마켓 계정 운영자 등록',         kind:'서브', targetCount:null, currentCount:null, unit:null, dueDate:null, note:'완료 (4/23)' },
+      { jobId:'mj-kgh-030', clientId:'kyunghee', title:'의료배상보험 서류 수령 및 외국인환자 유치업 신청 준비', kind:'서브', targetCount:null, currentCount:null, unit:null, dueDate:null, note:'완료 (4/28)' },
+      // [진행중]
+      { jobId:'mj-kgh-002', clientId:'kyunghee', title:'홈페이지 세부 시술 페이지 추가',    kind:'서브', targetCount:null, currentCount:null, unit:null, dueDate:null, note:'진행중' },
+      { jobId:'mj-kgh-004', clientId:'kyunghee', title:'카카오채널 매장사진 변경',          kind:'서브', targetCount:null, currentCount:null, unit:null, dueDate:null, note:'사진 미수령 — 대기' },
+      { jobId:'mj-kgh-031', clientId:'kyunghee', title:'키워드광고 심의 완료 후 재개',      kind:'서브', targetCount:null, currentCount:null, unit:null, dueDate:null, note:'심의 진행중 (한의사협회 심의 11만원)' },
+      { jobId:'mj-kgh-032', clientId:'kyunghee', title:'플레이스 광고 심의 및 리뉴얼',      kind:'서브', targetCount:null, currentCount:null, unit:null, dueDate:null, note:'심의만료 광고 1건 리뉴얼 필요' },
     ],
     postLogs: [],
     commonTasks: [],
@@ -172,7 +209,7 @@
 
   function loadData() {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
+      const raw = safeStorage.getItem(STORAGE_KEY);
       if(raw) {
         const s = JSON.parse(raw);
         return {
@@ -193,7 +230,7 @@
   }
 
   function saveData(data) {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
+    try { safeStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
     window.dashboardData = data;
     window.dashboardAPI = {
       url: API_URL,
@@ -263,6 +300,11 @@
         isRecurring: e.isRecurring === true || e.isRecurring === 'true' || e.isRecurring === 'TRUE',
       })),
       drafts: (d.drafts || []),
+      reviewTargets: (d.reviewTargets || []).map(r => ({
+        ...r,
+        savedVisitorReviewCount: Number(r.savedVisitorReviewCount) || 0,
+        isActive: r.isActive === true || r.isActive === 'TRUE' || r.isActive === 'true' || r.isActive === '1',
+      })),
     };
   }
 
@@ -1356,6 +1398,10 @@
   //  CLIENT CARD (메인 뷰)
   // ═══════════════════════════════════════════════
   function ClientCard({ client, data, onSelect }) {
+    // ── 네이버 방문자 리뷰 수 (reviewTargets에서 clientId 매칭) ──
+    const reviewTarget = (data.reviewTargets||[]).find(r => r.clientId === client.clientId);
+    const visitorReviewCount = reviewTarget ? reviewTarget.savedVisitorReviewCount : null;
+
     const allJobs    = (data.monthlyJobs||[]).filter(j => j.clientId===client.clientId);
     const essential  = allJobs.filter(j => j.kind==='필수');
     const rankJobs   = allJobs.filter(j => j.kind==='순위');
@@ -1492,7 +1538,14 @@
 
         {/* Footer */}
         <div style={{padding:'10px 20px 14px',borderTop:'1px solid #f9fafb',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-          <span style={{fontSize:10,color:'#9ca3af'}}>업데이트 {fmtDate(client.lastUpdated)}</span>
+          <div style={{display:'flex',alignItems:'center',gap:8}}>
+            <span style={{fontSize:10,color:'#9ca3af'}}>업데이트 {fmtDate(client.lastUpdated)}</span>
+            {visitorReviewCount != null && (
+              <span style={{fontSize:10,fontWeight:700,color:'#059669',background:'#d1fae5',padding:'2px 7px',borderRadius:20,letterSpacing:'-0.2px'}}>
+                ⭐ 방문자리뷰 {Number(visitorReviewCount).toLocaleString('ko-KR')}
+              </span>
+            )}
+          </div>
           {client.reportFile ? (
             <a href={client.reportFile} target="_blank" rel="noopener" onClick={e=>e.stopPropagation()}
               style={{fontSize:11,fontWeight:700,color:'#1a1a2e',background:'#f0e6d3',padding:'4px 10px',borderRadius:6,textDecoration:'none'}}>
@@ -1579,6 +1632,41 @@
 
     const specCls = SPEC_CLS[client.specialty]||'기타';
     const emoji   = SPEC_EMOJI[client.specialty]||'🏢';
+
+    // ── 상담 내역 (btskin / belrmon 전용, localStorage) ──
+    const CONSULT_CLIENTS = ['btskin', 'belrmon'];
+    const CONSULT_CH = ['위챗', '라인', '인스타'];
+    const CONSULT_CH_COLOR = { '위챗':'#16a34a', '라인':'#65a30d', '인스타':'#9333ea' };
+    const CONSULT_KEY = 'consult-v1-' + client.clientId;
+
+    const [consultList,    setConsultList]    = useState(() => {
+      try { return JSON.parse(safeStorage.getItem(CONSULT_KEY) || '[]'); } catch { return []; }
+    });
+    const [consultFilter,  setConsultFilter]  = useState('');
+    const [consultExpId,   setConsultExpId]   = useState(null);
+    const [showConsultAdd, setShowConsultAdd] = useState(false);
+    const [consultForm,    setConsultForm]    = useState(() => {
+      const now = new Date(); const kst = new Date(now.getTime() + 9*60*60*1000);
+      return { date: kst.toISOString().slice(0,10), channel:'위챗', nickname:'', content:'' };
+    });
+
+    function saveConsults(list) {
+      setConsultList(list);
+      safeStorage.setItem(CONSULT_KEY, JSON.stringify(list));
+    }
+    function addConsult() {
+      if (!consultForm.nickname.trim()) { alert('닉네임을 입력하세요.'); return; }
+      if (!consultForm.content.trim())  { alert('대화 내역을 입력하세요.'); return; }
+      const entry = { ...consultForm, id: 'cs-' + Date.now().toString(36), createdAt: new Date().toISOString() };
+      saveConsults([entry, ...consultList]);
+      const now = new Date(); const kst = new Date(now.getTime() + 9*60*60*1000);
+      setConsultForm({ date: kst.toISOString().slice(0,10), channel:'위챗', nickname:'', content:'' });
+      setShowConsultAdd(false);
+    }
+    function deleteConsult(id) {
+      if (!confirm('이 상담 내역을 삭제하시겠습니까?')) return;
+      saveConsults(consultList.filter(c => c.id !== id));
+    }
 
     // 발행 글 인라인 편집 상태
     const [editingPost,    setEditingPost]    = useState(null);
@@ -1772,6 +1860,119 @@
             })}
           </div>
         </div>
+
+        {/* ── 상담 내역 (btskin / belrmon 전용) ── */}
+        {CONSULT_CLIENTS.includes(client.clientId) && (
+          <div style={{marginBottom:24}}>
+            {/* 섹션 헤더 */}
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12}}>
+              <div className="section-title" style={{margin:0}}>💬 채널별 상담 내역</div>
+              <button onClick={()=>setShowConsultAdd(v=>!v)}
+                style={{background: showConsultAdd?'#6366f1':'rgba(99,102,241,0.1)', color: showConsultAdd?'#fff':'#6366f1', border:'1px solid rgba(99,102,241,0.3)', borderRadius:7, padding:'5px 14px', fontSize:12, fontWeight:700, cursor:'pointer', fontFamily:'inherit'}}>
+                {showConsultAdd ? '✕ 닫기' : '+ 추가'}
+              </button>
+            </div>
+
+            {/* 추가 폼 */}
+            {showConsultAdd && (
+              <div style={{background:'#f9fafb', border:'1px solid #e5e7eb', borderRadius:10, padding:'16px', marginBottom:12}}>
+                <div style={{display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:8, marginBottom:8}}>
+                  <div>
+                    <div style={{fontSize:11,fontWeight:600,color:'#6b7280',marginBottom:3}}>날짜</div>
+                    <input type="date" value={consultForm.date}
+                      onChange={e=>setConsultForm(f=>({...f,date:e.target.value}))}
+                      style={{width:'100%',boxSizing:'border-box',padding:'7px 10px',border:'1px solid #d1d5db',borderRadius:6,fontSize:13,fontFamily:'inherit',outline:'none'}} />
+                  </div>
+                  <div>
+                    <div style={{fontSize:11,fontWeight:600,color:'#6b7280',marginBottom:3}}>채널</div>
+                    <select value={consultForm.channel} onChange={e=>setConsultForm(f=>({...f,channel:e.target.value}))}
+                      style={{width:'100%',boxSizing:'border-box',padding:'7px 10px',border:'1px solid #d1d5db',borderRadius:6,fontSize:13,fontFamily:'inherit',outline:'none',background:'#fff'}}>
+                      {CONSULT_CH.map(ch=><option key={ch} value={ch}>{ch}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <div style={{fontSize:11,fontWeight:600,color:'#6b7280',marginBottom:3}}>상대방 닉네임</div>
+                    <input value={consultForm.nickname} onChange={e=>setConsultForm(f=>({...f,nickname:e.target.value}))}
+                      placeholder="닉네임 또는 이름"
+                      style={{width:'100%',boxSizing:'border-box',padding:'7px 10px',border:'1px solid #d1d5db',borderRadius:6,fontSize:13,fontFamily:'inherit',outline:'none'}} />
+                  </div>
+                </div>
+                <div style={{marginBottom:10}}>
+                  <div style={{fontSize:11,fontWeight:600,color:'#6b7280',marginBottom:3}}>대화 내역</div>
+                  <textarea value={consultForm.content} onChange={e=>setConsultForm(f=>({...f,content:e.target.value}))}
+                    placeholder="대화 내역 전체를 붙여넣으세요"
+                    style={{width:'100%',boxSizing:'border-box',padding:'9px 10px',border:'1px solid #d1d5db',borderRadius:6,fontSize:12,fontFamily:'inherit',outline:'none',minHeight:100,resize:'vertical',lineHeight:1.6}} />
+                </div>
+                <div style={{display:'flex',gap:8,justifyContent:'flex-end'}}>
+                  <button onClick={()=>{setShowConsultAdd(false);}}
+                    style={{padding:'7px 16px',background:'#f3f4f6',border:'none',borderRadius:6,fontSize:12,fontWeight:600,color:'#374151',cursor:'pointer',fontFamily:'inherit'}}>취소</button>
+                  <button onClick={addConsult}
+                    style={{padding:'7px 18px',background:'#6366f1',border:'none',borderRadius:6,fontSize:12,fontWeight:700,color:'#fff',cursor:'pointer',fontFamily:'inherit'}}>저장</button>
+                </div>
+              </div>
+            )}
+
+            {/* 채널 필터 */}
+            {consultList.length > 0 && (
+              <div style={{display:'flex',gap:6,marginBottom:10,flexWrap:'wrap'}}>
+                <button onClick={()=>setConsultFilter('')}
+                  style={{background:consultFilter===''?'#1a1a2e':'#f3f4f6', color:consultFilter===''?'#fff':'#6b7280', border:'none', borderRadius:20, padding:'4px 12px', fontSize:11, fontWeight:600, cursor:'pointer', fontFamily:'inherit'}}>
+                  전체 {consultList.length}
+                </button>
+                {CONSULT_CH.map(ch=>{
+                  const cnt = consultList.filter(c=>c.channel===ch).length;
+                  if (!cnt) return null;
+                  const col = CONSULT_CH_COLOR[ch];
+                  return (
+                    <button key={ch} onClick={()=>setConsultFilter(ch===consultFilter?'':ch)}
+                      style={{background:consultFilter===ch?col:'#f3f4f6', color:consultFilter===ch?'#fff':'#6b7280', border:'none', borderRadius:20, padding:'4px 12px', fontSize:11, fontWeight:600, cursor:'pointer', fontFamily:'inherit'}}>
+                      {ch} {cnt}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* 목록 */}
+            {consultList.length === 0 ? (
+              <div style={{textAlign:'center',padding:'28px 0',color:'#9ca3af',fontSize:12,border:'1px dashed #e5e7eb',borderRadius:10}}>
+                아직 저장된 상담 내역이 없습니다
+              </div>
+            ) : (
+              <div style={{display:'flex',flexDirection:'column',gap:8}}>
+                {consultList
+                  .filter(c=>!consultFilter||c.channel===consultFilter)
+                  .map(entry=>{
+                    const col = CONSULT_CH_COLOR[entry.channel]||'#6b7280';
+                    const isExp = consultExpId === entry.id;
+                    return (
+                      <div key={entry.id} style={{background:'#fff',border:'1px solid #e5e7eb',borderRadius:10,overflow:'hidden'}}>
+                        {/* 카드 헤더 */}
+                        <div style={{display:'flex',alignItems:'center',gap:10,padding:'11px 14px',cursor:'pointer'}}
+                          onClick={()=>setConsultExpId(isExp?null:entry.id)}>
+                          <span style={{background:col+'1a',color:col,fontSize:11,fontWeight:700,borderRadius:10,padding:'2px 9px',flexShrink:0}}>{entry.channel}</span>
+                          <span style={{fontSize:13,fontWeight:700,color:'#1a1a2e',flex:1}}>{entry.nickname}</span>
+                          <span style={{fontSize:11,color:'#9ca3af',flexShrink:0}}>{entry.date}</span>
+                          <span style={{fontSize:11,color:'#9ca3af',marginLeft:4}}>{isExp?'▲':'▼'}</span>
+                          <button onClick={e=>{e.stopPropagation();deleteConsult(entry.id);}}
+                            style={{background:'none',border:'none',color:'#d1d5db',fontSize:13,cursor:'pointer',padding:'0 2px',lineHeight:1,flexShrink:0}}
+                            onMouseOver={e=>e.target.style.color='#ef4444'}
+                            onMouseOut={e=>e.target.style.color='#d1d5db'}>✕</button>
+                        </div>
+                        {/* 내용 펼침 */}
+                        {isExp && (
+                          <div style={{padding:'0 14px 14px',borderTop:'1px solid #f3f4f6'}}>
+                            <pre style={{margin:'10px 0 0',fontFamily:'inherit',fontSize:12,lineHeight:1.75,color:'#374151',whiteSpace:'pre-wrap',wordBreak:'break-word'}}>{entry.content}</pre>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })
+                }
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Deliverables */}
         {cDelivs.length > 0 && (
@@ -2050,9 +2251,9 @@
 
   const REV_KEY = 'rev-data-v1';
   function loadRevData() {
-    try { return JSON.parse(localStorage.getItem(REV_KEY)) || getDefaultRevData(); } catch { return getDefaultRevData(); }
+    try { return JSON.parse(safeStorage.getItem(REV_KEY)) || getDefaultRevData(); } catch { return getDefaultRevData(); }
   }
-  function saveRevData(d) { try { localStorage.setItem(REV_KEY, JSON.stringify(d)); } catch {} }
+  function saveRevData(d) { try { safeStorage.setItem(REV_KEY, JSON.stringify(d)); } catch {} }
 
   const EXPENSE_CATS = ['인건비','외주비','광고비','촬영/디자인 제작비','툴/구독료','사무운영비','세무/수수료','기타비용'];
   const PAY_METHODS  = ['카드','계좌이체','현금','기타'];
@@ -2631,78 +2832,122 @@
       setSyncStatus('loading');
       fetchFromSheets()
         .then(sheetsData => {
-          // credentials는 로컬 전용 — Sheets 동기화 시 덮어쓰지 않음
-          // clients: DEFAULT_DATA 순서 + reportFile을 유지하면서 Sheets 데이터로 업데이트
-          // commonTasks: Sheets가 비어있으면 로컬 값 유지 (API 호출 실패로 Sheets에 없는 경우 대비)
-          mutate(prev => ({
-            ...sheetsData,
-            // 3-way merge: DEFAULT_DATA 순서 기준, Sheets 데이터 우선, localStorage 거래처 보존
-            clients:      mergeClients(DEFAULT_DATA.clients, sheetsData.clients || [], prev.clients || []),
-            credentials:  prev.credentials ?? DEFAULT_CREDENTIALS,
-            contracts:    (sheetsData.contracts && sheetsData.contracts.length > 0)
-                            ? sheetsData.contracts
-                            : (prev.contracts && prev.contracts.length > 0)
-                              ? prev.contracts
-                              : [],
-            commonTasks:  (sheetsData.commonTasks && sheetsData.commonTasks.length > 0)
-                            ? sheetsData.commonTasks
-                            : (prev.commonTasks && prev.commonTasks.length > 0)
-                              ? prev.commonTasks
-                              : sheetsData.commonTasks,
-            // 동기화: currentCount·note는 Sheets 값 우선 (source of truth)
-            // dueDate만 로컬 값 보존 (UI에서 편집 중일 수 있음)
-            monthlyJobs: (sheetsData.monthlyJobs && sheetsData.monthlyJobs.length > 0)
-              ? sheetsData.monthlyJobs.map(sj => {
-                  const lj = (prev.monthlyJobs || []).find(j => j.jobId === sj.jobId);
-                  // currentCount·note는 Sheets 값 사용 (항상 최신 반영)
-                  // dueDate는 로컬 편집 중인 값 보존
-                  return lj ? { ...sj, dueDate: lj.dueDate ?? sj.dueDate } : sj;
-                })
-              : (prev.monthlyJobs && prev.monthlyJobs.length > 0)
-                ? prev.monthlyJobs
-                : sheetsData.monthlyJobs,
-          }));
+          mutate(prev => {
+            // ── 안전 병합 헬퍼: Sheets가 비어있으면 반드시 로컬 값 유지 ──
+            const safeArr = (sheetsArr, prevArr) =>
+              (sheetsArr && sheetsArr.length > 0) ? sheetsArr
+              : (prevArr  && prevArr.length  > 0) ? prevArr
+              : [];
+
+            return {
+              ...prev,  // ← 로컬 전체를 base로 (Sheets 누락 필드로 로컬 덮어쓰기 방지)
+
+              // 거래처: DEFAULT_DATA 순서 + Sheets + 로컬 3-way merge
+              clients:     mergeClients(DEFAULT_DATA.clients, sheetsData.clients || [], prev.clients || []),
+
+              // 계정정보: 로컬 전용 — 절대 Sheets로 교체 안 함
+              credentials: prev.credentials ?? DEFAULT_CREDENTIALS,
+
+              // 계약: Sheets 우선, 비어있으면 로컬 유지
+              contracts:   safeArr(sheetsData.contracts, prev.contracts),
+
+              // 공통업무: Sheets 우선, 비어있으면 로컬 유지
+              commonTasks: safeArr(sheetsData.commonTasks, prev.commonTasks),
+
+              // 발행 글: Sheets 우선, 비어있으면 로컬 유지 (Sheets 초기화로 날아가지 않도록)
+              postLogs:    safeArr(sheetsData.postLogs, prev.postLogs),
+
+              // 로그: Sheets 우선, 비어있으면 로컬 유지
+              logs:        safeArr(sheetsData.logs, prev.logs),
+
+              // 비용: Sheets 우선, 비어있으면 로컬 유지
+              expenses:    safeArr(sheetsData.expenses, prev.expenses),
+
+              // 글 보관함: Sheets 우선, 비어있으면 로컬 유지
+              drafts:      safeArr(sheetsData.drafts, prev.drafts),
+
+              // 방문자 리뷰 모니터링: Sheets 우선, 비어있으면 로컬 유지
+              reviewTargets: safeArr(sheetsData.reviewTargets, prev.reviewTargets),
+
+              // 월별 업무: Sheets 값 우선 + 로컬 dueDate 보존
+              // ※ currentCount는 Sheets와 로컬 중 더 큰 값 사용 (Sheets가 덜 반영된 경우 대비)
+              // ※ DEFAULT_DATA.monthlyJobs에만 있는 항목도 누락 없이 추가 (코드 업데이트 반영)
+              monthlyJobs: (()=>{
+                const base = (sheetsData.monthlyJobs && sheetsData.monthlyJobs.length > 0)
+                  ? sheetsData.monthlyJobs.map(sj => {
+                      const lj = (prev.monthlyJobs || []).find(j => j.jobId === sj.jobId);
+                      if (!lj) return sj;
+                      return {
+                        ...sj,
+                        dueDate:      lj.dueDate ?? sj.dueDate,
+                        currentCount: (sj.currentCount != null && lj.currentCount != null)
+                          ? Math.max(Number(sj.currentCount), Number(lj.currentCount))
+                          : sj.currentCount ?? lj.currentCount,
+                      };
+                    })
+                  : (prev.monthlyJobs && prev.monthlyJobs.length > 0)
+                    ? prev.monthlyJobs
+                    : [];
+                // DEFAULT_DATA에만 있는 jobId를 base에 추가 (업무 누락 방지)
+                const baseIds = base.map(j => j.jobId);
+                const extras  = DEFAULT_DATA.monthlyJobs.filter(dj => !baseIds.includes(dj.jobId));
+                return [...base, ...extras];
+              })(),
+            };
+          });
+
+          // ── 동기화 완료 시 로컬 자동 백업 (IndexedDB) ──
+          try {
+            const backupKey = 'urbanplanad_backup_' + nowMonth();
+            const currentRaw = safeStorage.getItem(STORAGE_KEY);
+            if (currentRaw) safeStorage.setItem(backupKey, currentRaw);
+          } catch(e) {}
+
           setSyncStatus('ok');
         })
         .catch(e => { console.error('Sheets 연동 오류:', e); setSyncStatus('error'); });
     }, []);
 
-    // ── 월별 자동 초기화 ──
+    // ── 월별 초기화 (자동 실행 제거 — 수동 버튼으로만 실행) ──
+    // ※ 자동 초기화 비활성화: 월 전환 시 데이터 소실 방지
+    // ※ 설정 탭 > "다음 달 초기화" 버튼으로만 실행 가능
     useEffect(() => {
-      const lastMonth = localStorage.getItem(MONTH_KEY);
-      const curMonth  = nowMonth();
-      if (lastMonth && lastMonth !== curMonth) {
-        // 완료된 서브업무 수집 → Sheets에서 삭제
-        const savedData = loadData();
-        const completedSubs = (savedData.monthlyJobs || []).filter(
-          j => j.kind === '서브' && j.note === '완료'
-        );
-        completedSubs.forEach(j => {
-          fetch(API_URL, {
-            method: 'POST', redirect: 'follow',
-            body: JSON.stringify({ action: 'deleteSubJob', jobId: j.jobId })
-          }).catch(() => {});
-        });
+      // MONTH_KEY만 현재 월로 업데이트 (자동 초기화 없음)
+      safeStorage.setItem(MONTH_KEY, nowMonth());
+    }, []);
 
-        // 새 달 → 카운트/노트 초기화 + 완료된 서브업무 제거
-        setData(prev => ({
-          ...prev,
-          monthlyJobs: prev.monthlyJobs
-            .filter(j => !(j.kind === '서브' && j.note === '완료'))
-            .map(j => ({
-              ...j,
-              currentCount: j.targetCount != null ? 0 : j.currentCount,
-              note:         j.note === '완료' ? '' : j.note,
-            })),
-          postLogs: []
-        }));
+    // ── 수동 월별 초기화 함수 (설정 탭 버튼에서 호출) ──
+    function handleMonthlyReset() {
+      if (!confirm('⚠️ 이달 업무를 다음 달 기준으로 초기화합니다.\n\n완료된 서브업무가 삭제되고 카운트가 리셋됩니다.\n계속하시겠습니까?')) return;
+      if (!confirm('정말 초기화하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) return;
+
+      const completedSubs = (data.monthlyJobs || []).filter(
+        j => j.kind === '서브' && j.note === '완료'
+      );
+      completedSubs.forEach(j => {
         fetch(API_URL, {
           method: 'POST', redirect: 'follow',
-          body: JSON.stringify({ action: 'monthlyReset', month: curMonth })
+          body: JSON.stringify({ action: 'deleteSubJob', jobId: j.jobId })
         }).catch(() => {});
-      }
-      localStorage.setItem(MONTH_KEY, curMonth);
-    }, []);
+      });
+
+      mutate(prev => ({
+        ...prev,
+        monthlyJobs: prev.monthlyJobs
+          .filter(j => !(j.kind === '서브' && j.note === '완료'))
+          .map(j => ({
+            ...j,
+            currentCount: j.targetCount != null ? 0 : j.currentCount,
+            note:         j.note === '완료' ? '' : j.note,
+          })),
+        postLogs: []
+      }));
+      fetch(API_URL, {
+        method: 'POST', redirect: 'follow',
+        body: JSON.stringify({ action: 'monthlyReset', month: nowMonth() })
+      }).catch(() => {});
+      alert('초기화 완료!');
+    }
 
     // 페이지 로드 시 자동 동기화 (loading 상태 즉시 표시)
     useEffect(() => { setSyncStatus('loading'); handleSync(); }, []);
@@ -2999,11 +3244,18 @@
         {/* 관리 버튼 */}
         <div style={{position:'fixed',bottom:20,right:20,display:'flex',flexDirection:'column',gap:8,alignItems:'flex-end'}}>
           {view==='main' && (
-            <button
-              style={{background:'rgba(26,26,46,0.85)',color:'rgba(255,255,255,0.6)',border:'none',borderRadius:20,padding:'6px 14px',fontSize:11,cursor:'pointer',fontFamily:'inherit'}}
-              onClick={()=>{ if(confirm('⚠️ 로컬 데이터를 기본값으로 초기화합니다. 계속하시겠습니까?') && confirm('정말 초기화하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) { localStorage.removeItem(STORAGE_KEY); setData({...DEFAULT_DATA}); } }}>
-              ↺ 데이터 초기화
-            </button>
+            <>
+              <button
+                style={{background:'#7c3aed',color:'#fff',border:'none',borderRadius:20,padding:'6px 14px',fontSize:11,cursor:'pointer',fontFamily:'inherit'}}
+                onClick={handleMonthlyReset}>
+                📅 다음 달 초기화
+              </button>
+              <button
+                style={{background:'rgba(26,26,46,0.85)',color:'rgba(255,255,255,0.6)',border:'none',borderRadius:20,padding:'6px 14px',fontSize:11,cursor:'pointer',fontFamily:'inherit'}}
+                onClick={()=>{ if(confirm('⚠️ 로컬 데이터를 기본값으로 초기화합니다. 계속하시겠습니까?') && confirm('정말 초기화하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) { safeStorage.removeItem(STORAGE_KEY); setData({...DEFAULT_DATA}); } }}>
+                ↺ 데이터 초기화
+              </button>
+            </>
           )}
           <button
             style={{background:'#c9a96e',color:'#fff',border:'none',borderRadius:20,padding:'6px 14px',fontSize:11,cursor:'pointer',fontFamily:'inherit'}}
@@ -3012,10 +3264,35 @@
               const blob=new Blob([json],{type:'application/json'});
               const a=document.createElement('a');
               a.href=URL.createObjectURL(blob);
-              a.download='dashboard_data.json';
+              a.download=`dashboard_backup_${nowMonth()}.json`;
               a.click();
             }}>
-            ⬇ JSON 내보내기
+            ⬇ 백업 저장
+          </button>
+          <button
+            style={{background:'#0f766e',color:'#fff',border:'none',borderRadius:20,padding:'6px 14px',fontSize:11,cursor:'pointer',fontFamily:'inherit'}}
+            onClick={()=>{
+              // 이전 달 백업 목록 표시
+              const backups = [];
+              for(let i=0;i<safeStorage.length;i++){
+                const k=safeStorage.key(i);
+                if(k && k.startsWith('urbanplanad_backup_')) backups.push(k);
+              }
+              backups.sort().reverse();
+              if(backups.length===0){ alert('저장된 자동 백업이 없습니다.\n동기화가 한 번 이상 완료된 후 자동 백업이 생성됩니다.'); return; }
+              const list = backups.map((k,i)=>`${i+1}. ${k.replace('urbanplanad_backup_','')}`).join('\n');
+              const choice = prompt(`복원할 백업을 선택하세요 (번호 입력):\n\n${list}`);
+              const idx = parseInt(choice)-1;
+              if(isNaN(idx)||idx<0||idx>=backups.length){ alert('취소되었습니다.'); return; }
+              if(!confirm(`[${backups[idx].replace('urbanplanad_backup_','')}] 백업으로 복원합니까?\n현재 데이터가 덮어씌워집니다.`)) return;
+              const raw=safeStorage.getItem(backups[idx]);
+              if(!raw){ alert('백업 데이터를 읽을 수 없습니다.'); return; }
+              safeStorage.setItem(STORAGE_KEY, raw);
+              setData(JSON.parse(raw));
+              alert('✅ 복원 완료! 페이지를 새로고침합니다.');
+              location.reload();
+            }}>
+            ↩ 백업 복원
           </button>
         </div>
       </div>

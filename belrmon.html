@@ -127,14 +127,352 @@
 <main class="container">
   <p class="timeline-label">보고서 목록</p>
   <div class="month-tabs">
-    <div class="month-tab active" onclick="switchTab('mar', event)">2026년 3월</div>
+    <div class="month-tab active" onclick="switchTab('apr', event)">2026년 4월</div>
+    <div class="month-tab" onclick="switchTab('mar', event)">2026년 3월</div>
     <div class="month-tab" onclick="switchTab('feb', event)">2026년 2월</div>
   </div>
 
   <!-- ═══════════════════════════════════════
+       4월 보고서
+  ═══════════════════════════════════════ -->
+  <div class="report-panel active" id="panel-apr">
+
+    <!-- 요약 배너 -->
+    <div class="summary-band">
+      <div class="band-title">MONTHLY SUMMARY</div>
+      <div class="band-month">2026년 4월 마케팅 결과보고</div>
+      <div class="band-points">
+        <div class="band-point"><div class="dot"></div><p><strong>외국인 다채널 실모객 20건</strong> — 라인 13건·인스타 7건, 예약 확정 2건(YURI·Mini) 직접 전환</p></div>
+        <div class="band-point"><div class="dot"></div><p><strong>크롬 확장프로그램 개발 완료</strong> — 카카오·위챗 외국어 상담 인프라 구축, 실무 적용 단계 진입</p></div>
+        <div class="band-point"><div class="dot"></div><p><strong>네이버 1위 기조 유지</strong> — 제주성형외과 키워드 상위권 방어, 직접유입 중심 브랜드 트래픽 지속</p></div>
+        <div class="band-point"><div class="dot"></div><p><strong>리프팅·리쥬란 문의 집중</strong> — 울쎄라프라임·Thermage·리쥬란 반복 문의로 프리미엄 시술 수요 확인</p></div>
+      </div>
+    </div>
+
+    <!-- 핵심 지표 -->
+    <div class="metrics-grid">
+      <div class="metric-card highlight">
+        <div class="mc-label">다채널 외국인 상담</div>
+        <div class="mc-value">20건</div>
+        <div class="mc-sub">라인 13 · 인스타 7</div>
+      </div>
+      <div class="metric-card highlight">
+        <div class="mc-label">예약 확정</div>
+        <div class="mc-value">2건</div>
+        <div class="mc-sub">울쎄라프라임+리쥬란 / 울쎄라프라임+점제거</div>
+      </div>
+      <div class="metric-card">
+        <div class="mc-label">크롬 확장 개발</div>
+        <div class="mc-value" style="font-size:20px;">✅ 완료</div>
+        <div class="mc-sub">카카오·위챗 외국어 상담 적용</div>
+      </div>
+      <div class="metric-card">
+        <div class="mc-label">콘텐츠 발행</div>
+        <div class="mc-value">11건</div>
+        <div class="mc-sub">인스타 7 · 블로그 4</div>
+      </div>
+    </div>
+
+    <!-- 크롬 확장프로그램 개발 (강조 섹션) -->
+    <div class="section-card" style="border:2px solid var(--accent);margin-bottom:20px;">
+      <div class="section-header" style="background:var(--accent-light);">
+        <div class="icon icon-purple">🧩</div>
+        <h3 style="color:#5b21b6;">크롬 확장프로그램 개발 완료 — 외국어 상담 인프라 구축</h3>
+      </div>
+      <div class="section-body">
+        <div style="background:var(--accent-light);border-radius:12px;padding:16px 20px;margin-bottom:16px;">
+          <p style="font-size:14px;line-height:1.7;color:#3b0764;">
+            카카오채널 및 위챗 상담 환경에서 <strong>외국어(중국어·일본어·영어) 메시지를 실시간 처리</strong>할 수 있는 크롬 확장프로그램을 자체 개발 완료했습니다. 별도 번역 앱 전환 없이 상담 창 내에서 직접 사용 가능하며, 외국인 환자 응대 속도와 정확도가 대폭 향상됩니다.
+          </p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-purple"></div>
+          <p><strong>카카오채널 적용</strong> — 외국인 고객 인바운드 메시지 자동 언어 감지 및 번역 지원</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-purple"></div>
+          <p><strong>위챗 상담 적용</strong> — 중국어 메시지 수신 즉시 한국어 변환, 답변 문구도 중국어로 자동 변환 발송 가능</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-green"></div>
+          <p><strong>다국어 템플릿 연동</strong> — 가격표·예약 안내·교통비 지원 등 반복 문의 문구를 언어별로 1클릭 전송</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-blue"></div>
+          <p><strong>현장 효과</strong> — 라인·인스타 상담 전환된 외국인 2명(YURI·Mini)이 실제 예약으로 이어지는 구조적 기반 마련</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 외국인 채널 상담 (라인 + 인스타) -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-green">🌏</div>
+        <h3>외국인 다채널 상담 — 라인·인스타그램 모객</h3>
+      </div>
+      <div class="section-body">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px;">
+          <div style="text-align:center; padding:18px; background:var(--blue-light); border-radius:12px;">
+            <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;">LINE 비즈니스</div>
+            <div style="font-size:32px;font-weight:800;color:var(--blue);">13건</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px;">예약확정 2건 포함</div>
+          </div>
+          <div style="text-align:center; padding:18px; background:#fce4ec; border-radius:12px;">
+            <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;">인스타그램 DM</div>
+            <div style="font-size:32px;font-weight:800;color:#ad1457;">7건</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px;">라인 연결 전환 1건</div>
+          </div>
+        </div>
+
+        <!-- 예약 확정 -->
+        <div style="background:#eaf5ee;border-radius:12px;padding:16px 20px;margin-bottom:16px;border-left:4px solid var(--green);">
+          <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;">✅ 예약 확정 2건</div>
+          <div class="status-item" style="padding-top:0;">
+            <div class="status-dot dot-green"></div>
+            <p><strong>YURI (일본)</strong> — 라인 상담 → 4월 21일 내원 · 울쎄라피프라임 + 리쥬란힐러 예약 완료</p>
+          </div>
+          <div class="status-item">
+            <div class="status-dot dot-green"></div>
+            <p><strong>Mini (대만)</strong> — 라인 상담 → 5월 2일 내원 · 울쎄라피프라임 + 점제거 예약 완료</p>
+          </div>
+        </div>
+
+        <!-- 주요 문의 패턴 -->
+        <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px;">주요 문의 패턴 분석</div>
+
+        <div class="chart-row">
+          <div class="chart-label"><span>가격표 요청 (시술 비용 문의)</span><span style="color:var(--primary);font-weight:800;">8건 · 40%</span></div>
+          <div class="chart-bar-bg"><div class="chart-bar" style="width:40%;background:var(--primary);"></div></div>
+        </div>
+        <div class="chart-row">
+          <div class="chart-label"><span>리프팅 계열 (울쎄라프라임·Thermage·XERF)</span><span style="color:var(--accent);font-weight:800;">4건 · 20%</span></div>
+          <div class="chart-bar-bg"><div class="chart-bar" style="width:20%;background:var(--accent);"></div></div>
+        </div>
+        <div class="chart-row">
+          <div class="chart-label"><span>리쥬란힐러 (가격·코드 문의)</span><span style="color:var(--green);font-weight:800;">3건 · 15%</span></div>
+          <div class="chart-bar-bg"><div class="chart-bar" style="width:15%;background:var(--green);"></div></div>
+        </div>
+        <div class="chart-row">
+          <div class="chart-label"><span>채널 연결 (인스타→라인 전환)</span><span style="color:#3182ce;font-weight:800;">2건 · 10%</span></div>
+          <div class="chart-bar-bg"><div class="chart-bar" style="width:10%;background:#3182ce;"></div></div>
+        </div>
+        <div class="chart-row">
+          <div class="chart-label"><span>기타 (범주 외·단순 문의)</span><span style="color:var(--muted);font-weight:800;">3건 · 15%</span></div>
+          <div class="chart-bar-bg"><div class="chart-bar" style="width:15%;background:#a0aec0;"></div></div>
+        </div>
+
+        <div style="margin-top:14px;" class="status-item">
+          <div class="status-dot dot-gold"></div>
+          <p>가격표 요청 8건 집중 — 다국어 표준 가격표 자동발송 체계 구축으로 응답 속도·일관성 개선 필요</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-purple"></div>
+          <p>인스타→라인 채널 연결 유도 성공 (Gongyabping) — 인스타 DM 첫 접점 → 라인 심층 상담 전환 구조 작동</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-green"></div>
+          <p>리쥬란 시술 코드(1003109) 문의 확인 — 외국인 고객 대상 리쥬란 패키지 구성 및 안내 자료 정비 검토</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 네이버 + 구글/외국인 SEO -->
+    <div class="two-col">
+      <div class="section-card">
+        <div class="section-header">
+          <div class="icon icon-gold">🥇</div>
+          <h3>네이버 키워드 순위</h3>
+        </div>
+        <div class="section-body">
+          <div class="status-item">
+            <div class="status-dot dot-green"></div>
+            <p><strong>제주성형외과</strong> — 3월 1위 진입 이후 4월 전체 상위권 유지 · 검색 주도권 안정 방어</p>
+          </div>
+          <div class="status-item">
+            <div class="status-dot dot-gold"></div>
+            <p>네이버 플레이스 · 블로그 병행 최적화 지속 — 통합 검색 점유율 확장 중</p>
+          </div>
+          <div class="status-item">
+            <div class="status-dot dot-blue"></div>
+            <p>4월 이벤트 프로모션 카카오채널 발송 → 기존 고객 재방문·직접유입 기여</p>
+          </div>
+        </div>
+      </div>
+      <div class="section-card">
+        <div class="section-header">
+          <div class="icon icon-blue">🌐</div>
+          <h3>구글 · 외국인 SEO</h3>
+        </div>
+        <div class="section-body">
+          <div class="status-item">
+            <div class="status-dot dot-green"></div>
+            <p>영문·일문·중문 키워드 구글 노출 지속 — 라인·인스타 외국인 유입과 연계</p>
+          </div>
+          <div class="status-item">
+            <div class="status-dot dot-blue"></div>
+            <p>야후재팬 유입 지속 확인 — 일본어 교통비 지원 페이지 SEO 효과 유지</p>
+          </div>
+          <div class="status-item">
+            <div class="status-dot dot-gold"></div>
+            <p>대만(Mini)·홍콩 중화권 인스타·라인 문의 확인 — 중문 SEO 보강 검토</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 위챗 공식계정 운영 현황 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-green">💬</div>
+        <h3>위챗 공식계정 운영 현황</h3>
+      </div>
+      <div class="section-body">
+        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:18px;">
+          <div style="text-align:center; padding:14px; background:var(--green-light); border-radius:12px;">
+            <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:5px;">누적 팔로워</div>
+            <div style="font-size:26px;font-weight:800;color:var(--green);">199명</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;">3월 말 139명 → +60명</div>
+          </div>
+          <div style="text-align:center; padding:14px; background:var(--green-light); border-radius:12px;">
+            <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:5px;">4월 신규 팔로워</div>
+            <div style="font-size:26px;font-weight:800;color:var(--green);">67명</div>
+          </div>
+          <div style="text-align:center; padding:14px; background:var(--green-light); border-radius:12px;">
+            <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:5px;">순증가</div>
+            <div style="font-size:26px;font-weight:800;color:var(--green);">+60명</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;">취소 7명 차감</div>
+          </div>
+        </div>
+
+        <div style="margin-bottom:12px;">
+          <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;">신규 팔로워 유입 채널 (67명)</div>
+
+          <div style="margin-bottom:8px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+              <span style="font-size:12px;font-weight:600;">게시물 팔로우(文章页关注)</span>
+              <span style="font-size:12px;font-weight:700;color:#3182ce;">43명 · 64.18%</span>
+            </div>
+            <div style="background:#ebf8ff;border-radius:4px;height:8px;">
+              <div style="background:#3182ce;height:8px;border-radius:4px;width:64%;"></div>
+            </div>
+          </div>
+
+          <div style="margin-bottom:8px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+              <span style="font-size:12px;font-weight:600;">QR코드 스캔(扫描二维码)</span>
+              <span style="font-size:12px;font-weight:700;color:var(--green);">21명 · 31.34%</span>
+            </div>
+            <div style="background:#e8f5e9;border-radius:4px;height:8px;">
+              <div style="background:var(--green);height:8px;border-radius:4px;width:31%;"></div>
+            </div>
+          </div>
+
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+              <span style="font-size:12px;font-weight:600;">검색(搜一搜)</span>
+              <span style="font-size:12px;font-weight:700;color:var(--accent);">3명 · 4.48%</span>
+            </div>
+            <div style="background:var(--accent-light);border-radius:4px;height:8px;">
+              <div style="background:var(--accent);height:8px;border-radius:4px;width:5%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="status-item" style="margin-top:12px;">
+          <div class="status-dot dot-blue"></div>
+          <p>게시물 팔로우(64%) 1위 — 위챗 콘텐츠 자연 확산이 주 유입 채널. 콘텐츠 기반 팔로워 유입 구조 안착</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-green"></div>
+          <p>QR코드 스캔(31%) — 원내 엑스배너 및 오프라인 접점 효과 지속 확인</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-gold"></div>
+          <p>3월(+2명) 대비 4월 순증 60명 — 전월 대비 <strong>30배 증가</strong>. 위챗 운영 성과 급성장 전환점</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 콘텐츠 발행 내역 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-purple">📝</div>
+        <h3>콘텐츠 발행 내역 <span class="count-chip">11건</span></h3>
+      </div>
+      <div class="section-body" style="padding:0;">
+        <div style="overflow-x:auto;">
+          <table class="content-table">
+            <thead>
+              <tr><th>#</th><th>채널</th><th>발행일</th><th>제목</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>1</td><td><span class="tag tag-insta">인스타</span></td><td style="white-space:nowrap;color:var(--muted);">04.22</td><td>외국인 후기 릴스</td></tr>
+              <tr><td>2</td><td><span class="tag tag-insta">인스타</span></td><td style="white-space:nowrap;color:var(--muted);">04.27</td><td>무너지는 턱선, 피부가 먼저 알고 있습니다.</td></tr>
+              <tr><td>3</td><td><span class="tag tag-insta">인스타</span></td><td style="white-space:nowrap;color:var(--muted);">04.28</td><td>처짐은 가볍게, 인상은 도렷하게</td></tr>
+              <tr><td>4</td><td><span class="tag tag-insta">인스타</span></td><td style="white-space:nowrap;color:var(--muted);">04.28</td><td>subtle lift can redefine everything</td></tr>
+              <tr><td>5</td><td><span class="tag tag-insta">인스타</span></td><td style="white-space:nowrap;color:var(--muted);">04.29</td><td>It's not about changing your face.</td></tr>
+              <tr><td>6</td><td><span class="tag tag-insta">인스타</span></td><td style="white-space:nowrap;color:var(--muted);">04.30</td><td>라인이 바뀌면 인상이 달라집니다</td></tr>
+              <tr><td>7</td><td><span class="tag tag-insta">인스타</span></td><td style="white-space:nowrap;color:var(--muted);">04.30</td><td>True beauty begins with understanding.</td></tr>
+              <tr><td>8</td><td><span class="tag tag-blog">블로그</span></td><td style="white-space:nowrap;color:var(--muted);">05.02*</td><td>제주 써마지, 이런 고민이 있으신 분께 추천해요!</td></tr>
+              <tr><td>9</td><td><span class="tag tag-blog">블로그</span></td><td style="white-space:nowrap;color:var(--muted);">05.02*</td><td>서귀포 피부과 시술 후 다운타임 얼마나 걸릴까요</td></tr>
+              <tr><td>10</td><td><span class="tag tag-blog">블로그</span></td><td style="white-space:nowrap;color:var(--muted);">05.02*</td><td>제주피부과와 V라인을 만드는 습관을 소개해요</td></tr>
+              <tr><td>11</td><td><span class="tag tag-blog">블로그</span></td><td style="white-space:nowrap;color:var(--muted);">05.02*</td><td>제주 쌍꺼풀 수술 방법보다 내 눈의 조건이 먼저입니다</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size:12px;color:var(--muted);padding:10px 20px;">* 블로그 4건은 4월 작업 완료 후 5월 초 등록 (4월 성과분 포함)</p>
+      </div>
+    </div>
+
+    <!-- 서브업무 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-blue">⚙️</div>
+        <h3>서브업무</h3>
+      </div>
+      <div class="section-body">
+        <ul class="sub-list">
+          <li><div class="sub-num">1</div><span><strong>크롬 확장프로그램 개발 완료</strong> — 카카오·위챗 외국어 상담 인프라 실무 배포</span></li>
+          <li><div class="sub-num">2</div><span>울쎄라피프라임 브이로그 영상 촬영(4/7) → 인스타·유튜브 배포 완료</span></li>
+          <li><div class="sub-num">3</div><span>4월 이벤트 프로모션 카카오채널 발송 — 기존 고객 리텐션 대응</span></li>
+          <li><div class="sub-num">4</div><span>라인페이·애플페이 도입 협의 진행 중 — 외국인 결제 편의성 강화</span></li>
+          <li><div class="sub-num">5</div><span>베가스차트·알림톡 연동 완료 → 자동화 상담 알림 체계 구축</span></li>
+          <li><div class="sub-num">6</div><span>다국어 가격표 자동발송 템플릿 초안 설계 (라인·인스타 DM 적용)</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 5월 방향 -->
+    <div class="next-band">
+      <h3>💡 5월 중점 방향</h3>
+      <div class="next-item">
+        <div class="n-num">1</div>
+        <p>크롬 확장 안정화 운영 — 라인·위챗·카카오 상담 채널 전체 외국어 대응 체계 완성, 응답 속도 개선</p>
+      </div>
+      <div class="next-item">
+        <div class="n-num">2</div>
+        <p>다국어 가격표·시술 안내 자동발송 템플릿 배포 — 가격 문의 8건 반복 패턴 대응으로 상담 전환율 제고</p>
+      </div>
+      <div class="next-item">
+        <div class="n-num">3</div>
+        <p>라인페이·애플페이 도입 완료 → 외국인 예약 후 결제 마찰 제거, 대만·일본 확정 고객 UX 강화</p>
+      </div>
+      <div class="next-item">
+        <div class="n-num">4</div>
+        <p>리쥬란·울쎄라프라임 복합 패키지 다국어 안내 자료 제작 — 반복 문의 패턴 기반 세일즈 콘텐츠 전환</p>
+      </div>
+      <div class="next-item">
+        <div class="n-num">5</div>
+        <p>인스타→라인 채널 연결 전환 구조 고도화 — DM 첫 응답 문구 최적화 및 QR 연계 강화</p>
+      </div>
+    </div>
+
+  </div><!-- /panel-apr -->
+
+  <!-- ═══════════════════════════════════════
        3월 보고서
   ═══════════════════════════════════════ -->
-  <div class="report-panel active" id="panel-mar">
+  <div class="report-panel" id="panel-mar">
 
     <!-- 요약 배너 -->
     <div class="summary-band">

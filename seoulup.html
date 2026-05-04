@@ -55,11 +55,223 @@
 <main class="container">
   <p class="timeline-label">보고서 목록</p>
   <div class="month-tabs">
-    <div class="month-tab active" onclick="switchTab('mar', event)">2026년 3월</div>
+    <div class="month-tab active" onclick="switchTab('apr', event)">2026년 4월</div>
+    <div class="month-tab" onclick="switchTab('mar', event)">2026년 3월</div>
     <div class="month-tab" onclick="switchTab('feb', event)">2026년 2월</div>
   </div>
 
-  <div class="report-panel active" id="panel-mar">
+  <!-- ═══════ 4월 보고서 ═══════ -->
+  <div class="report-panel active" id="panel-apr">
+
+    <!-- 요약 배너 -->
+    <div class="summary-band">
+      <div class="band-title">MONTHLY SUMMARY</div>
+      <div class="band-month">2026년 4월 마케팅 결과보고</div>
+      <div class="band-points">
+        <div class="band-point"><div class="dot"></div><p><strong>총 유입 1,754건</strong> — 3월(1,464) 대비 +290건(+20%) 성장. 직접방문 737건(42%)으로 브랜드 재방문 급증</p></div>
+        <div class="band-point"><div class="dot"></div><p><strong>구글 유입 317건(18%)</strong> — 3월(285건) 대비 +11% 증가. 검색 다각화 효과 확인</p></div>
+        <div class="band-point"><div class="dot"></div><p><strong>플레이스 순위 9위 최고 달성</strong> — 4월 초중순 기준 9위까지 상승, 월말 하락 요인 분석 중</p></div>
+      </div>
+    </div>
+
+    <!-- 핵심 지표 -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:28px;">
+      <div style="background:#fff;border-radius:14px;padding:22px 24px;border:1px solid var(--border);">
+        <div style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:8px;">홈페이지 총 유입</div>
+        <div style="font-size:26px;font-weight:800;color:var(--primary);">1,754</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:6px;">3월 대비 +290건 · +20%</div>
+      </div>
+      <div style="background:#fff;border-radius:14px;padding:22px 24px;border:1px solid var(--border);">
+        <div style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:8px;">직접 방문</div>
+        <div style="font-size:26px;font-weight:800;color:var(--primary);">737</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:6px;">전체 유입의 42% (3월 28%↑)</div>
+      </div>
+      <div style="background:#dbeafe;border-radius:14px;padding:22px 24px;border:1px solid var(--accent);">
+        <div style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:8px;">이달 최고 순위</div>
+        <div style="font-size:26px;font-weight:800;color:#1d4ed8;">9위</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:6px;">4/6·4/8 달성</div>
+      </div>
+      <div style="background:#fff;border-radius:14px;padding:22px 24px;border:1px solid var(--border);">
+        <div style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:8px;">구글 유입</div>
+        <div style="font-size:26px;font-weight:800;color:#ea4335;">317</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:6px;">전체 유입의 18%</div>
+      </div>
+    </div>
+
+    <!-- 네이버 플레이스 순위 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon">📍</div>
+        <h3>네이버 플레이스 순위 추이</h3>
+      </div>
+      <div class="section-body">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:18px;">
+          <div style="background:#ecfdf5;border-radius:10px;padding:12px 14px;border:1px solid #6ee7b7;">
+            <div style="font-size:10px;font-weight:700;color:#065f46;margin-bottom:4px;">4/1 ~ 4/8</div>
+            <div style="font-size:22px;font-weight:800;color:#059669;">9~11위</div>
+            <div style="font-size:11px;color:var(--muted);">9위 최고 달성</div>
+          </div>
+          <div style="background:#ecfdf5;border-radius:10px;padding:12px 14px;border:1px solid #6ee7b7;">
+            <div style="font-size:10px;font-weight:700;color:#065f46;margin-bottom:4px;">4/9 ~ 4/23</div>
+            <div style="font-size:22px;font-weight:800;color:#059669;">11~12위</div>
+            <div style="font-size:11px;color:var(--muted);">안정 유지</div>
+          </div>
+          <div style="background:#fff8e6;border-radius:10px;padding:12px 14px;border:1px solid #f59e0b;">
+            <div style="font-size:10px;font-weight:700;color:#8a6230;margin-bottom:4px;">4/24 ~ 4/25</div>
+            <div style="font-size:22px;font-weight:800;color:#d97706;">14→21위</div>
+            <div style="font-size:11px;color:var(--muted);">하락 시작</div>
+          </div>
+          <div style="background:#fee2e2;border-radius:10px;padding:12px 14px;border:1px solid #fca5a5;">
+            <div style="font-size:10px;font-weight:700;color:#7f1d1d;margin-bottom:4px;">4/26 ~ 4/30</div>
+            <div style="font-size:22px;font-weight:800;color:#dc2626;">23~29위</div>
+            <div style="font-size:11px;color:var(--muted);">4/30 26위 소폭 회복</div>
+          </div>
+        </div>
+
+        <!-- 순위 하락 알림 박스 -->
+        <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:16px 20px;margin-bottom:12px;">
+          <div style="font-size:12px;font-weight:800;color:#c2410c;margin-bottom:8px;">⚠️ 4월 하순 순위 급락 — 원인 분석 및 대응 필요</div>
+          <div style="font-size:13px;line-height:1.7;color:#7c2d12;">
+            4월 24일을 기점으로 순위가 14위 → 29위로 급락했습니다. 4월 초중순까지 9위 최고 성과를 기록했던 점을 고려할 때, <strong>알고리즘 변동·경쟁사 활동·콘텐츠 신호 약화</strong> 등 복합 요인 가능성이 있습니다. 5월 블로그 발행 집중 + 플레이스 최적화로 조속한 회복이 최우선 과제입니다.
+          </div>
+        </div>
+
+        <div class="status-item">
+          <div class="status-dot"></div>
+          <p>4/1~4/23 구간 평균 11위 — 3월 성과(11위)를 이어받아 9위 신기록 달성</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot" style="background:#dc2626;"></div>
+          <p>4/24 이후 급락 — 4/30 기준 26위, 5월 회복 작업 최우선 집중 필요</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 홈페이지 유입 채널 분석 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon">📊</div>
+        <h3>홈페이지 유입 채널 분석</h3>
+      </div>
+      <div class="section-body">
+        <div style="margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:4px;"><span>직접방문 (snupdental.co.kr)</span><span style="color:var(--primary);font-weight:800;">737 · 42%</span></div>
+          <div style="background:#f0f0f0;border-radius:4px;height:10px;"><div style="background:var(--primary);height:10px;border-radius:4px;width:42%;"></div></div>
+        </div>
+        <div style="margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:4px;"><span>네이버 검색 (m.search + search + naver.com)</span><span style="color:var(--accent);font-weight:800;">662 · 38%</span></div>
+          <div style="background:#f0f0f0;border-radius:4px;height:10px;"><div style="background:var(--accent);height:10px;border-radius:4px;width:38%;"></div></div>
+        </div>
+        <div style="margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:4px;"><span>구글 (google.com · google.co.kr · android)</span><span style="color:#ea4335;font-weight:800;">317 · 18%</span></div>
+          <div style="background:#f0f0f0;border-radius:4px;height:10px;"><div style="background:#ea4335;height:10px;border-radius:4px;width:18%;"></div></div>
+        </div>
+        <div style="margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:4px;"><span>네이버플레이스 (m.place + pcmap)</span><span style="color:#059669;font-weight:800;">27 · 1.5%</span></div>
+          <div style="background:#f0f0f0;border-radius:4px;height:10px;"><div style="background:#059669;height:10px;border-radius:4px;width:2%;"></div></div>
+        </div>
+        <div style="margin-bottom:14px;">
+          <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:4px;"><span>다음·빙·블로그·카카오맵·기타</span><span style="color:var(--muted);font-weight:800;">11 · 0.5%</span></div>
+          <div style="background:#f0f0f0;border-radius:4px;height:10px;"><div style="background:#a0aec0;height:10px;border-radius:4px;width:1%;"></div></div>
+        </div>
+
+        <!-- 3월 대비 비교 -->
+        <div style="background:#f0f7ff;border-radius:12px;padding:14px 18px;margin-bottom:12px;border:1px solid #bfdbfe;">
+          <div style="font-size:11px;font-weight:800;color:var(--accent);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;">3월 대비 증감</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center;">
+            <div>
+              <div style="font-size:10px;color:var(--muted);margin-bottom:3px;">총 유입</div>
+              <div style="font-size:15px;font-weight:800;color:#059669;">+290건</div>
+              <div style="font-size:10px;color:var(--muted);">1,464 → 1,754</div>
+            </div>
+            <div>
+              <div style="font-size:10px;color:var(--muted);margin-bottom:3px;">직접방문</div>
+              <div style="font-size:15px;font-weight:800;color:#059669;">+325건</div>
+              <div style="font-size:10px;color:var(--muted);">412 → 737 (+79%)</div>
+            </div>
+            <div>
+              <div style="font-size:10px;color:var(--muted);margin-bottom:3px;">구글</div>
+              <div style="font-size:15px;font-weight:800;color:#059669;">+32건</div>
+              <div style="font-size:10px;color:var(--muted);">285 → 317 (+11%)</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="status-item">
+          <div class="status-dot" style="background:var(--accent);"></div>
+          <p>m.search.naver.com 531건 — 단일 채널 1위, 모바일 네이버 검색 유입이 핵심 채널 유지</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot" style="background:#059669;"></div>
+          <p>직접방문 +79% 급증 — 재방문·브랜드 직접 검색 증가로 브랜드 인지도 성장 신호 확인</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot"></div>
+          <p>구글 www.google.com 308건 — 전월 대비 증가세 유지, 검색 채널 다각화 구조 안착 중</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 블로그 콘텐츠 발행 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon">📝</div>
+        <h3>순위관리용 의학정보 블로그 발행</h3>
+      </div>
+      <div class="section-body">
+        <div class="status-item">
+          <div class="status-dot" style="background:var(--accent);"></div>
+          <p>월별 꾸준한 의학정보 콘텐츠 발행 — 네이버 플레이스 순위 관리 핵심 기반 지속 운영</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot" style="background:#c9a96e;"></div>
+          <p>소량이라도 꾸준한 발행 유지 — 콘텐츠 신호 지속 공급으로 순위 회복 기반 안정적으로 유지</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 서브업무 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon">⚙️</div>
+        <h3>서브업무 <span style="display:inline-block;background:var(--accent);color:#fff;font-size:11px;font-weight:800;padding:3px 9px;border-radius:10px;margin-left:8px;vertical-align:middle;">1건</span></h3>
+      </div>
+      <div class="section-body">
+        <div class="status-item">
+          <div class="status-dot" style="background:var(--accent);"></div>
+          <p>
+            <strong>제주 맘카페 바이럴 댓글 작업 (4/29)</strong> — 자유게시판 "초등 저학년 주걱턱 치과 어디로 가야되나요?" 질문 글에
+            <strong>"좀 꼼꼼한 상담 원하시면 서울업치과 추천이요!"</strong> 댓글 작성 완료. 조회 174회, 부정교합 관련 실수요 상담층 타겟 자연 노출
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5월 방향 -->
+    <div style="background:var(--accent-light);border:1px solid var(--accent);border-radius:14px;padding:24px 28px;margin-bottom:20px;">
+      <h3 style="font-size:15px;font-weight:700;color:#1d4ed8;margin-bottom:16px;">💡 5월 중점 방향</h3>
+      <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:10px;">
+        <div style="min-width:24px;height:24px;background:var(--accent);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;">1</div>
+        <p style="font-size:14px;line-height:1.6;padding-top:2px;"><strong>플레이스 순위 조기 회복 최우선</strong> — 4/30 기준 26위에서 이전 9~11위 수준으로 복귀, 블로그 발행 밀도 집중 강화</p>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:10px;">
+        <div style="min-width:24px;height:24px;background:var(--accent);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;">2</div>
+        <p style="font-size:14px;line-height:1.6;padding-top:2px;">순위 하락 원인 분석 — 경쟁사 동향·알고리즘 변화·콘텐츠 신호 점검 후 맞춤 대응 전략 수립</p>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:10px;">
+        <div style="min-width:24px;height:24px;background:var(--accent);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;">3</div>
+        <p style="font-size:14px;line-height:1.6;padding-top:2px;">직접방문 증가세 유지 — 재방문 브랜드 유입 구조 강화, 홈페이지 전환율 개선 검토</p>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:12px;">
+        <div style="min-width:24px;height:24px;background:var(--accent);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;">4</div>
+        <p style="font-size:14px;line-height:1.6;padding-top:2px;">구글 SEO 지속 관리 — 317건(18%) 유입 유지·확대, 구글 노출 키워드 다각화</p>
+      </div>
+    </div>
+
+  </div><!-- /panel-apr -->
+
+  <!-- ═══════ 3월 보고서 ═══════ -->
+  <div class="report-panel" id="panel-mar">
 
     <!-- 요약 배너 -->
     <div class="summary-band">

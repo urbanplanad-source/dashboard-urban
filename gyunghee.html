@@ -162,13 +162,396 @@
 <main class="container">
   <p class="timeline-label">보고서 목록</p>
   <div class="month-tabs">
-    <div class="month-tab active" onclick="switchTab('mar', event)">2026년 3월</div>
+    <div class="month-tab active" onclick="switchTab('apr', event)">2026년 4월</div>
+    <div class="month-tab" onclick="switchTab('mar', event)">2026년 3월</div>
   </div>
+
+  <!-- ═══════════════════════════════════════
+       4월 보고서
+  ═══════════════════════════════════════ -->
+  <div class="report-panel active" id="panel-apr">
+
+    <!-- 요약 배너 -->
+    <div class="summary-band">
+      <div class="band-title">MONTHLY SUMMARY</div>
+      <div class="band-month">2026년 4월 마케팅 결과보고</div>
+      <div class="band-sub">계약 2개월 차 · 피부센터 오픈 후 첫 본격 마케팅</div>
+      <div class="band-points">
+        <div class="band-point"><div class="dot"></div><p><strong>블로그 조회수 2,960</strong> — 3월(1,992) 대비 +968건, +49% 성장. 마케팅 2개월 만에 가시적 검색 유입 실현</p></div>
+        <div class="band-point"><div class="dot"></div><p><strong>홈페이지 유입 292건</strong> — 직접방문 260건(89%) 중심, 네이버플레이스·검색·구글 복합 유입 확인</p></div>
+        <div class="band-point"><div class="dot"></div><p><strong>콘텐츠 14건 발행</strong> — 블로그 10건(SEO 지역타겟) + 홈페이지 포스팅 4건(시술·기미·흉터)</p></div>
+        <div class="band-point"><div class="dot"></div><p><strong>한방+레이저 차별화 콘텐츠 구조화</strong> — 삼화지구·화복·서귀포 지역 키워드 SEO 보강 집중</p></div>
+      </div>
+    </div>
+
+    <!-- 핵심 지표 -->
+    <div class="metrics-grid">
+      <div class="metric-card highlight">
+        <div class="mc-label">블로그 월간 조회수</div>
+        <div class="mc-value">2,960</div>
+        <div class="mc-sub">3월 1,992 대비 +49% ↑</div>
+      </div>
+      <div class="metric-card">
+        <div class="mc-label">홈페이지 총 유입</div>
+        <div class="mc-value">292</div>
+        <div class="mc-sub">4월 전체 클릭수 합계</div>
+      </div>
+      <div class="metric-card">
+        <div class="mc-label">직접 방문</div>
+        <div class="mc-value">260</div>
+        <div class="mc-sub">전체 유입의 89%</div>
+      </div>
+      <div class="metric-card highlight">
+        <div class="mc-label">콘텐츠 발행</div>
+        <div class="mc-value">14건</div>
+        <div class="mc-sub">블로그 10 · 홈페이지 4</div>
+      </div>
+    </div>
+
+    <!-- 블로그 조회수 성장 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-green">📈</div>
+        <h3>네이버 블로그 조회수 성장</h3>
+      </div>
+      <div class="section-body">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px;">
+          <div style="text-align:center;padding:16px;background:#f5f7f5;border-radius:12px;border:1px solid var(--border);">
+            <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;">2026년 2월</div>
+            <div style="font-size:24px;font-weight:800;color:var(--muted);">1,659</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:4px;">마케팅 이전</div>
+          </div>
+          <div style="text-align:center;padding:16px;background:var(--green-light);border-radius:12px;border:1px solid var(--accent);">
+            <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;">2026년 3월 <span style="color:var(--accent);font-size:10px;">계약 1개월</span></div>
+            <div style="font-size:24px;font-weight:800;color:var(--accent);">1,992</div>
+            <div style="font-size:11px;color:var(--green);margin-top:4px;">+333 · +20%</div>
+          </div>
+          <div style="text-align:center;padding:16px;background:var(--accent);border-radius:12px;">
+            <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.7);margin-bottom:6px;">2026년 4월 <span style="color:#b3e8cc;font-size:10px;">계약 2개월</span></div>
+            <div style="font-size:24px;font-weight:800;color:#fff;">2,960</div>
+            <div style="font-size:11px;color:#b3e8cc;margin-top:4px;">+968 · +49%</div>
+          </div>
+        </div>
+
+        <div style="margin-bottom:12px;">
+          <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;">조회 유형 분석 (4월)</div>
+          <div style="margin-bottom:8px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+              <span style="font-size:12px;font-weight:600;">기타(검색 유입)</span>
+              <span style="font-size:12px;font-weight:700;color:var(--primary);">2,949건 · 99.6%</span>
+            </div>
+            <div style="background:#f0f0f0;border-radius:4px;height:8px;">
+              <div style="background:var(--primary);height:8px;border-radius:4px;width:99.6%;"></div>
+            </div>
+          </div>
+          <div style="margin-bottom:8px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+              <span style="font-size:12px;font-weight:600;">피이웃</span>
+              <span style="font-size:12px;font-weight:700;color:var(--blue);">7건 · 0.2%</span>
+            </div>
+            <div style="background:var(--blue-light);border-radius:4px;height:8px;">
+              <div style="background:var(--blue);height:8px;border-radius:4px;width:1%;"></div>
+            </div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+              <span style="font-size:12px;font-weight:600;">서로이웃</span>
+              <span style="font-size:12px;font-weight:700;color:var(--orange);">4건 · 0.1%</span>
+            </div>
+            <div style="background:var(--orange-light);border-radius:4px;height:8px;">
+              <div style="background:var(--orange);height:8px;border-radius:4px;width:0.5%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="status-item" style="margin-top:8px;">
+          <div class="status-dot dot-green"></div>
+          <p>검색 유입(기타) 99.6% — SEO 최적화 콘텐츠가 네이버 검색 노출로 직결되고 있음을 확인</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-gold"></div>
+          <p>2월(마케팅 이전) 대비 +78% — 2개월 만에 조회수 거의 2배 성장, SEO 누적 효과 본격화</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 홈페이지 유입 채널 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-blue">📊</div>
+        <h3>홈페이지 유입 채널 분석</h3>
+      </div>
+      <div class="section-body">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;">
+          <div style="text-align:center;padding:14px;background:var(--green-light);border-radius:12px;border:1px solid var(--accent);">
+            <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:5px;">직접방문</div>
+            <div style="font-size:22px;font-weight:800;color:var(--accent);">260</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;">89%</div>
+          </div>
+          <div style="text-align:center;padding:14px;background:var(--green-light);border-radius:12px;">
+            <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:5px;">네이버플레이스</div>
+            <div style="font-size:22px;font-weight:800;color:var(--green);">19</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;">6.5%</div>
+          </div>
+          <div style="text-align:center;padding:14px;background:var(--blue-light);border-radius:12px;">
+            <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:5px;">검색(네이버)</div>
+            <div style="font-size:22px;font-weight:800;color:var(--blue);">10</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;">3.4%</div>
+          </div>
+          <div style="text-align:center;padding:14px;background:#f0f4ff;border-radius:12px;">
+            <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:5px;">구글·카카오</div>
+            <div style="font-size:22px;font-weight:800;color:#5b7fa6;">3</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;">1%</div>
+          </div>
+        </div>
+
+        <div style="margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+            <span style="font-size:12px;font-weight:600;">직접방문 (365kbhani.com + kbhani.imweb.me)</span>
+            <span style="font-size:12px;font-weight:700;color:var(--primary);">260건 · 89%</span>
+          </div>
+          <div style="background:#f0f0f0;border-radius:4px;height:10px;">
+            <div style="background:var(--primary);height:10px;border-radius:4px;width:89%;"></div>
+          </div>
+        </div>
+        <div style="margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+            <span style="font-size:12px;font-weight:600;">네이버플레이스 (m.place + pcmap)</span>
+            <span style="font-size:12px;font-weight:700;color:var(--green);">19건 · 6.5%</span>
+          </div>
+          <div style="background:var(--green-light);border-radius:4px;height:10px;">
+            <div style="background:var(--green);height:10px;border-radius:4px;width:6.5%;"></div>
+          </div>
+        </div>
+        <div style="margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+            <span style="font-size:12px;font-weight:600;">네이버 검색 (naver.com · m.search · search)</span>
+            <span style="font-size:12px;font-weight:700;color:var(--blue);">10건 · 3.4%</span>
+          </div>
+          <div style="background:var(--blue-light);border-radius:4px;height:10px;">
+            <div style="background:var(--blue);height:10px;border-radius:4px;width:3.5%;"></div>
+          </div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+            <span style="font-size:12px;font-weight:600;">구글 · 카카오비즈니스</span>
+            <span style="font-size:12px;font-weight:700;color:var(--muted);">3건 · 1%</span>
+          </div>
+          <div style="background:#f0f0f0;border-radius:4px;height:10px;">
+            <div style="background:#a0aec0;height:10px;border-radius:4px;width:1%;"></div>
+          </div>
+        </div>
+
+        <div class="status-item" style="margin-top:14px;">
+          <div class="status-dot dot-green"></div>
+          <p>네이버플레이스 19건 — 플레이스 정비 효과가 홈페이지 유입으로 이어지는 구조 확인</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-blue"></div>
+          <p>카카오비즈니스(business.kakao.com) 유입 1건 — 카카오채널 오픈 발송 효과 소폭 확인</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 콘텐츠 발행 내역 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon" style="background:var(--accent-light);">📝</div>
+        <h3>콘텐츠 발행 내역 <span class="count-chip">14건</span></h3>
+      </div>
+      <div class="section-body" style="padding:0;">
+        <div style="overflow-x:auto;">
+          <table class="content-table">
+            <thead>
+              <tr><th>#</th><th>채널</th><th>제목</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>1</td><td><span class="tag tag-homepage">홈페이지</span></td><td>제주 기미치료, 한의학적 관점과 Helios 785 피코레이저로 더 정교하게</td></tr>
+              <tr><td>2</td><td><span class="tag tag-homepage">홈페이지</span></td><td>제주 레이저제모 고민이라면? 횟수·효과·관리 핵심 정리</td></tr>
+              <tr><td>3</td><td><span class="tag tag-homepage">홈페이지</span></td><td>화복피부과 흉터 치료 전에 꼭 알아야 할 것들</td></tr>
+              <tr><td>4</td><td><span class="tag tag-homepage">홈페이지</span></td><td>화복피부과 흉터 치료 전에 꼭 알아야 할 것들 (ver.2)</td></tr>
+              <tr><td>5</td><td><span class="tag tag-blog">블로그</span></td><td>이벤트 안내</td></tr>
+              <tr><td>6</td><td><span class="tag tag-blog">블로그</span></td><td>5월 휴진 안내</td></tr>
+              <tr><td>7</td><td><span class="tag tag-blog">블로그</span></td><td>화복 레이저제모, 면도 트러블 줄이는 방법부터 이해해보세요</td></tr>
+              <tr><td>8</td><td><span class="tag tag-blog">블로그</span></td><td>제주 레이저제모 하기전, 이것은 알아두면 좋아요</td></tr>
+              <tr><td>9</td><td><span class="tag tag-blog">블로그</span></td><td>제주피부과 치료 전 생활습관 문진이 중요한 이유</td></tr>
+              <tr><td>10</td><td><span class="tag tag-blog">블로그</span></td><td>제주시 한방피부과 치료와 레이저 병행, 효과적인 경우는?</td></tr>
+              <tr><td>11</td><td><span class="tag tag-blog">블로그</span></td><td>화복 피부관리 모공이 넓어지는 이유는</td></tr>
+              <tr><td>12</td><td><span class="tag tag-blog">블로그</span></td><td>제주시 피부과 반복되는 피부염, 겉치료만으론 부족한 이유</td></tr>
+              <tr><td>13</td><td><span class="tag tag-blog">블로그</span></td><td>삼화지구 피부관리 레이저토닝이 궁금하다면</td></tr>
+              <tr><td>14</td><td><span class="tag tag-blog">블로그</span></td><td>삼화지구 피부과 원인부터 찾는 접근으로</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 크롬 확장프로그램 개발 (강조 섹션) -->
+    <div class="section-card" style="border:2px solid var(--accent);">
+      <div class="section-header" style="background:var(--accent-light);">
+        <div class="icon" style="background:#fff;">🧩</div>
+        <h3 style="color:var(--green);">카카오채널 전용 크롬 확장프로그램 — 맞춤 개발 · 배포 완료</h3>
+      </div>
+      <div class="section-body">
+        <div style="background:var(--accent-light);border-radius:12px;padding:16px 20px;margin-bottom:16px;">
+          <p style="font-size:14px;line-height:1.8;color:#1a3a22;">
+            카카오채널 상담 환경에 최적화된 <strong>전용 크롬 확장프로그램을 맞춤 개발해 배포</strong>했습니다. 상담사가 별도 앱 전환 없이 카카오채널 화면 안에서 바로 사용할 수 있어 응대 속도와 정확도가 크게 향상됩니다. 특히 <strong>외국어 메시지가 인입될 경우 즉시 번역</strong>이 가능해, 영어권·중국어권 환자의 문의에도 지체 없이 대응할 수 있는 기반이 마련됐습니다.
+          </p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-green"></div>
+          <p><strong>상담 효율 향상</strong> — 반복 문의 문구를 1클릭 전송 가능한 템플릿 구조로 운영, 응답 시간 단축</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-green"></div>
+          <p><strong>외국어 인입 즉시 번역</strong> — 영어·중국어·일본어 메시지를 카카오채널 화면 내에서 바로 번역, 별도 도구 불필요</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-blue"></div>
+          <p><strong>외국인 환자 유치 인프라 선제 구축</strong> — 외국인환자 유치업 신청 준비와 연계해 실제 상담 전환까지 대응 가능한 체계 완성</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 외국인 환자 유치 전략 -->
+    <div class="section-card" style="border:2px solid var(--blue);">
+      <div class="section-header" style="background:var(--blue-light);">
+        <div class="icon icon-blue">🌍</div>
+        <h3 style="color:var(--blue);">외국인 환자 유치 — 준비 완료 · 본격 모객 예정</h3>
+      </div>
+      <div class="section-body">
+        <div style="background:var(--blue-light);border-radius:12px;padding:16px 20px;margin-bottom:16px;">
+          <p style="font-size:14px;line-height:1.8;color:#1a2e5a;">
+            4월 28일 <strong>의료배상보험 서류 수령 및 외국인환자 유치업 신청 준비를 완료</strong>했습니다. 신청 승인 후 영어권 환자를 대상으로 한 온라인 모객을 본격 집행할 예정이며, 구글 SEO 최적화·영문 콘텐츠 확장·크롬 확장프로그램 외국어 상담 체계와 연계해 <strong>글로벌 환자 유입 구조를 완성</strong>합니다.
+          </p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-blue"></div>
+          <p><strong>의료배상보험 서류 수령 완료 (4/28)</strong> — 외국인환자 유치업 등록을 위한 필수 요건 이행</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-blue"></div>
+          <p><strong>유치업 신청 준비 완료</strong> — 승인 즉시 영어권 환자 대상 구글 광고·영문 SEO 콘텐츠 집행 전환</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-green"></div>
+          <p><strong>상담 인프라 사전 구축 완료</strong> — 크롬 확장 외국어 번역 + 영문 시술 안내 문구 준비로 유치 승인 즉시 실전 대응</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-gold"></div>
+          <p>제주 방문 영어권 외국인·교민 타겟 — 레이저제모·기미·피부염 등 핵심 시술 영문 키워드 노출 전략 병행</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEO 키워드 전략 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-green">🔍</div>
+        <h3>SEO 지역 키워드 전략</h3>
+      </div>
+      <div class="section-body">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:16px;">
+          <div style="padding:14px;background:var(--green-light);border-radius:12px;">
+            <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;">화복 지역 타겟</div>
+            <div style="font-size:13px;font-weight:600;line-height:1.7;">화복피부과<br>화복레이저제모<br>화복피부관리<br>화복흉터치료</div>
+          </div>
+          <div style="padding:14px;background:var(--blue-light);border-radius:12px;">
+            <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;">삼화지구 타겟</div>
+            <div style="font-size:13px;font-weight:600;line-height:1.7;">삼화지구피부과<br>삼화지구피부관리<br>삼화지구레이저토닝</div>
+          </div>
+          <div style="padding:14px;background:var(--orange-light);border-radius:12px;">
+            <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;">시술 중심 키워드</div>
+            <div style="font-size:13px;font-weight:600;line-height:1.7;">제주레이저제모<br>제주기미치료<br>제주피부염치료<br>한방피부과레이저</div>
+          </div>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-green"></div>
+          <p>한방+레이저 병행 차별화 키워드 — "한방피부과 치료와 레이저 병행" 등 경쟁사와 차별화된 롱테일 공략</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-blue"></div>
+          <p>삼화지구·화복 소지역 타겟 — 대형 키워드 대신 경쟁도 낮은 지역+시술 조합으로 빠른 상위 노출 설계</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-gold"></div>
+          <p>생활습관 문진·피부염 원인 접근 등 의원 철학 반영 콘텐츠 — 브랜드 신뢰 구축 + 전문성 어필 병행</p>
+        </div>
+
+        <div style="margin-top:20px;border-top:1px solid var(--border);padding-top:16px;">
+          <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px;">채널별 콘텐츠 운영 방향</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <div style="padding:14px 16px;background:var(--green-light);border-radius:12px;border-left:3px solid var(--accent);">
+              <div style="font-size:11px;font-weight:800;color:var(--accent);margin-bottom:6px;">🏥 홈페이지</div>
+              <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">전문 의학칼럼</div>
+              <div style="font-size:12px;color:var(--muted);line-height:1.6;">한방·레이저 시술 원리, 치료 철학, 임상적 접근 등 심층 전문 콘텐츠. 브랜드 신뢰와 SEO 권위 동시 구축</div>
+            </div>
+            <div style="padding:14px 16px;background:var(--blue-light);border-radius:12px;border-left:3px solid var(--blue);">
+              <div style="font-size:11px;font-weight:800;color:var(--blue);margin-bottom:6px;">📖 네이버 블로그</div>
+              <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">라이트 의학정보</div>
+              <div style="font-size:12px;color:var(--muted);line-height:1.6;">지역·시술 키워드 중심의 검색 유입형 콘텐츠. 일상적 고민(모공·레이저제모·피부염)을 쉽게 풀어 검색 상위 노출 집중</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 서브업무 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-blue">⚙️</div>
+        <h3>서브업무 <span class="count-chip">13건</span></h3>
+      </div>
+      <div class="section-body">
+        <ul class="sub-list">
+          <li><div class="sub-num">1</div><span><strong>가격표 엑셀 파일 제작</strong> — 시술 항목별 가격 정리, 최종본 확정 (4/3~10)</span></li>
+          <li><div class="sub-num">2</div><span><strong>전단지 디자인 제작</strong> — 삼화지구 배포용, 오프라인 신규 접점 확보 (4/6)</span></li>
+          <li><div class="sub-num">3</div><span><strong>네이버플레이스 피부클리닉 명칭 변경</strong> — 검색 노출 정확도 향상 (4/7)</span></li>
+          <li><div class="sub-num">4</div><span><strong>블로그 전화번호 오류 수정</strong> — 잘못 기재된 전화번호 수정 완료 (4/11)</span></li>
+          <li><div class="sub-num">5</div><span><strong>카톡채널 추가 안내문 제작</strong> — 신규 환자 대상 채널 안내 문구 완성 (4/16)</span></li>
+          <li><div class="sub-num">6</div><span><strong>네이버 리뷰 이벤트 시안 배경색 변경 3종</strong> — 원내 부착 이벤트물 시안 최종 확정 (4/16)</span></li>
+          <li><div class="sub-num">7</div><span><strong>홈페이지 1차 구축 완료</strong> — 도메인(365kbhani.com) + SSL 보안 설정 완료 (4/21)</span></li>
+          <li><div class="sub-num">8</div><span><strong>당근마켓 계정 운영자 등록</strong> — 지역 타겟 광고 집행 준비 완료 (4/23)</span></li>
+          <li><div class="sub-num">9</div><span><strong>의료배상보험 서류 수령 + 외국인환자 유치업 신청 준비 완료</strong> — 영어권 환자 모객을 위한 필수 요건 이행 (4/28)</span></li>
+          <li><div class="sub-num">10</div><span><strong>키워드광고 심의 완료 후 재개 예정</strong></span></li>
+          <li><div class="sub-num">11</div><span><strong>플레이스 광고</strong> — 기존 광고 리뉴얼 필요</span></li>
+          <li><div class="sub-num">12</div><span><strong>공식홈페이지 이벤트 팝업모달 고도화</strong> — UX 개선 및 이벤트 전환율 향상 목적</span></li>
+          <li><div class="sub-num">13</div><span><strong>네이버카페 후기 작성 완료</strong> — "제주 삼화지구피부과 추천해드려요!! 오늘 다녀온 365경희부부한의원 피부클리닉" 자연 후기 등록</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 5월 방향 -->
+    <div class="next-band">
+      <h3>💡 5월 중점 방향</h3>
+      <div class="next-item">
+        <div class="n-num">1</div>
+        <p><strong>외국인환자 유치업 신청 승인 후 영어권 모객 즉시 집행</strong> — 구글 SEO 영문 콘텐츠 확장, 영문 시술 안내 페이지 정비</p>
+      </div>
+      <div class="next-item">
+        <div class="n-num">2</div>
+        <p>키워드광고 심의 완료 후 재개 — 플레이스 광고 리뉴얼 병행해 검색 노출·유입 전환 집중</p>
+      </div>
+      <div class="next-item">
+        <div class="n-num">3</div>
+        <p>홈페이지 전문 의학칼럼 지속 발행 — 시술 안내·기미·흉터·레이저제모 주제로 심층 콘텐츠 구축</p>
+      </div>
+      <div class="next-item">
+        <div class="n-num">4</div>
+        <p>네이버플레이스 리뷰 유도 본격화 — 리뷰 이벤트 진행 + 카카오채널 발송으로 초기 리뷰 누적 가속화</p>
+      </div>
+      <div class="next-item">
+        <div class="n-num">5</div>
+        <p>여름 시즌 콘텐츠 선제 기획 — 레이저제모·모공·색소 시즌성 키워드 블로그·홈페이지 동시 공략</p>
+      </div>
+    </div>
+
+  </div><!-- /panel-apr -->
 
   <!-- ═══════════════════════════════════════
        3월 보고서
   ═══════════════════════════════════════ -->
-  <div class="report-panel active" id="panel-mar">
+  <div class="report-panel" id="panel-mar">
 
     <!-- 요약 배너 -->
     <div class="summary-band">

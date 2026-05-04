@@ -73,11 +73,239 @@
 <main class="container">
   <p class="timeline-label">보고서 목록</p>
   <div class="month-tabs">
-    <div class="month-tab active" onclick="switchTab('mar')">2026년 3월</div>
-    <div class="month-tab" onclick="switchTab('feb')">2026년 2월</div>
+    <div class="month-tab active" onclick="switchTab('apr',event)">2026년 4월</div>
+    <div class="month-tab" onclick="switchTab('mar',event)">2026년 3월</div>
+    <div class="month-tab" onclick="switchTab('feb',event)">2026년 2월</div>
   </div>
 
-  <div class="report-panel active" id="panel-mar">
+  <!-- ===== 4월 패널 ===== -->
+  <div class="report-panel active" id="panel-apr">
+
+    <!-- 요약 배너 -->
+    <div class="summary-band">
+      <div class="band-title">MONTHLY SUMMARY</div>
+      <div class="band-month">2026년 4월 마케팅 결과보고</div>
+      <div class="band-points">
+        <div class="band-point"><div class="dot"></div><p><strong>홈페이지 유입 196건</strong> — 네이버 검색 채널 62%, 직접 방문 23%로 검색 노출 기반 유지</p></div>
+        <div class="band-point"><div class="dot"></div><p><strong>블로그 7건 발행</strong> — 성산구·가음정동 지역 키워드 충치·사랑니·임플란트·소아 고른 커버</p></div>
+        <div class="band-point"><div class="dot"></div><p><strong>네이버 블로그 조회수 133건</strong> — 3월 34건 대비 <strong>+291% 급성장</strong>, 4월 블로그 본격 운영 첫 성과</p></div>
+      </div>
+    </div>
+
+    <!-- 핵심 지표 -->
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="mc-label">홈페이지 총 유입</div>
+        <div class="mc-value">196</div>
+        <div class="mc-sub">4월 전체 클릭수 합계</div>
+      </div>
+      <div class="metric-card highlight">
+        <div class="mc-label">네이버 검색 유입</div>
+        <div class="mc-value">122</div>
+        <div class="mc-sub">전체 유입의 62%</div>
+      </div>
+      <div class="metric-card">
+        <div class="mc-label">직접 방문</div>
+        <div class="mc-value">45</div>
+        <div class="mc-sub">전체 유입의 23%</div>
+      </div>
+      <div class="metric-card highlight">
+        <div class="mc-label">블로그 조회수</div>
+        <div class="mc-value">133</div>
+        <div class="mc-sub">3월 34건 대비 +291%↑</div>
+      </div>
+      <div class="metric-card">
+        <div class="mc-label">블로그 발행</div>
+        <div class="mc-value">7건</div>
+        <div class="mc-sub">지역 SEO 중심</div>
+      </div>
+    </div>
+
+    <!-- 키워드 순위 + 유입 채널 -->
+    <div class="two-col">
+      <div class="section-card">
+        <div class="section-header">
+          <div class="icon icon-gold">🥇</div>
+          <h3>네이버 키워드 현황</h3>
+        </div>
+        <div class="section-body">
+          <div style="background:var(--accent-light);border:1px solid var(--accent);border-radius:12px;padding:16px 18px;margin-bottom:12px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+              <div style="background:var(--accent);color:#fff;font-size:13px;font-weight:800;padding:4px 12px;border-radius:20px;">검색 유입 지속</div>
+              <span style="font-size:12px;color:var(--muted);">4월 기준</span>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;">
+              <span style="background:#fff;border:1.5px solid var(--accent);color:#065f46;font-size:12px;font-weight:700;padding:5px 12px;border-radius:8px;">성산구치과</span>
+              <span style="background:#fff;border:1.5px solid var(--accent);color:#065f46;font-size:12px;font-weight:700;padding:5px 12px;border-radius:8px;">성산구 사랑니</span>
+              <span style="background:#fff;border:1.5px solid var(--accent);color:#065f46;font-size:12px;font-weight:700;padding:5px 12px;border-radius:8px;">성산구 소아치과</span>
+              <span style="background:#fff;border:1.5px solid var(--accent);color:#065f46;font-size:12px;font-weight:700;padding:5px 12px;border-radius:8px;">가음정 사랑니</span>
+              <span style="background:#fff;border:1.5px solid var(--accent);color:#065f46;font-size:12px;font-weight:700;padding:5px 12px;border-radius:8px;">가음동치과</span>
+              <span style="background:#fff;border:1.5px solid var(--accent);color:#065f46;font-size:12px;font-weight:700;padding:5px 12px;border-radius:8px;">가음동 임플란트</span>
+              <span style="background:#fff;border:1.5px solid var(--accent);color:#065f46;font-size:12px;font-weight:700;padding:5px 12px;border-radius:8px;">가음정 이갈이</span>
+            </div>
+          </div>
+          <div class="status-item">
+            <div class="status-dot dot-green"></div>
+            <p>성산구·가음동·가음정 권역 핵심 키워드 <strong>검색 유입 유지</strong> — 블로그 발행 연계 효과 지속</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-header">
+          <div class="icon icon-blue">📊</div>
+          <h3>홈페이지 유입 채널 분석</h3>
+        </div>
+        <div class="section-body">
+          <div style="margin-bottom:10px;">
+            <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:4px;"><span>네이버 검색</span><span style="color:var(--accent);font-weight:800;">122 · 62%</span></div>
+            <div style="background:#f0f0f0;border-radius:4px;height:9px;"><div style="background:var(--accent);height:9px;border-radius:4px;width:62%;"></div></div>
+          </div>
+          <div style="margin-bottom:10px;">
+            <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:4px;"><span>직접방문</span><span style="color:var(--primary);font-weight:800;">45 · 23%</span></div>
+            <div style="background:#f0f0f0;border-radius:4px;height:9px;"><div style="background:var(--primary);height:9px;border-radius:4px;width:23%;"></div></div>
+          </div>
+          <div style="margin-bottom:10px;">
+            <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:4px;"><span>네이버플레이스</span><span style="color:#c9a96e;font-weight:800;">16 · 8%</span></div>
+            <div style="background:#f0f0f0;border-radius:4px;height:9px;"><div style="background:#c9a96e;height:9px;border-radius:4px;width:8%;"></div></div>
+          </div>
+          <div style="margin-bottom:10px;">
+            <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:4px;"><span>구글(Google)</span><span style="color:var(--blue);font-weight:800;">9 · 5%</span></div>
+            <div style="background:#f0f0f0;border-radius:4px;height:9px;"><div style="background:var(--blue);height:9px;border-radius:4px;width:5%;"></div></div>
+          </div>
+          <div style="margin-bottom:14px;">
+            <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:4px;"><span>기타</span><span style="color:var(--muted);font-weight:800;">4 · 2%</span></div>
+            <div style="background:#f0f0f0;border-radius:4px;height:9px;"><div style="background:#a0aec0;height:9px;border-radius:4px;width:2%;"></div></div>
+          </div>
+          <div class="status-item">
+            <div class="status-dot dot-gold"></div>
+            <p style="font-size:13px;">네이버 검색·플레이스 합산 138건(70%) — 네이버 채널 집중 관리 효과 유지</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 블로그 발행 내역 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-blue">📝</div>
+        <h3>블로그 발행 내역 <span class="count-chip">7건</span></h3>
+      </div>
+      <div class="section-body" style="padding:0;">
+        <div style="overflow-x:auto;">
+          <table class="content-table">
+            <thead>
+              <tr>
+                <th>#</th><th>발행일</th><th>제목</th><th>키워드</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td><td style="color:var(--muted);white-space:nowrap;">4/15</td>
+                <td>성산구 소아치과</td>
+                <td><span style="display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;background:var(--accent-light);color:#065f46;">소아치과</span></td>
+              </tr>
+              <tr>
+                <td>2</td><td style="color:var(--muted);white-space:nowrap;">4/22</td>
+                <td>가음동 잇몸 피</td>
+                <td><span style="display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;background:var(--accent-light);color:#065f46;">잇몸</span></td>
+              </tr>
+              <tr>
+                <td>3</td><td style="color:var(--muted);white-space:nowrap;">4/23</td>
+                <td>가음동 임플란트</td>
+                <td><span style="display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;background:var(--accent-light);color:#065f46;">임플란트</span></td>
+              </tr>
+              <tr>
+                <td>4</td><td style="color:var(--muted);white-space:nowrap;">4/27</td>
+                <td>가음정동 치과 이갈이</td>
+                <td><span style="display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;background:var(--accent-light);color:#065f46;">이갈이</span></td>
+              </tr>
+              <tr>
+                <td>5</td><td style="color:var(--muted);white-space:nowrap;">4/28</td>
+                <td>성산구 사랑니</td>
+                <td><span style="display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;background:var(--accent-light);color:#065f46;">사랑니</span></td>
+              </tr>
+              <tr>
+                <td>6</td><td style="color:var(--muted);white-space:nowrap;">4/29</td>
+                <td>가음정 사랑니</td>
+                <td><span style="display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;background:var(--accent-light);color:#065f46;">사랑니</span></td>
+              </tr>
+              <tr>
+                <td>7</td><td style="color:var(--muted);white-space:nowrap;">4/30</td>
+                <td>성산구 충치</td>
+                <td><span style="display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;background:var(--accent-light);color:#065f46;">충치</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="padding:12px 20px;background:var(--bg);font-size:12px;color:var(--muted);">
+          ※ 성산구·가음동·가음정동 지역 키워드 + 충치·사랑니·임플란트·소아치과·잇몸·이갈이 다양한 시술 커버
+        </div>
+      </div>
+    </div>
+
+    <!-- 블로그 조회수 성장 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-gold">📈</div>
+        <h3>네이버 블로그 조회수 성장</h3>
+      </div>
+      <div class="section-body">
+        <!-- 3월 vs 4월 비교 카드 -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+          <div style="background:var(--bg);border-radius:12px;padding:18px 20px;text-align:center;border:1px solid var(--border);">
+            <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;">3월 조회수</div>
+            <div style="font-size:32px;font-weight:800;color:var(--primary);">34</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px;">블로그 미운영</div>
+          </div>
+          <div style="background:var(--accent-light);border-radius:12px;padding:18px 20px;text-align:center;border:2px solid var(--accent);">
+            <div style="font-size:11px;font-weight:700;color:#065f46;margin-bottom:6px;">4월 조회수</div>
+            <div style="font-size:32px;font-weight:800;color:#065f46;">133</div>
+            <div style="font-size:12px;color:#065f46;margin-top:4px;font-weight:700;">+291% ↑</div>
+          </div>
+        </div>
+        <!-- 유입 분석 -->
+        <div style="background:var(--bg);border-radius:10px;padding:16px 18px;margin-bottom:16px;">
+          <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:12px;">검색 유입 29.55% — 주요 유입 키워드</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            <span style="background:#fff;border:1.5px solid var(--accent);color:#065f46;font-size:12px;font-weight:700;padding:5px 12px;border-radius:8px;">창원 이고치과 38%</span>
+            <span style="background:#fff;border:1.5px solid var(--border);color:var(--text);font-size:12px;font-weight:600;padding:5px 12px;border-radius:8px;">이고치과 15%</span>
+            <span style="background:#fff;border:1.5px solid var(--border);color:var(--text);font-size:12px;font-weight:600;padding:5px 12px;border-radius:8px;">가음정 이고치과</span>
+            <span style="background:#fff;border:1.5px solid var(--border);color:var(--text);font-size:12px;font-weight:600;padding:5px 12px;border-radius:8px;">아프지않는 사랑니</span>
+            <span style="background:#fff;border:1.5px solid var(--border);color:var(--text);font-size:12px;font-weight:600;padding:5px 12px;border-radius:8px;">저가 임플란트 비용</span>
+          </div>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-green"></div>
+          <p>네이버 통합검색(모바일 30.77% · PC 7.69%) — 블로그 발행 시작 첫 달 검색 노출 즉시 발생, 5월 조회수 추가 성장 기대</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5월 중점방향 -->
+    <div style="background:var(--primary);border-radius:16px;padding:28px 32px;margin-bottom:28px;color:#fff;">
+      <div style="font-size:13px;color:rgba(255,255,255,0.5);font-weight:600;letter-spacing:0.5px;margin-bottom:6px;">NEXT MONTH PLAN</div>
+      <div style="font-size:20px;font-weight:800;color:var(--accent);margin-bottom:20px;">5월 중점 방향</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;">
+        <div style="display:flex;gap:10px;align-items:flex-start;">
+          <div style="width:24px;height:24px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;margin-top:1px;">1</div>
+          <p style="font-size:14px;line-height:1.6;color:rgba(255,255,255,0.85);">블로그 꾸준한 발행 지속 — 성산구·가음동·가음정 지역 키워드 확장 커버</p>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start;">
+          <div style="width:24px;height:24px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;margin-top:1px;">2</div>
+          <p style="font-size:14px;line-height:1.6;color:rgba(255,255,255,0.85);">네이버플레이스 순위 집중 관리 — 유입 전환율 제고를 위한 플레이스 최적화 작업</p>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start;">
+          <div style="width:24px;height:24px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;margin-top:1px;">3</div>
+          <p style="font-size:14px;line-height:1.6;color:rgba(255,255,255,0.85);">임플란트·교정 등 고단가 시술 키워드 콘텐츠 강화 — 검색 의도 매칭 상세 페이지 보강</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== 3월 패널 ===== -->
+  <div class="report-panel" id="panel-mar">
 
     <!-- 요약 배너 -->
     <div class="summary-band">
@@ -267,12 +495,12 @@
     }).join('');
     document.getElementById('mar-content-area').innerHTML='<div style="overflow-x:auto;"><table class="content-table"><thead><tr><th>#</th><th>제목</th><th>채널</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
   }
-  function switchTab(id) {
-    document.querySelectorAll('.month-tab').forEach(t=>t.classList.remove('active')); event.currentTarget.classList.add('active');
+  function switchTab(id, e) {
+    document.querySelectorAll('.month-tab').forEach(t=>t.classList.remove('active')); (e?e.currentTarget:document.querySelector('.month-tab')).classList.add('active');
     document.querySelectorAll('.report-panel').forEach(p=>p.classList.remove('active')); document.getElementById('panel-'+id).classList.add('active');
     if(id==='mar') loadMarchContent();
   }
-  document.addEventListener('DOMContentLoaded', loadMarchContent);
+  document.addEventListener('DOMContentLoaded', ()=>{});
 </script>
 </body>
 </html>

@@ -55,11 +55,151 @@
 <main class="container">
   <p class="timeline-label">보고서 목록</p>
   <div class="month-tabs">
-    <div class="month-tab active" onclick="switchTab('mar', event)">2026년 3월</div>
+    <div class="month-tab active" onclick="switchTab('apr', event)">2026년 4월</div>
+    <div class="month-tab" onclick="switchTab('mar', event)">2026년 3월</div>
     <div class="month-tab" onclick="switchTab('feb', event)">2026년 2월</div>
   </div>
 
-  <div class="report-panel active" id="panel-mar">
+  <!-- ===== 4월 패널 ===== -->
+  <div class="report-panel active" id="panel-apr">
+
+    <div class="summary-band">
+      <div class="band-title">MONTHLY SUMMARY</div>
+      <div class="band-month">2026년 4월 마케팅 결과보고</div>
+      <div class="band-points">
+        <div class="band-point"><div class="dot"></div><p><strong>월초~중순 2위 안정 유지</strong> — 4/1~4/9 꾸준한 2위, 3월 상위권 기반 이어받아 출발</p></div>
+        <div class="band-point"><div class="dot"></div><p><strong>4/19~4/26 4위 하락 구간 발생</strong> — 경쟁 업체 변수로 일시 하락, 블로그 발행 지속으로 대응</p></div>
+        <div class="band-point"><div class="dot"></div><p><strong>4/29~4/30 1위 탈환 🏆</strong> — 하락 이후 빠른 반등, 월말 최상위 마감</p></div>
+      </div>
+    </div>
+
+    <!-- 핵심 지표 -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:28px;">
+      <div style="background:var(--accent-light);border-radius:14px;padding:22px 24px;border:2px solid var(--accent);">
+        <div style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:8px;">4월 최고 순위</div>
+        <div style="font-size:36px;font-weight:800;color:#d97706;">1위 🏆</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:6px;">4/29~4/30 달성</div>
+      </div>
+      <div style="background:var(--accent-light);border-radius:14px;padding:22px 24px;border:1px solid var(--accent);">
+        <div style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:8px;">월말 현재 순위</div>
+        <div style="font-size:36px;font-weight:800;color:#d97706;">1위</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:6px;">4/30 기준</div>
+      </div>
+      <div style="background:#fdecea;border-radius:14px;padding:22px 24px;border:1px solid #fca5a5;">
+        <div style="font-size:12px;color:#991b1b;font-weight:600;margin-bottom:8px;">최저 구간</div>
+        <div style="font-size:36px;font-weight:800;color:#dc2626;">4위</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:6px;">4/19~4/26 (일시)</div>
+      </div>
+      <div style="background:#fff;border-radius:14px;padding:22px 24px;border:1px solid var(--border);">
+        <div style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:8px;">블로그 발행</div>
+        <div style="font-size:36px;font-weight:800;color:var(--primary);">50건</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:6px;">순위관리용 정보성 포스팅</div>
+      </div>
+    </div>
+
+    <!-- 순위 추이 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon">🥇</div>
+        <h3>네이버 플레이스 순위 추이 ('제주 이사')</h3>
+      </div>
+      <div class="section-body">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:18px;">
+          <div style="background:#fff8e6;border-radius:10px;padding:12px 14px;border:1px solid #e8c96e;">
+            <div style="font-size:10px;font-weight:700;color:#92400e;margin-bottom:4px;">4/1 ~ 4/9</div>
+            <div style="font-size:22px;font-weight:800;color:#c9a96e;">2위</div>
+            <div style="font-size:11px;color:var(--muted);">안정 유지</div>
+          </div>
+          <div style="background:#fdecea;border-radius:10px;padding:12px 14px;border:1px solid #fca5a5;">
+            <div style="font-size:10px;font-weight:700;color:#991b1b;margin-bottom:4px;">4/10 ~ 4/12</div>
+            <div style="font-size:22px;font-weight:800;color:#dc2626;">3위</div>
+            <div style="font-size:11px;color:var(--muted);">소폭 하락</div>
+          </div>
+          <div style="background:#fff8e6;border-radius:10px;padding:12px 14px;border:1px solid #e8c96e;">
+            <div style="font-size:10px;font-weight:700;color:#92400e;margin-bottom:4px;">4/13 ~ 4/18</div>
+            <div style="font-size:22px;font-weight:800;color:#c9a96e;">2위</div>
+            <div style="font-size:11px;color:var(--muted);">회복</div>
+          </div>
+          <div style="background:#fdecea;border-radius:10px;padding:12px 14px;border:1px solid #fca5a5;">
+            <div style="font-size:10px;font-weight:700;color:#991b1b;margin-bottom:4px;">4/19 ~ 4/26</div>
+            <div style="font-size:22px;font-weight:800;color:#dc2626;">4위</div>
+            <div style="font-size:11px;color:var(--muted);">하락 구간</div>
+          </div>
+          <div style="background:#fff8e6;border-radius:10px;padding:12px 14px;border:1px solid #e8c96e;">
+            <div style="font-size:10px;font-weight:700;color:#92400e;margin-bottom:4px;">4/27 ~ 4/28</div>
+            <div style="font-size:22px;font-weight:800;color:#c9a96e;">3위</div>
+            <div style="font-size:11px;color:var(--muted);">반등 시작</div>
+          </div>
+          <div style="background:var(--accent-light);border-radius:10px;padding:12px 14px;border:2px solid var(--accent);">
+            <div style="font-size:10px;font-weight:700;color:#92400e;margin-bottom:4px;">4/29 ~ 4/30</div>
+            <div style="font-size:22px;font-weight:800;color:#d97706;">1위 🏆</div>
+            <div style="font-size:11px;color:var(--muted);">최상위 탈환</div>
+          </div>
+        </div>
+        <div class="status-item">
+          <div class="status-dot"></div>
+          <p>4/19~4/26 4위 하락 → 블로그 발행 지속 → 4/27부터 반등 → <strong>4/29 1위 탈환</strong> — 단 사흘 만에 최상위 복귀</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot"></div>
+          <p>4월 전체 평균 순위 <strong>약 2~3위권</strong> — 하락 구간 포함에도 최상위 경쟁력 유지, 5월 1위 방어가 관건</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 블로그 발행 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon">📝</div>
+        <h3>순위관리용 블로그 발행 <span style="display:inline-block;background:var(--accent);color:#fff;font-size:11px;font-weight:800;padding:3px 9px;border-radius:10px;margin-left:8px;vertical-align:middle;">50건</span></h3>
+      </div>
+      <div class="section-body">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:16px;">
+          <div style="background:var(--accent-light);border-radius:10px;padding:16px;text-align:center;border:1px solid var(--accent);">
+            <div style="font-size:32px;font-weight:800;color:#d97706;">50건</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px;">4월 발행 완료</div>
+          </div>
+          <div style="background:#fff;border-radius:10px;padding:16px;border:1px solid var(--border);">
+            <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px;">발행 목적</div>
+            <div style="font-size:13px;font-weight:600;line-height:1.5;">'제주 이사' 키워드<br>검색 노출 강화</div>
+          </div>
+          <div style="background:#fff;border-radius:10px;padding:16px;border:1px solid var(--border);">
+            <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px;">효과</div>
+            <div style="font-size:13px;font-weight:600;line-height:1.5;">4위 하락 후<br>1위 탈환 기반</div>
+          </div>
+        </div>
+        <div class="status-item">
+          <div class="status-dot"></div>
+          <p>4위 하락 구간(4/19~4/26)에서도 블로그 발행 지속 → <strong>4/29 1위 탈환</strong>의 핵심 동력으로 작용</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot"></div>
+          <p>월 50건 꾸준한 콘텐츠 누적 → 네이버 알고리즘 신뢰도 유지 → 하락 후 빠른 반등 선순환 구조 지속</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5월 방향 -->
+    <div style="background:var(--accent-light);border:1px solid var(--accent);border-radius:14px;padding:24px 28px;margin-bottom:20px;">
+      <h3 style="font-size:15px;font-weight:700;color:#d97706;margin-bottom:16px;">🚚 5월 순위 관리 방향</h3>
+      <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:10px;">
+        <div style="min-width:24px;height:24px;background:var(--accent);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;">1</div>
+        <p style="font-size:14px;line-height:1.6;padding-top:2px;"><strong>'제주 이사' 1위 방어</strong> — 4월 말 탈환한 1위를 5월 내내 유지하는 것이 최우선 목표</p>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:10px;">
+        <div style="min-width:24px;height:24px;background:var(--accent);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;">2</div>
+        <p style="font-size:14px;line-height:1.6;padding-top:2px;">블로그 50건 발행 지속 — 순위 하락 패턴(4/19~4/26) 재발 방지, 최신성 신호 지속 공급</p>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:12px;">
+        <div style="min-width:24px;height:24px;background:var(--accent);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;">3</div>
+        <p style="font-size:14px;line-height:1.6;padding-top:2px;">리뷰·최신성 관리 병행 — 알고리즘 안정성 확보 및 경쟁 업체 변수 대응</p>
+      </div>
+    </div>
+
+  </div><!-- /panel-apr -->
+
+  <!-- ===== 3월 패널 ===== -->
+  <div class="report-panel" id="panel-mar">
 
     <!-- 요약 배너 -->
     <div class="summary-band">
