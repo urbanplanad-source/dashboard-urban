@@ -1373,6 +1373,28 @@
     return CHANNEL_TAG[ch] || '<span class="tag tag-homepage">' + ch + '</span>';
   }
 
+  function normalizeDate(v) {
+    if (!v) return '';
+    const s = String(v).trim();
+    const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    return m ? `${m[1]}-${m[2]}-${m[3]}` : s;
+  }
+
+  function normalizeMonth(v) {
+    const d = normalizeDate(v);
+    const m = String(d || v || '').match(/^(\d{4})-(\d{2})/);
+    return m ? `${m[1]}-${m[2]}` : '';
+  }
+
+  function normalizePostLog(p) {
+    return {
+      ...p,
+      publishedAt: normalizeDate(p.publishedAt),
+      month: normalizeMonth(p.month || p.publishedAt),
+      channel: p.channel || p[''] || p.Channel || p['채널'] || '홈페이지'
+    };
+  }
+
   // ── 공통 렌더 헬퍼 ──
   function renderContentToArea(posts, chipId, areaId) {
     const count = posts.length;
@@ -1412,10 +1434,7 @@
       .then(r => r.json())
       .then(res => {
         if (!res.success) throw new Error(res.error || 'API 오류');
-        summaryCache = (res.data.postLogs || []).map(p => ({
-          ...p,
-          channel: p.channel || '홈페이지'
-        }));
+        summaryCache = (res.data.postLogs || []).map(normalizePostLog);
         return summaryCache;
       });
   }

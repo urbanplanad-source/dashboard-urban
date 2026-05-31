@@ -72,6 +72,11 @@
     /* Credentials */
     .cred-row { display:flex; align-items:center; gap:8px; padding:9px 12px; border-radius:8px; background:#f9fafb; border:1px solid #f3f4f6; }
     .cred-pw  { font-family:monospace; font-size:12px; color:#374151; letter-spacing:0.5px; cursor:pointer; }
+
+    .main-top-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:18px; align-items:start; }
+    @media (max-width: 860px) {
+      .main-top-grid { grid-template-columns:1fr; }
+    }
   </style>
 </head>
 <body>
@@ -142,7 +147,6 @@
     monthlyJobs: [
       // ── 365경희부부한의원 피부센터 (kyunghee) ──
       // [완료] 3월
-      { jobId:'mj-kgh-001', clientId:'kyunghee', title:'네이버 블로그 의학정보 발행',     kind:'서브', targetCount:5,    currentCount:5,    unit:'건',  dueDate:null, note:'완료 (5/5건)' },
       { jobId:'mj-kgh-010', clientId:'kyunghee', title:'네이버 플레이스 사진·정보 업데이트', kind:'서브', targetCount:null, currentCount:null, unit:null, dueDate:null, note:'완료 (3/9)' },
       { jobId:'mj-kgh-011', clientId:'kyunghee', title:'명함 디자인 제작 및 인쇄 발주',    kind:'서브', targetCount:null, currentCount:null, unit:null, dueDate:null, note:'완료 (500장, 3/12)' },
       { jobId:'mj-kgh-012', clientId:'kyunghee', title:'가오픈 이벤트 안내문 제작 2종',    kind:'서브', targetCount:null, currentCount:null, unit:null, dueDate:null, note:'완료 (3/16)' },
@@ -173,6 +177,7 @@
     postLogs: [],
     commonTasks: [],
     contracts: [],
+    consultHistories: [],  // 채널별 상담 내역 월별 백업 (다음달 초기화 시 자동 저장)
   };
 
   // ═══════════════════════════════════════════════
@@ -180,9 +185,37 @@
   // ═══════════════════════════════════════════════
   const uid     = () => Math.random().toString(36).slice(2,10);
   const today   = () => { const n=new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`; };
-  const nowMonth= () => { const n=new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}`; };
-  const fmtDate = (d) => { if(!d) return '—'; const p=d.split('-'); return `${p[0].slice(2)}.${p[1]}.${p[2]}`; };
-  const daysLeft= (d) => { if(!d) return null; const due=new Date(d+'T00:00:00'); const n=new Date(); const tod=new Date(n.getFullYear(),n.getMonth(),n.getDate()); return Math.ceil((due-tod)/86400000); };
+  const nowMonth = () => { const n=new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}`; };
+  const prevMonth= () => { const n=new Date(); const y=n.getMonth()===0?n.getFullYear()-1:n.getFullYear(); const m=n.getMonth()===0?12:n.getMonth(); return `${y}-${String(m).padStart(2,'0')}`; };
+  const normalizeDate = (v) => {
+    if(!v) return '';
+    if(v instanceof Date && !isNaN(v)) {
+      return `${v.getFullYear()}-${String(v.getMonth()+1).padStart(2,'0')}-${String(v.getDate()).padStart(2,'0')}`;
+    }
+    const s = String(v).trim();
+    const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if(m) return `${m[1]}-${m[2]}-${m[3]}`;
+    const d = new Date(s);
+    if(!isNaN(d)) return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    return s;
+  };
+  const normalizeMonth = (v) => {
+    const d = normalizeDate(v);
+    const m = String(d || v || '').match(/^(\d{4})-(\d{2})/);
+    return m ? `${m[1]}-${m[2]}` : '';
+  };
+  const normalizePostLog = (p) => {
+    const channel = p.channel || p[''] || p.Channel || p['채널'] || null;
+    return {
+      ...p,
+      publishedAt: normalizeDate(p.publishedAt),
+      month: normalizeMonth(p.month || p.publishedAt),
+      channel,
+    };
+  };
+  const fmtMonth = (m) => { const nm = normalizeMonth(m); if(!nm) return ''; const [y,mo]=nm.split('-'); return `${y}년 ${Number(mo)}월`; };
+  const fmtDate  = (d) => { const nd = normalizeDate(d); if(!nd) return '—'; const p=nd.split('-'); return `${p[0].slice(2)}.${p[1]}.${p[2]}`; };
+  const daysLeft= (d) => { const nd = normalizeDate(d); if(!nd) return null; const due=new Date(nd+'T00:00:00'); const n=new Date(); const tod=new Date(n.getFullYear(),n.getMonth(),n.getDate()); return Math.ceil((due-tod)/86400000); };
 
   // DEFAULT_DATA 순서를 유지하면서 primary·fallback 데이터를 병합하는 함수
   // - primary  : Sheets 데이터 (sync 시) 또는 localStorage 데이터 (loadData 시)
@@ -221,8 +254,9 @@
           monthlyJobs:  s.monthlyJobs  ?? DEFAULT_DATA.monthlyJobs,
           postLogs:     s.postLogs     ?? [],
           commonTasks:  s.commonTasks  ?? [],
-          credentials:  s.credentials  ?? DEFAULT_CREDENTIALS,
-          contracts:    s.contracts    ?? [],
+          credentials:      s.credentials      ?? DEFAULT_CREDENTIALS,
+          contracts:        s.contracts        ?? [],
+          consultHistories: s.consultHistories ?? [],
         };
       }
     } catch(e) {}
@@ -280,19 +314,21 @@
       projects:     [],
       tasks:        [],
       logs:         d.logs         || [],
-      monthlyJobs:  (d.monthlyJobs && d.monthlyJobs.length) ? d.monthlyJobs : DEFAULT_DATA.monthlyJobs,
+      // 서브업무는 Sheets에서 가져오지 않음 — 로컬 상태 전용
+      // (Sheets fallback으로 DEFAULT_DATA 사용 시 초기화한 서브업무가 복원되는 문제 방지)
+      monthlyJobs:  (d.monthlyJobs && d.monthlyJobs.length) ? d.monthlyJobs.map(j => ({ ...j, dueDate: normalizeDate(j.dueDate) || null })) : [],
       deliverables: DEFAULT_DATA.deliverables,
-      postLogs: (d.postLogs || []).map(p => ({
-        ...p,
-        channel: p.channel || p[''] || null   // Sheets 빈 헤더 키 정규화
-      })),
+      postLogs: (d.postLogs || []).map(normalizePostLog),
       commonTasks: (d.commonTasks || []).map(t => ({
         ...t,
         done: t.done === true || t.done === 'TRUE' || t.done === '1',
+        dueDate: normalizeDate(t.dueDate) || null,
       })),
       contracts: (d.contracts || []).map(c => ({
         ...c,
         monthlyFee: Number(c.monthlyFee) || 0,
+        contractStart: normalizeDate(c.contractStart),
+        contractRenew: normalizeDate(c.contractRenew),
       })),
       expenses: (d.expenses || []).map(e => ({
         ...e,
@@ -464,6 +500,9 @@
       setShowAddSub(false);
     }
 
+    // 필수업무 표시명 매핑
+    const TITLE_DISPLAY_MAP = { '홈페이지 글 발행': '병원마케팅 콘텐츠 제작' };
+
     function JobRow({ job }) {
       const isCount  = job.targetCount != null;
       const isSub    = job.kind === '서브' || job.kind === '순위';
@@ -475,6 +514,8 @@
       const jobLogs  = (isCount || isBlog)
         ? (data.postLogs||[]).filter(p => p.jobId === job.jobId)
         : [];
+      // 표시 제목 (매핑 적용)
+      const displayTitle = TITLE_DISPLAY_MAP[job.title] || job.title;
 
       // 수동 발행 기록 폼 상태
       const [showPost,    setShowPost]    = useState(false);
@@ -486,6 +527,11 @@
                       : job.title.includes('위챗')   ? '위챗'
                       : '홈페이지';
       const [postChannel, setPostChannel] = useState(defaultCh);
+
+      // 발행 항목 편집/삭제 상태
+      const [editingLogId,  setEditingLogId]  = useState(null);
+      const [editLogTitle,  setEditLogTitle]  = useState('');
+      const [editLogUrl,    setEditLogUrl]    = useState('');
 
       // 서브업무 인라인 편집 상태
       const [editing,    setEditing]    = useState(false);
@@ -519,6 +565,36 @@
           dueDate: editDue || null,
         });
         setEditing(false);
+      }
+
+      function deleteLog(logId) {
+        if (!confirm('이 발행 항목을 삭제하시겠습니까?')) return;
+        mutate(d => ({
+          ...d,
+          monthlyJobs: isCount ? d.monthlyJobs.map(j =>
+            j.jobId === job.jobId ? { ...j, currentCount: Math.max(0,(j.currentCount||0)-1) } : j
+          ) : d.monthlyJobs,
+          postLogs: (d.postLogs||[]).filter(p => p.logId !== logId)
+        }));
+        fetch(API_URL, {
+          method: 'POST', redirect: 'follow',
+          body: JSON.stringify({ action: 'deletePost', logId })
+        }).catch(e => console.warn('deletePost 오류:', e));
+      }
+
+      function saveLogEdit(logId) {
+        if (!editLogTitle.trim()) return;
+        mutate(d => ({
+          ...d,
+          postLogs: (d.postLogs||[]).map(p =>
+            p.logId === logId ? { ...p, title: editLogTitle.trim(), url: editLogUrl.trim() } : p
+          )
+        }));
+        fetch(API_URL, {
+          method: 'POST', redirect: 'follow',
+          body: JSON.stringify({ action: 'updatePost', logId, title: editLogTitle.trim(), url: editLogUrl.trim() })
+        }).catch(e => console.warn('updatePost 오류:', e));
+        setEditingLogId(null);
       }
 
       function handleSubmitPost() {
@@ -604,7 +680,7 @@
                 textDecoration: isDone ? 'line-through':'none',
                 whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'
               }}>
-                {job.title}
+                {displayTitle}
               </div>
               {job.dueDate && !isDone && (
                 <div style={{fontSize:11,marginTop:2}}><DueBadge dueDate={job.dueDate} /></div>
@@ -766,18 +842,57 @@
           {(isCount || isBlog) && jobLogs.length > 0 && (
             <div style={{marginTop:7,paddingLeft:6,borderLeft:'2px solid #e5e7eb'}}>
               {jobLogs.map(pl => (
-                <div key={pl.logId} style={{display:'flex',alignItems:'center',gap:6,padding:'3px 0',fontSize:11}}>
-                  <span style={{color:'#9ca3af',flexShrink:0}}>↳</span>
-                  {pl.url ? (
-                    <a href={pl.url} target="_blank" rel="noopener"
-                      style={{color:'#1d4ed8',textDecoration:'none',flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',fontWeight:600}}>
-                      {pl.title}
-                    </a>
+                <div key={pl.logId}>
+                  {editingLogId === pl.logId ? (
+                    <div style={{padding:'6px 8px',background:'#f0f9ff',borderRadius:7,marginBottom:4,border:'1px solid #bfdbfe'}}>
+                      <input
+                        value={editLogTitle}
+                        onChange={e=>setEditLogTitle(e.target.value)}
+                        placeholder="제목"
+                        autoFocus
+                        onKeyDown={e=>{ if(e.key==='Enter') saveLogEdit(pl.logId); if(e.key==='Escape') setEditingLogId(null); }}
+                        style={{width:'100%',boxSizing:'border-box',padding:'4px 8px',border:'1px solid #93c5fd',borderRadius:5,fontSize:12,fontFamily:'inherit',outline:'none',marginBottom:4}}
+                      />
+                      <input
+                        value={editLogUrl}
+                        onChange={e=>setEditLogUrl(e.target.value)}
+                        placeholder="URL (선택)"
+                        style={{width:'100%',boxSizing:'border-box',padding:'4px 8px',border:'1px solid #93c5fd',borderRadius:5,fontSize:12,fontFamily:'inherit',outline:'none',marginBottom:5}}
+                      />
+                      <div style={{display:'flex',gap:5}}>
+                        <button onClick={()=>saveLogEdit(pl.logId)}
+                          style={{padding:'3px 10px',background:'#1d4ed8',color:'#fff',border:'none',borderRadius:5,fontSize:11,cursor:'pointer',fontFamily:'inherit',fontWeight:700}}>저장</button>
+                        <button onClick={()=>setEditingLogId(null)}
+                          style={{padding:'3px 9px',background:'none',border:'1px solid #93c5fd',borderRadius:5,fontSize:11,cursor:'pointer',fontFamily:'inherit',color:'#6b7280'}}>취소</button>
+                      </div>
+                    </div>
                   ) : (
-                    <span style={{flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',color:'#374151'}}>{pl.title}</span>
-                  )}
-                  {pl.publishedAt && (
-                    <span style={{color:'#9ca3af',flexShrink:0,fontSize:10}}>{fmtDate(pl.publishedAt)}</span>
+                    <div style={{display:'flex',alignItems:'center',gap:6,padding:'3px 0',fontSize:11,group:'1'}}>
+                      <span style={{color:'#9ca3af',flexShrink:0}}>↳</span>
+                      {pl.url ? (
+                        <a href={pl.url} target="_blank" rel="noopener"
+                          style={{color:'#1d4ed8',textDecoration:'none',flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',fontWeight:600}}>
+                          {pl.title}
+                        </a>
+                      ) : (
+                        <span style={{flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',color:'#374151'}}>{pl.title}</span>
+                      )}
+                      {pl.publishedAt && (
+                        <span style={{color:'#9ca3af',flexShrink:0,fontSize:10}}>{fmtDate(pl.publishedAt)}</span>
+                      )}
+                      <button
+                        onClick={()=>{ setEditingLogId(pl.logId); setEditLogTitle(pl.title); setEditLogUrl(pl.url||''); }}
+                        title="수정"
+                        style={{width:18,height:18,borderRadius:4,border:'1px solid #e5e7eb',background:'#f9fafb',cursor:'pointer',fontSize:9,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'inherit',color:'#6b7280',flexShrink:0}}>
+                        ✎
+                      </button>
+                      <button
+                        onClick={()=>deleteLog(pl.logId)}
+                        title="삭제"
+                        style={{width:18,height:18,borderRadius:4,border:'1px solid #fecaca',background:'#fef2f2',cursor:'pointer',fontSize:9,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:'inherit',color:'#dc2626',flexShrink:0}}>
+                        ✕
+                      </button>
+                    </div>
                   )}
                 </div>
               ))}
@@ -1268,12 +1383,243 @@
   }
 
   // ═══════════════════════════════════════════════
+  //  CALENDAR CARD (업무 캘린더)
+  // ═══════════════════════════════════════════════
+  function CalendarCard({ data, onAddCommonTask, onAddClientSubJob, onUpdateCommonTask, onDeleteCommonTask, onUpdateJob, onDeleteJob, onGoClient }) {
+    const [cursor, setCursor] = useState(() => {
+      const n = new Date();
+      return new Date(n.getFullYear(), n.getMonth(), 1);
+    });
+    const [selectedDate, setSelectedDate] = useState(today());
+    const [editing, setEditing] = useState(null);
+    const [editTitle, setEditTitle] = useState('');
+    const [editDue, setEditDue] = useState('');
+    const [editNote, setEditNote] = useState('');
+    const [showAdd, setShowAdd] = useState(false);
+    const [addType, setAddType] = useState('common');
+    const [addClientId, setAddClientId] = useState((data.clients||[])[0]?.clientId || '');
+    const [addTitle, setAddTitle] = useState('');
+    const [addDue, setAddDue] = useState(today());
+
+    const monthKey = `${cursor.getFullYear()}-${String(cursor.getMonth()+1).padStart(2,'0')}`;
+    const monthLabel = `${cursor.getFullYear()}년 ${cursor.getMonth()+1}월`;
+    const clientsById = useMemo(() => {
+      const m = {};
+      (data.clients||[]).forEach(c => { m[c.clientId] = c; });
+      return m;
+    }, [data.clients]);
+
+    const events = useMemo(() => {
+      const jobEvents = (data.monthlyJobs||[])
+        .filter(j => normalizeDate(j.dueDate))
+        .map(j => {
+          const client = clientsById[j.clientId];
+          return {
+            id: 'job:' + j.jobId,
+            type: 'job',
+            refId: j.jobId,
+            date: normalizeDate(j.dueDate),
+            title: j.title,
+            note: j.note || '',
+            kind: j.kind || '업무',
+            clientId: j.clientId,
+            clientName: client?.clientName || j.clientId || '',
+            done: j.note === '완료' || (j.targetCount != null && Number(j.currentCount||0) >= Number(j.targetCount||0)),
+            color: j.kind === '필수' ? '#dc2626' : j.kind === '순위' ? '#7c3aed' : '#2563eb',
+          };
+        });
+      const commonEvents = (data.commonTasks||[])
+        .filter(t => t.kind !== 'group' && normalizeDate(t.dueDate))
+        .map(t => ({
+          id: 'common:' + t.taskId,
+          type: 'common',
+          refId: t.taskId,
+          date: normalizeDate(t.dueDate),
+          title: t.title,
+          note: '',
+          kind: '공통',
+          clientId: '',
+          clientName: '내 사업',
+          done: !!t.done,
+          color: '#059669',
+        }));
+      return [...jobEvents, ...commonEvents].sort((a,b) => (a.date+a.title).localeCompare(b.date+b.title));
+    }, [data.monthlyJobs, data.commonTasks, clientsById]);
+
+    const eventsByDate = useMemo(() => {
+      const m = {};
+      events.forEach(e => { (m[e.date] ||= []).push(e); });
+      return m;
+    }, [events]);
+
+    const monthEvents = events.filter(e => e.date.startsWith(monthKey));
+    const selectedEvents = eventsByDate[selectedDate] || [];
+    const firstDay = new Date(cursor.getFullYear(), cursor.getMonth(), 1);
+    const startOffset = firstDay.getDay();
+    const daysInMonth = new Date(cursor.getFullYear(), cursor.getMonth()+1, 0).getDate();
+    const cells = [];
+    for (let i=0; i<startOffset; i++) cells.push(null);
+    for (let d=1; d<=daysInMonth; d++) cells.push(new Date(cursor.getFullYear(), cursor.getMonth(), d));
+    while (cells.length % 7 !== 0) cells.push(null);
+
+    function moveMonth(delta) {
+      const n = new Date(cursor.getFullYear(), cursor.getMonth()+delta, 1);
+      setCursor(n);
+      setSelectedDate(`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-01`);
+    }
+    function startEdit(ev) {
+      setEditing(ev);
+      setEditTitle(ev.title);
+      setEditDue(ev.date);
+      setEditNote(ev.note || '');
+    }
+    function saveEdit() {
+      if (!editing || !editTitle.trim()) return;
+      if (editing.type === 'common') {
+        onUpdateCommonTask(editing.refId, editTitle.trim(), editDue || null);
+      } else {
+        onUpdateJob(editing.refId, { title: editTitle.trim(), dueDate: editDue || null, note: editNote });
+      }
+      setEditing(null);
+    }
+    function deleteEvent(ev) {
+      if (!confirm(`"${ev.title}" 업무를 삭제할까요?`)) return;
+      if (ev.type === 'common') onDeleteCommonTask(ev.refId);
+      else onDeleteJob(ev.refId);
+      setEditing(null);
+    }
+    function addEvent() {
+      if (!addTitle.trim()) return;
+      const due = addDue || selectedDate || today();
+      if (addType === 'common') onAddCommonTask(addTitle.trim(), due);
+      else if (addClientId) onAddClientSubJob(addClientId, addTitle.trim(), due);
+      setAddTitle('');
+      setAddDue(due);
+      setShowAdd(false);
+    }
+
+    return (
+      <div style={{background:'#fff',borderRadius:14,border:'1px solid #e5e7eb',padding:'18px 18px',marginBottom:20,boxShadow:'0 1px 4px rgba(0,0,0,0.05)',minWidth:0}}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12,gap:8}}>
+          <div style={{display:'flex',alignItems:'center',gap:9,minWidth:0}}>
+            <span style={{fontSize:18}}>📅</span>
+            <div>
+              <div style={{fontSize:14,fontWeight:800,color:'#1a1a2e'}}>업무 캘린더</div>
+              <div style={{fontSize:11,color:'#9ca3af'}}>{monthEvents.length}건 예정</div>
+            </div>
+          </div>
+          <div style={{display:'flex',alignItems:'center',gap:4,flexShrink:0}}>
+            <button onClick={()=>moveMonth(-1)} title="이전 달" style={{width:28,height:28,border:'1px solid #e5e7eb',borderRadius:7,background:'#fff',cursor:'pointer'}}>‹</button>
+            <div style={{fontSize:13,fontWeight:800,color:'#374151',minWidth:86,textAlign:'center'}}>{monthLabel}</div>
+            <button onClick={()=>moveMonth(1)} title="다음 달" style={{width:28,height:28,border:'1px solid #e5e7eb',borderRadius:7,background:'#fff',cursor:'pointer'}}>›</button>
+          </div>
+        </div>
+
+        <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:4,marginBottom:5}}>
+          {['일','월','화','수','목','금','토'].map((d,i)=><div key={d} style={{fontSize:10,fontWeight:800,color:i===0?'#dc2626':i===6?'#2563eb':'#9ca3af',textAlign:'center'}}>{d}</div>)}
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:4}}>
+          {cells.map((d,i)=>{
+            if(!d) return <div key={'b'+i} style={{aspectRatio:'1/0.9'}} />;
+            const ds = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+            const evs = eventsByDate[ds] || [];
+            const isToday = ds === today();
+            const isSelected = ds === selectedDate;
+            return (
+              <button key={ds} onClick={()=>{setSelectedDate(ds);setAddDue(ds);}}
+                style={{aspectRatio:'1/0.9',border:isSelected?'2px solid #1a1a2e':'1px solid #e5e7eb',borderRadius:8,background:isSelected?'#f8fafc':'#fff',padding:4,cursor:'pointer',fontFamily:'inherit',textAlign:'left',overflow:'hidden'}}>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                  <span style={{fontSize:11,fontWeight:isToday?900:700,color:isToday?'#c9a96e':'#374151'}}>{d.getDate()}</span>
+                  {evs.length>0 && <span style={{fontSize:9,fontWeight:800,color:'#fff',background:'#1a1a2e',borderRadius:9,padding:'0 5px'}}>{evs.length}</span>}
+                </div>
+                <div style={{display:'flex',gap:2,marginTop:4,flexWrap:'wrap'}}>
+                  {evs.slice(0,3).map(ev=><span key={ev.id} style={{width:5,height:5,borderRadius:'50%',background:ev.done?'#d1d5db':ev.color,display:'inline-block'}} />)}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        <div style={{marginTop:14,borderTop:'1px solid #f3f4f6',paddingTop:12}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+            <div style={{fontSize:12,fontWeight:800,color:'#374151'}}>{fmtDate(selectedDate)} 업무</div>
+            <button onClick={()=>{setShowAdd(v=>!v);setAddDue(selectedDate);}} style={{fontSize:11,fontWeight:800,color:'#1d4ed8',border:'1px dashed #bfdbfe',borderRadius:7,background:'#eff6ff',padding:'4px 9px',cursor:'pointer',fontFamily:'inherit'}}>+ 등록</button>
+          </div>
+
+          {showAdd && (
+            <div style={{background:'#f8fafc',border:'1px solid #e5e7eb',borderRadius:9,padding:10,marginBottom:10}}>
+              <div style={{display:'grid',gridTemplateColumns:'92px 1fr',gap:6,marginBottom:6}}>
+                <select value={addType} onChange={e=>setAddType(e.target.value)} style={{padding:'6px 8px',border:'1px solid #d1d5db',borderRadius:6,fontSize:12,fontFamily:'inherit'}}>
+                  <option value="common">공통업무</option>
+                  <option value="client">거래처 서브</option>
+                </select>
+                {addType === 'client' ? (
+                  <select value={addClientId} onChange={e=>setAddClientId(e.target.value)} style={{padding:'6px 8px',border:'1px solid #d1d5db',borderRadius:6,fontSize:12,fontFamily:'inherit',minWidth:0}}>
+                    {(data.clients||[]).map(c=><option key={c.clientId} value={c.clientId}>{c.clientName}</option>)}
+                  </select>
+                ) : (
+                  <input value="내 사업 공통업무" readOnly style={{padding:'6px 8px',border:'1px solid #e5e7eb',borderRadius:6,fontSize:12,fontFamily:'inherit',background:'#fff',color:'#6b7280'}} />
+                )}
+              </div>
+              <input value={addTitle} onChange={e=>setAddTitle(e.target.value)} placeholder="업무 제목" style={{width:'100%',boxSizing:'border-box',padding:'7px 9px',border:'1px solid #d1d5db',borderRadius:6,fontSize:12,fontFamily:'inherit',marginBottom:6}} />
+              <div style={{display:'flex',gap:6}}>
+                <input type="date" value={addDue} onChange={e=>setAddDue(e.target.value)} style={{flex:1,padding:'6px 8px',border:'1px solid #d1d5db',borderRadius:6,fontSize:12,fontFamily:'inherit'}} />
+                <button onClick={addEvent} style={{padding:'6px 12px',background:'#1a1a2e',color:'#fff',border:'none',borderRadius:6,fontSize:12,fontWeight:800,cursor:'pointer',fontFamily:'inherit'}}>저장</button>
+                <button onClick={()=>setShowAdd(false)} style={{padding:'6px 9px',background:'#fff',color:'#6b7280',border:'1px solid #d1d5db',borderRadius:6,fontSize:12,cursor:'pointer',fontFamily:'inherit'}}>취소</button>
+              </div>
+            </div>
+          )}
+
+          {selectedEvents.length === 0 ? (
+            <div style={{fontSize:12,color:'#9ca3af',textAlign:'center',padding:'16px 0'}}>등록된 업무가 없습니다</div>
+          ) : (
+            <div style={{display:'flex',flexDirection:'column',gap:6,maxHeight:280,overflowY:'auto',paddingRight:2}}>
+              {selectedEvents.map(ev=>(
+                <div key={ev.id} style={{border:'1px solid #e5e7eb',borderRadius:9,padding:'8px 10px',background:ev.done?'#f9fafb':'#fff'}}>
+                  {editing?.id === ev.id ? (
+                    <div style={{display:'flex',flexDirection:'column',gap:6}}>
+                      <input value={editTitle} onChange={e=>setEditTitle(e.target.value)} style={{padding:'6px 8px',border:'1px solid #93c5fd',borderRadius:6,fontSize:12,fontFamily:'inherit'}} />
+                      <div style={{display:'flex',gap:6}}>
+                        <input type="date" value={editDue} onChange={e=>setEditDue(e.target.value)} style={{flex:1,padding:'5px 8px',border:'1px solid #d1d5db',borderRadius:6,fontSize:12,fontFamily:'inherit'}} />
+                        {ev.type === 'job' && <input value={editNote} onChange={e=>setEditNote(e.target.value)} placeholder="메모" style={{flex:1,padding:'5px 8px',border:'1px solid #d1d5db',borderRadius:6,fontSize:12,fontFamily:'inherit',minWidth:0}} />}
+                      </div>
+                      <div style={{display:'flex',gap:5}}>
+                        <button onClick={saveEdit} style={{padding:'4px 10px',background:'#1a1a2e',color:'#fff',border:'none',borderRadius:6,fontSize:11,fontWeight:800,cursor:'pointer',fontFamily:'inherit'}}>저장</button>
+                        <button onClick={()=>setEditing(null)} style={{padding:'4px 9px',background:'#fff',color:'#6b7280',border:'1px solid #d1d5db',borderRadius:6,fontSize:11,cursor:'pointer',fontFamily:'inherit'}}>취소</button>
+                        <button onClick={()=>deleteEvent(ev)} style={{marginLeft:'auto',padding:'4px 9px',background:'#fff',color:'#dc2626',border:'1px solid #fecaca',borderRadius:6,fontSize:11,cursor:'pointer',fontFamily:'inherit'}}>삭제</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{display:'flex',gap:8,alignItems:'flex-start'}}>
+                      <span style={{width:7,height:7,borderRadius:'50%',background:ev.done?'#d1d5db':ev.color,marginTop:6,flexShrink:0}} />
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{fontSize:12,fontWeight:800,color:ev.done?'#9ca3af':'#374151',textDecoration:ev.done?'line-through':'none',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{ev.title}</div>
+                        <div style={{display:'flex',gap:5,alignItems:'center',marginTop:3,flexWrap:'wrap'}}>
+                          <span style={{fontSize:10,fontWeight:800,color:ev.color,background:'#f8fafc',border:'1px solid #e5e7eb',borderRadius:10,padding:'1px 6px'}}>{ev.kind}</span>
+                          <span style={{fontSize:10,color:'#9ca3af'}}>{ev.clientName}</span>
+                        </div>
+                      </div>
+                      {ev.clientId && <button onClick={()=>onGoClient(ev.clientId)} title="거래처 보기" style={{border:'none',background:'transparent',fontSize:12,color:'#9ca3af',cursor:'pointer'}}>↗</button>}
+                      <button onClick={()=>startEdit(ev)} title="수정" style={{border:'1px solid #e5e7eb',background:'#f9fafb',borderRadius:6,width:24,height:24,fontSize:11,cursor:'pointer',color:'#6b7280'}}>✎</button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ═══════════════════════════════════════════════
   //  CREDENTIALS SECTION (거래처별 자격증명 메모)
   // ═══════════════════════════════════════════════
-  function CredentialsSection({ clientId, credentials, onAdd, onDelete }) {
+  function CredentialsSection({ clientId, credentials, onAdd, onDelete, title='계정 / 비밀번호 메모' }) {
     const [open,    setOpen]    = useState(false);   // 기본 접힘
     const [showAdd, setShowAdd] = useState(false);
     const [revealed, setRevealed] = useState({});
+    const [copied, setCopied] = useState(null);
     const [form, setForm]         = useState({ service:'', url:'', username:'', password:'' });
 
     const creds = credentials[clientId] || [];
@@ -1285,6 +1631,29 @@
       setShowAdd(false);
     }
 
+    async function copyText(value, key) {
+      if (!value) return;
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(value);
+        } else {
+          const el = document.createElement('textarea');
+          el.value = value;
+          el.setAttribute('readonly', '');
+          el.style.position = 'fixed';
+          el.style.left = '-9999px';
+          document.body.appendChild(el);
+          el.select();
+          document.execCommand('copy');
+          document.body.removeChild(el);
+        }
+        setCopied(key);
+        setTimeout(() => setCopied(c => c === key ? null : c), 1200);
+      } catch (e) {
+        alert('복사에 실패했습니다. 직접 선택해서 복사해주세요.');
+      }
+    }
+
     return (
       <div style={{background:'#fff',borderRadius:12,border:'1px solid #e5e7eb',marginBottom:20,overflow:'hidden'}}>
         {/* 헤더 — 항상 표시, 클릭으로 접기/펼치기 */}
@@ -1293,7 +1662,7 @@
           style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'13px 20px',cursor:'pointer',userSelect:'none'}}>
           <div style={{display:'flex',alignItems:'center',gap:8}}>
             <span style={{fontSize:13}}>🔐</span>
-            <span style={{fontSize:11,fontWeight:700,color:'#9ca3af',letterSpacing:'1px',textTransform:'uppercase'}}>계정 / 비밀번호 메모</span>
+            <span style={{fontSize:11,fontWeight:700,color:'#9ca3af',letterSpacing:'1px',textTransform:'uppercase'}}>{title}</span>
             {creds.length > 0 && (
               <span style={{fontSize:10,color:'#9ca3af',fontWeight:600}}>({creds.length}개)</span>
             )}
@@ -1368,7 +1737,15 @@
                 )}
               </div>
               <div style={{flex:1,minWidth:0}}>
-                <div style={{fontSize:12,color:'#374151',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{c.username}</div>
+                <div style={{display:'flex',alignItems:'center',gap:6,minWidth:0}}>
+                  <div style={{fontSize:12,color:'#374151',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',flex:1}}>{c.username}</div>
+                  <button
+                    onClick={() => copyText(c.username, c.credId + ':id')}
+                    title="아이디 복사"
+                    style={{fontSize:10,fontWeight:700,color:copied===c.credId+':id'?'#059669':'#6b7280',background:'#fff',border:'1px solid #e5e7eb',borderRadius:6,padding:'2px 6px',cursor:'pointer',fontFamily:'inherit',whiteSpace:'nowrap'}}>
+                    {copied===c.credId+':id'?'복사됨':'ID'}
+                  </button>
+                </div>
               </div>
               <div
                 className="cred-pw"
@@ -1381,6 +1758,13 @@
                 }}>
                 {revealed[c.credId] ? c.password : '••••••••'}
               </div>
+              <button
+                onClick={() => copyText(c.password || '', c.credId + ':pw')}
+                title="비밀번호 복사"
+                disabled={!c.password}
+                style={{fontSize:10,fontWeight:700,color:copied===c.credId+':pw'?'#059669':'#6b7280',background:'#fff',border:'1px solid #e5e7eb',borderRadius:6,padding:'2px 6px',cursor:c.password?'pointer':'default',fontFamily:'inherit',whiteSpace:'nowrap',opacity:c.password?1:0.45}}>
+                {copied===c.credId+':pw'?'복사됨':'PW'}
+              </button>
               <button
                 className="btn-icon"
                 onClick={() => { if(confirm(`"${c.service}" 계정을 삭제하시겠습니까?`)) onDelete(clientId, c.credId); }}
@@ -1645,6 +2029,7 @@
     const [consultFilter,  setConsultFilter]  = useState('');
     const [consultExpId,   setConsultExpId]   = useState(null);
     const [showConsultAdd, setShowConsultAdd] = useState(false);
+    const [histExpMonth,   setHistExpMonth]   = useState(null);  // 이전 월 통계 펼친 항목
     const [consultForm,    setConsultForm]    = useState(() => {
       const now = new Date(); const kst = new Date(now.getTime() + 9*60*60*1000);
       return { date: kst.toISOString().slice(0,10), channel:'위챗', nickname:'', content:'' };
@@ -1974,6 +2359,97 @@
           </div>
         )}
 
+        {/* ── 채널별 상담 통계 (이전 월 백업) ── */}
+        {CONSULT_CLIENTS.includes(client.clientId) && (() => {
+          const HIST_COLORS = { '위챗':'#16a34a', '라인':'#65a30d', '인스타':'#9333ea' };
+          const myHistories = (data.consultHistories || [])
+            .filter(h => h.clientId === client.clientId)
+            .sort((a, b) => b.month.localeCompare(a.month));
+          if (!myHistories.length) return null;
+          return (
+            <div style={{marginBottom:24}}>
+              <div className="section-title">📊 채널별 상담 통계 (월별 백업)</div>
+              <div style={{display:'flex',flexDirection:'column',gap:10}}>
+                {myHistories.map(h => {
+                  const total = h.summary?.total || 0;
+                  const byChannel = h.summary?.byChannel || {};
+                  const isOpen = histExpMonth === (h.month + h.clientId);
+                  return (
+                    <div key={h.month + h.clientId}
+                      style={{background:'#fff',border:'1px solid #e5e7eb',borderRadius:10,overflow:'hidden'}}>
+                      {/* 헤더 */}
+                      <div style={{display:'flex',alignItems:'center',gap:10,padding:'12px 16px',cursor:'pointer',userSelect:'none'}}
+                        onClick={()=>setHistExpMonth(isOpen ? null : (h.month + h.clientId))}>
+                        <span style={{fontSize:13,fontWeight:700,color:'#1a1a2e',flex:1}}>
+                          {fmtMonth(h.month)} 상담 내역
+                        </span>
+                        <span style={{fontSize:12,background:'#f0e6d3',color:'#92400e',fontWeight:700,padding:'2px 10px',borderRadius:20,flexShrink:0}}>
+                          총 {total}건
+                        </span>
+                        {/* 채널 요약 chips */}
+                        <div style={{display:'flex',gap:5,flexShrink:0}}>
+                          {Object.entries(byChannel).sort((a,b)=>b[1]-a[1]).map(([ch,cnt])=>{
+                            const col = HIST_COLORS[ch]||'#6b7280';
+                            return (
+                              <span key={ch} style={{fontSize:10,fontWeight:700,padding:'2px 7px',borderRadius:20,background:col+'18',color:col}}>
+                                {ch} {cnt}
+                              </span>
+                            );
+                          })}
+                        </div>
+                        <span style={{fontSize:11,color:'#9ca3af',flexShrink:0}}>{isOpen?'▲':'▼'}</span>
+                      </div>
+
+                      {/* 채널별 비율 바 */}
+                      <div style={{padding:'0 16px 12px',borderTop:'1px solid #f9fafb'}}>
+                        <div style={{display:'flex',flexDirection:'column',gap:5,marginBottom:isOpen?12:0}}>
+                          {Object.entries(byChannel).sort((a,b)=>b[1]-a[1]).map(([ch,cnt])=>{
+                            const pct = total ? Math.round(cnt / total * 100) : 0;
+                            const col = HIST_COLORS[ch]||'#6b7280';
+                            return (
+                              <div key={ch} style={{display:'flex',alignItems:'center',gap:8}}>
+                                <span style={{width:38,fontSize:11,fontWeight:700,color:col,flexShrink:0}}>{ch}</span>
+                                <div style={{flex:1,background:'#f3f4f6',borderRadius:99,height:6,overflow:'hidden'}}>
+                                  <div style={{width:pct+'%',background:col,height:'100%',borderRadius:99}} />
+                                </div>
+                                <span style={{fontSize:11,color:'#6b7280',width:60,textAlign:'right',flexShrink:0,fontWeight:600}}>
+                                  {cnt}건 ({pct}%)
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {/* 개별 기록 (펼쳤을 때만) */}
+                        {isOpen && h.records && h.records.length > 0 && (
+                          <div style={{display:'flex',flexDirection:'column',gap:6,marginTop:4}}>
+                            <div style={{fontSize:11,fontWeight:700,color:'#9ca3af',letterSpacing:'0.5px',marginBottom:2}}>개별 기록</div>
+                            {h.records.map((r,i)=>{
+                              const col = HIST_COLORS[r.channel]||'#6b7280';
+                              return (
+                                <div key={r.id||i} style={{background:'#f9fafb',borderRadius:8,padding:'9px 12px',border:'1px solid #f3f4f6'}}>
+                                  <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:r.content?5:0}}>
+                                    <span style={{fontSize:10,fontWeight:700,borderRadius:10,padding:'1px 7px',background:col+'18',color:col,flexShrink:0}}>{r.channel}</span>
+                                    <span style={{fontSize:12,fontWeight:700,color:'#1a1a2e',flex:1}}>{r.nickname}</span>
+                                    <span style={{fontSize:11,color:'#9ca3af',flexShrink:0}}>{r.date}</span>
+                                  </div>
+                                  {r.content && (
+                                    <pre style={{margin:0,fontFamily:'inherit',fontSize:11,lineHeight:1.65,color:'#374151',whiteSpace:'pre-wrap',wordBreak:'break-word'}}>{r.content}</pre>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })()}
+
         {/* Deliverables */}
         {cDelivs.length > 0 && (
           <div style={{marginBottom:24}}>
@@ -2273,10 +2749,10 @@
     const [m0,m1,m2,m3,m4,m5] = months;
     const clientRevenue = [
       {clientId:'btskin',    monthlyFee:1200000, additionalRevenue:{[m4]:300000,[m5]:150000}, allocatedCosts:{}, contractStart:'2024-06-01', memo:'홈페이지+블로그+SNS'},
-      {clientId:'bellemont', monthlyFee:800000,  additionalRevenue:{[m5]:200000},             allocatedCosts:{}, contractStart:'2024-09-01', memo:'홈페이지+블로그'},
+      {clientId:'belrmon',   monthlyFee:800000,  additionalRevenue:{[m5]:200000},             allocatedCosts:{}, contractStart:'2024-09-01', memo:'홈페이지+블로그'},
       {clientId:'kyunghee',  monthlyFee:600000,  additionalRevenue:{},                        allocatedCosts:{}, contractStart:'2025-01-01', memo:'블로그+SNS'},
-      {clientId:'eyeclinic', monthlyFee:500000,  additionalRevenue:{},                        allocatedCosts:{}, contractStart:'2024-11-01', memo:'홈페이지'},
-      {clientId:'igo',       monthlyFee:450000,  additionalRevenue:{},                        allocatedCosts:{}, contractStart:'2025-03-01', memo:'블로그'},
+      {clientId:'eyecare',   monthlyFee:500000,  additionalRevenue:{},                        allocatedCosts:{}, contractStart:'2024-11-01', memo:'홈페이지'},
+      {clientId:'igochi',    monthlyFee:450000,  additionalRevenue:{},                        allocatedCosts:{}, contractStart:'2025-03-01', memo:'블로그'},
     ];
     const base = [
       {category:'인건비',            type:'고정비', description:'프리랜서 작가',          amount:400000, clientId:'', payMethod:'계좌이체', isRecurring:true},
@@ -2288,8 +2764,8 @@
     const vars = [
       [{category:'촬영/디자인 제작비',type:'변동비',description:'노형 촬영',      amount:350000,clientId:'btskin',   payMethod:'계좌이체',isRecurring:false},
        {category:'외주비',            type:'변동비',description:'중국어 번역',    amount:120000,clientId:'btskin',   payMethod:'계좌이체',isRecurring:false}],
-      [{category:'광고비',            type:'변동비',description:'네이버 파워링크', amount:200000,clientId:'bellemont',payMethod:'카드',    isRecurring:false}],
-      [{category:'촬영/디자인 제작비',type:'변동비',description:'벨르몬 촬영',    amount:280000,clientId:'bellemont',payMethod:'계좌이체',isRecurring:false},
+      [{category:'광고비',            type:'변동비',description:'네이버 파워링크', amount:200000,clientId:'belrmon',  payMethod:'카드',    isRecurring:false}],
+      [{category:'촬영/디자인 제작비',type:'변동비',description:'벨르몬 촬영',    amount:280000,clientId:'belrmon',  payMethod:'계좌이체',isRecurring:false},
        {category:'외주비',            type:'변동비',description:'일본어 번역',    amount:90000, clientId:'btskin',   payMethod:'계좌이체',isRecurring:false}],
       [{category:'광고비',            type:'변동비',description:'인스타그램 광고', amount:150000,clientId:'kyunghee', payMethod:'카드',    isRecurring:false},
        {category:'기타비용',          type:'변동비',description:'명함 인쇄',      amount:45000, clientId:'',         payMethod:'카드',    isRecurring:false}],
@@ -2869,12 +3345,34 @@
               // 방문자 리뷰 모니터링: Sheets 우선, 비어있으면 로컬 유지
               reviewTargets: safeArr(sheetsData.reviewTargets, prev.reviewTargets),
 
-              // 월별 업무: Sheets 값 우선 + 로컬 dueDate 보존
-              // ※ currentCount는 Sheets와 로컬 중 더 큰 값 사용 (Sheets가 덜 반영된 경우 대비)
-              // ※ DEFAULT_DATA.monthlyJobs에만 있는 항목도 누락 없이 추가 (코드 업데이트 반영)
+              // ── 월별 업무 병합 전략 ──────────────────────────────────────────
+              // 서브/순위 업무: 로컬 상태 전용 (Sheets에서 절대 복원하지 않음)
+              //   → 다음달 초기화 후 동기화해도 서브업무가 되살아나지 않는 핵심 원칙
+              // 필수(메인) 업무: Sheets 우선, 없으면 로컬 유지
+              //   → Sheets에서 진행상황 업데이트가 로컬로 반영됨
+              // ─────────────────────────────────────────────────────────────────
               monthlyJobs: (()=>{
-                const base = (sheetsData.monthlyJobs && sheetsData.monthlyJobs.length > 0)
-                  ? sheetsData.monthlyJobs.map(sj => {
+                // DEFAULT_DATA 기준으로 서브/순위 jobId Set 구성
+                // (Sheets 데이터의 kind 필드가 누락될 수 있으므로 DEFAULT_DATA 기준 판단)
+                const defaultSubIds = new Set(
+                  DEFAULT_DATA.monthlyJobs
+                    .filter(dj => dj.kind === '서브' || dj.kind === '순위')
+                    .map(dj => dj.jobId)
+                );
+
+                // 1) 서브/순위: 현재 로컬 상태만 사용 (초기화됐으면 빈 배열)
+                const localSubs = (prev.monthlyJobs || [])
+                  .filter(j => j.kind === '서브' || j.kind === '순위' || defaultSubIds.has(j.jobId));
+
+                // 2) 필수(메인): Sheets에서 서브/순위 제거 후 사용
+                const sheetsMain = (sheetsData.monthlyJobs && sheetsData.monthlyJobs.length > 0)
+                  ? sheetsData.monthlyJobs.filter(sj =>
+                      sj.kind !== '서브' && sj.kind !== '순위' && !defaultSubIds.has(sj.jobId)
+                    )
+                  : null;
+
+                const mainBase = (sheetsMain && sheetsMain.length > 0)
+                  ? sheetsMain.map(sj => {
                       const lj = (prev.monthlyJobs || []).find(j => j.jobId === sj.jobId);
                       if (!lj) return sj;
                       return {
@@ -2885,13 +3383,20 @@
                           : sj.currentCount ?? lj.currentCount,
                       };
                     })
-                  : (prev.monthlyJobs && prev.monthlyJobs.length > 0)
-                    ? prev.monthlyJobs
-                    : [];
-                // DEFAULT_DATA에만 있는 jobId를 base에 추가 (업무 누락 방지)
-                const baseIds = base.map(j => j.jobId);
-                const extras  = DEFAULT_DATA.monthlyJobs.filter(dj => !baseIds.includes(dj.jobId));
-                return [...base, ...extras];
+                  : (prev.monthlyJobs || []).filter(j =>
+                      j.kind !== '서브' && j.kind !== '순위' && !defaultSubIds.has(j.jobId)
+                    );
+
+                // 3) DEFAULT_DATA 메인 업무 중 Sheets/로컬 누락분 보완
+                //    (로컬에 존재했던 것만 추가 — 완전 초기화 시 재유입 방지)
+                const baseIds = new Set(mainBase.map(j => j.jobId));
+                const prevIds = new Set((prev.monthlyJobs || []).map(j => j.jobId));
+                const extras  = DEFAULT_DATA.monthlyJobs
+                  .filter(dj => dj.kind !== '서브' && dj.kind !== '순위' && !defaultSubIds.has(dj.jobId))
+                  .filter(dj => !baseIds.has(dj.jobId) && prevIds.has(dj.jobId));
+
+                // 최종: 메인 + DEFAULT 보완 + 로컬 서브 (순서: 메인→서브)
+                return [...mainBase, ...extras, ...localSubs];
               })(),
             };
           });
@@ -2918,36 +3423,87 @@
 
     // ── 수동 월별 초기화 함수 (설정 탭 버튼에서 호출) ──
     function handleMonthlyReset() {
-      if (!confirm('⚠️ 이달 업무를 다음 달 기준으로 초기화합니다.\n\n완료된 서브업무가 삭제되고 카운트가 리셋됩니다.\n계속하시겠습니까?')) return;
+      if (!confirm('⚠️ 이달 업무를 다음 달 기준으로 초기화합니다.\n\n서브업무(완료·진행중 모두) 전체가 삭제되고 카운트가 리셋됩니다.\n노형아름다운피부과·벨르몬성형외과 채널별 상담 내역은 통계로 백업 후 초기화됩니다.\n계속하시겠습니까?')) return;
       if (!confirm('정말 초기화하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) return;
 
-      const completedSubs = (data.monthlyJobs || []).filter(
-        j => j.kind === '서브' && j.note === '완료'
-      );
-      completedSubs.forEach(j => {
+      // ── 1) 채널별 상담 내역 백업 (btskin / belrmon) ──
+      // 초기화는 이번 달 업무를 닫는 작업이므로 백업 월 = 이전 달 (전달 데이터 보존)
+      const backupMonth = prevMonth();
+      const CONSULT_TARGETS = ['btskin', 'belrmon'];
+      const newHistories = CONSULT_TARGETS.map(cid => {
+        const raw     = safeStorage.getItem('consult-v1-' + cid);
+        const records = raw ? (() => { try { return JSON.parse(raw); } catch { return []; } })() : [];
+        const byChannel = {};
+        records.forEach(r => { byChannel[r.channel] = (byChannel[r.channel] || 0) + 1; });
+        const clientName = (data.clients || []).find(c => c.clientId === cid)?.clientName || cid;
+        return {
+          month:      backupMonth,
+          clientId:   cid,
+          clientName,
+          records,
+          savedAt:    new Date().toISOString(),
+          summary:    { total: records.length, byChannel },
+        };
+      }).filter(h => h.records.length > 0);  // 데이터 없으면 백업 항목 생성 안 함
+
+      // ── 2) 상담 localStorage 초기화 ──
+      CONSULT_TARGETS.forEach(cid => {
+        safeStorage.setItem('consult-v1-' + cid, '[]');
+      });
+
+      // ── 3) 완료·진행중 구분 없이 모든 서브업무 삭제 ──
+      const allSubs = (data.monthlyJobs || []).filter(j => j.kind === '서브');
+      allSubs.forEach(j => {
         fetch(API_URL, {
           method: 'POST', redirect: 'follow',
           body: JSON.stringify({ action: 'deleteSubJob', jobId: j.jobId })
         }).catch(() => {});
       });
 
+      // ── 4) 상태 업데이트 (서브업무 제거 + 백업 저장) ──
       mutate(prev => ({
         ...prev,
         monthlyJobs: prev.monthlyJobs
-          .filter(j => !(j.kind === '서브' && j.note === '완료'))
+          .filter(j => j.kind !== '서브')
           .map(j => ({
             ...j,
             currentCount: j.targetCount != null ? 0 : j.currentCount,
             note:         j.note === '완료' ? '' : j.note,
           })),
-        postLogs: []
+        postLogs:         [],
+        consultHistories: [...(prev.consultHistories || []), ...newHistories],
       }));
+
       fetch(API_URL, {
         method: 'POST', redirect: 'follow',
         body: JSON.stringify({ action: 'monthlyReset', month: nowMonth() })
       }).catch(() => {});
-      alert('초기화 완료!');
+
+      const backupMsg = newHistories.length > 0
+        ? `\n\n📊 상담 내역 백업 완료:\n` + newHistories.map(h => `  • ${h.clientName}: ${h.summary.total}건`).join('\n')
+        : '';
+      alert('초기화 완료!' + backupMsg);
     }
+
+    // ── 일회성 마이그레이션: 상담 백업 월 라벨 수정 ──
+    // 2026-05로 잘못 저장된 btskin/belrmon 백업을 2026-04로 교정
+    useEffect(() => {
+      const MIG_KEY = 'consult_month_fix_v1';
+      if (safeStorage.getItem(MIG_KEY)) return;
+      mutate(prev => {
+        const histories = prev.consultHistories || [];
+        if (!histories.some(h => h.month === '2026-05' && ['btskin','belrmon'].includes(h.clientId))) return prev;
+        return {
+          ...prev,
+          consultHistories: histories.map(h =>
+            (h.month === '2026-05' && ['btskin','belrmon'].includes(h.clientId))
+              ? { ...h, month: '2026-04' }
+              : h
+          )
+        };
+      });
+      safeStorage.setItem(MIG_KEY, '1');
+    }, []);
 
     // 페이지 로드 시 자동 동기화 (loading 상태 즉시 표시)
     useEffect(() => { setSyncStatus('loading'); handleSync(); }, []);
@@ -3068,6 +3624,57 @@
       }).catch(e => console.warn('commonTaskUpdate 오류:', e));
     }
 
+    // ── 캘린더 연동 CRUD ──
+    function addCalendarSubJob(clientId, title, dueDate) {
+      const tempId = 'mj-dyn-' + Date.now().toString(36);
+      const newJob = {
+        jobId: tempId,
+        clientId,
+        title,
+        kind: '서브',
+        targetCount: null,
+        currentCount: null,
+        unit: null,
+        dueDate: dueDate || null,
+        note: ''
+      };
+      mutate(d => ({ ...d, monthlyJobs: [...(d.monthlyJobs||[]), newJob] }));
+      fetch(API_URL, {
+        method: 'POST', redirect: 'follow',
+        body: JSON.stringify({ action: 'addSubJob', clientId, title, dueDate: dueDate || null })
+      }).then(r=>r.json()).then(res => {
+        if (res.success && res.jobId) {
+          mutate(d => ({ ...d, monthlyJobs: (d.monthlyJobs||[]).map(j => j.jobId === tempId ? { ...j, jobId: res.jobId } : j) }));
+        }
+      }).catch(e => console.warn('calendar addSubJob 오류:', e));
+    }
+    function updateCalendarJob(jobId, fields) {
+      const clean = {
+        ...fields,
+        dueDate: fields.dueDate ? normalizeDate(fields.dueDate) : null,
+      };
+      mutate(d => ({
+        ...d,
+        monthlyJobs: (d.monthlyJobs||[]).map(j => j.jobId === jobId ? { ...j, ...clean } : j)
+      }));
+      fetch(API_URL, {
+        method: 'POST', redirect: 'follow',
+        body: JSON.stringify({ action: 'updateSubJob', jobId, ...clean })
+      }).catch(e => console.warn('calendar updateJob 오류:', e));
+    }
+    function deleteCalendarJob(jobId) {
+      const job = (data.monthlyJobs||[]).find(j => j.jobId === jobId);
+      if (job && job.kind === '필수') {
+        updateCalendarJob(jobId, { title: job.title, note: job.note || '', dueDate: null });
+        return;
+      }
+      mutate(d => ({ ...d, monthlyJobs: (d.monthlyJobs||[]).filter(j => j.jobId !== jobId) }));
+      fetch(API_URL, {
+        method: 'POST', redirect: 'follow',
+        body: JSON.stringify({ action: 'deleteSubJob', jobId })
+      }).catch(e => console.warn('calendar deleteJob 오류:', e));
+    }
+
     // ── 자격증명 CRUD (로컬 전용) ──
     function addCredential(clientId, cred) {
       const credId = 'cr-' + uid();
@@ -3175,15 +3782,36 @@
         {view==='main' && (
           <div style={{maxWidth:1200,margin:'0 auto',padding:'24px 24px'}}>
 
-            {/* 내 사업 공통업무 */}
-            <CommonTasksCard
-              tasks={data.commonTasks || []}
-              onAddGroup={addCommonGroup}
-              onAddTask={addCommonTask}
-              onToggle={toggleCommonTask}
-              onDelete={deleteCommonTask}
-              onEdit={editCommonTask}
-            />
+            {/* 내 사업 공통업무 + 업무 캘린더 */}
+            <div className="main-top-grid">
+              <div style={{minWidth:0}}>
+                <CommonTasksCard
+                  tasks={data.commonTasks || []}
+                  onAddGroup={addCommonGroup}
+                  onAddTask={addCommonTask}
+                  onToggle={toggleCommonTask}
+                  onDelete={deleteCommonTask}
+                  onEdit={editCommonTask}
+                />
+                <CredentialsSection
+                  clientId="__business"
+                  credentials={data.credentials || {}}
+                  onAdd={addCredential}
+                  onDelete={deleteCredential}
+                  title="내 사업 계정 / 비밀번호 메모"
+                />
+              </div>
+              <CalendarCard
+                data={data}
+                onAddCommonTask={(title,dueDate)=>addCommonTask(null,title,dueDate)}
+                onAddClientSubJob={addCalendarSubJob}
+                onUpdateCommonTask={editCommonTask}
+                onDeleteCommonTask={deleteCommonTask}
+                onUpdateJob={updateCalendarJob}
+                onDeleteJob={deleteCalendarJob}
+                onGoClient={(id)=>{ setSelId(id); setView('client'); }}
+              />
+            </div>
 
             {/* 필수업무 거래처 */}
             {topClients.length > 0 && cardGrid(topClients)}

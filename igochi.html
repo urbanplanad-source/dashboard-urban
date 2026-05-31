@@ -477,11 +477,25 @@
   const CLIENT_ID = 'igochi'; const CURRENT_MONTH = '2026-03';
   const CHANNEL_TAG = { '블로그':'<span class="tag tag-blog">블로그</span>', '홈페이지':'<span class="tag tag-homepage">홈페이지</span>' };
   function channelTag(ch) { return CHANNEL_TAG[ch] || '<span class="tag tag-homepage">'+ch+'</span>'; }
+  function normalizeDate(v) {
+    if (!v) return '';
+    const s = String(v).trim();
+    const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    return m ? `${m[1]}-${m[2]}-${m[3]}` : s;
+  }
+  function normalizeMonth(v) {
+    const d = normalizeDate(v);
+    const m = String(d || v || '').match(/^(\d{4})-(\d{2})/);
+    return m ? `${m[1]}-${m[2]}` : '';
+  }
+  function normalizePostLog(p) {
+    return { ...p, publishedAt: normalizeDate(p.publishedAt), month: normalizeMonth(p.month || p.publishedAt), channel: p.channel || p[''] || p.Channel || p['채널'] || '홈페이지' };
+  }
   let marLoaded = false;
   function loadMarchContent() {
     if (marLoaded) return; marLoaded = true;
     fetch(API_URL + '?action=postLogs').then(r=>r.json()).then(res=>{
-      const posts = (res.data||[]).filter(p=>p.clientId===CLIENT_ID&&p.month===CURRENT_MONTH);
+      const posts = (res.data||[]).map(normalizePostLog).filter(p=>p.clientId===CLIENT_ID&&p.month===CURRENT_MONTH);
       renderMarchContent(posts);
     }).catch(()=>{ document.getElementById('mar-content-area').innerHTML='<p style="font-size:14px;color:var(--muted);padding:20px;">데이터를 불러오지 못했습니다.</p>'; document.getElementById('mar-chip').textContent='오류'; marLoaded=false; });
   }
