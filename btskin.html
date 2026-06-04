@@ -127,6 +127,41 @@
       margin-top: 7px; flex-shrink: 0;
     }
     .band-point p { font-size: 14px; line-height: 1.6; color: rgba(255,255,255,0.85); }
+    .performance-flow {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin: -12px 0 28px;
+    }
+    .flow-node {
+      position: relative;
+      min-width: 0;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 14px;
+    }
+    .flow-node:not(:last-child)::after {
+      content: "→";
+      position: absolute;
+      right: -11px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 800;
+      z-index: 1;
+    }
+    .flow-kicker { font-size: 11px; font-weight: 800; color: var(--muted); margin-bottom: 6px; }
+    .flow-value { font-size: 22px; font-weight: 900; color: var(--primary); line-height: 1.1; }
+    .flow-label { font-size: 11px; color: var(--muted); margin-top: 6px; line-height: 1.4; }
 
     /* ─── GRID ─── */
     .metrics-grid {
@@ -278,6 +313,302 @@
       padding: 3px 9px; border-radius: 10px;
       margin-left: 8px; vertical-align: middle;
     }
+
+    /* ─── MAY REPORT VISUALS ─── */
+    .source-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .source-item {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+    }
+    .source-item .s-label { font-size: 11px; font-weight: 700; color: var(--muted); margin-bottom: 6px; }
+    .source-item .s-value { font-size: 22px; font-weight: 800; color: var(--primary); line-height: 1; }
+    .source-item .s-sub { font-size: 11px; color: var(--muted); margin-top: 6px; line-height: 1.45; }
+
+    .rank-chart-wrap {
+      background: linear-gradient(180deg, #fff 0%, #fbfaf7 100%);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 16px 12px;
+      margin-bottom: 16px;
+      overflow-x: auto;
+    }
+    .rank-chart {
+      width: 100%;
+      min-width: 640px;
+      height: auto;
+      display: block;
+    }
+    .rank-mobile-chart {
+      display: none;
+      width: 100%;
+      height: auto;
+    }
+    .rank-mobile-chart text { font-family: inherit; }
+    .rank-axis { font-size: 10px; fill: #8a8a8a; font-weight: 700; }
+    .rank-line { fill: none; stroke: var(--blue); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+    .rank-area { fill: rgba(45, 95, 168, 0.09); }
+    .rank-dot { fill: #fff; stroke: var(--blue); stroke-width: 3; }
+    .rank-dot.best { stroke: var(--green); fill: #fff; }
+    .rank-dot.low { stroke: #d4621a; fill: #fff; }
+    .rank-label { font-size: 11px; fill: var(--primary); font-weight: 800; }
+    .rank-note-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+    .rank-note {
+      border-radius: 10px;
+      padding: 12px 14px;
+      background: var(--blue-light);
+      border-left: 3px solid var(--blue);
+    }
+    .rank-note strong { display: block; font-size: 18px; color: var(--blue); margin-bottom: 4px; }
+    .rank-note span { font-size: 12px; color: #1a3a6b; line-height: 1.5; }
+
+    .wechat-grid {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 20px;
+      align-items: center;
+    }
+    .wechat-donut {
+      width: 190px;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      margin: 0 auto;
+      background: conic-gradient(#10b85f 0 54.55%, #3bbf8f 54.55% 84.10%, #38c7d9 84.10% 89.68%, #4b9fe5 89.68% 100%);
+      display: grid;
+      place-items: center;
+      position: relative;
+    }
+    .wechat-donut::after {
+      content: "";
+      width: 108px;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: #fff;
+      position: absolute;
+    }
+    .wechat-donut-label {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+    }
+    .wechat-donut-label strong { display: block; font-size: 22px; color: var(--primary); }
+    .wechat-donut-label span { font-size: 11px; color: var(--muted); }
+    .wechat-legend {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    .wechat-legend-item {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--text);
+    }
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-top: 4px;
+      flex-shrink: 0;
+    }
+
+    @media(max-width: 700px) {
+      .source-grid, .rank-note-grid, .wechat-legend { grid-template-columns: 1fr 1fr; }
+      .wechat-grid { grid-template-columns: 1fr; }
+    }
+    @media(max-width: 480px) {
+      .source-grid, .rank-note-grid, .wechat-legend { grid-template-columns: 1fr; }
+    }
+    @media(max-width: 640px) {
+      .site-header { padding: 18px 16px; flex-direction: column; align-items: flex-start; gap: 12px; }
+      .site-header .logo { gap: 10px; }
+      .site-header .logo-badge { width: 36px; height: 36px; border-radius: 9px; font-size: 16px; }
+      .site-header .logo-text h1 { font-size: 16px; line-height: 1.35; letter-spacing: 0; }
+      .site-header .logo-text p { font-size: 11px; }
+      .header-tag { font-size: 11px; padding: 5px 10px; }
+      .container { padding: 28px 12px; }
+      .timeline-label { margin-bottom: 12px; }
+      .month-tabs { flex-wrap: nowrap; overflow-x: auto; gap: 8px; margin: 0 -12px 24px; padding: 0 12px 6px; scrollbar-width: none; }
+      .month-tabs::-webkit-scrollbar { display: none; }
+      .month-tab { flex: 0 0 auto; white-space: nowrap; padding: 7px 14px; font-size: 13px; }
+      .summary-band { padding: 20px 18px; border-radius: 14px; margin-bottom: 20px; }
+      .summary-band .band-month { font-size: 22px; line-height: 1.25; margin-bottom: 6px; }
+      .summary-band .band-title { font-size: 11px; }
+      .summary-band .band-sub { font-size: 12px; margin-bottom: 14px; }
+      .summary-band .band-points { grid-template-columns: 1fr !important; gap: 10px; }
+      .band-point p { font-size: 13px; line-height: 1.55; }
+      .performance-flow { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; margin: -8px 0 20px; }
+      .flow-node { padding: 13px 11px; border-radius: 12px; }
+      .flow-node::after { display: none !important; }
+      .flow-kicker { font-size: 10px; }
+      .flow-value { font-size: 20px; }
+      .flow-label { font-size: 10px; }
+      .metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 10px; margin-bottom: 20px; }
+      .metric-card { padding: 16px 14px; border-radius: 12px; }
+      .metric-card .mc-label { font-size: 11px; }
+      .metric-card .mc-value { font-size: 24px !important; line-height: 1.1; }
+      .metric-card .mc-sub { font-size: 11px; line-height: 1.45; }
+      .section-card { border-radius: 12px; margin-bottom: 16px; }
+      .section-header { padding: 14px 16px; align-items: flex-start; }
+      .section-header .icon { width: 28px; height: 28px; font-size: 14px; flex-shrink: 0; }
+      .section-header h3 { font-size: 14px; line-height: 1.4; }
+      .section-body { padding: 16px 14px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .two-col, .source-grid, .rank-note-grid, .wechat-grid, .wechat-legend { grid-template-columns: 1fr !important; gap: 12px; }
+      .content-table { min-width: 520px; }
+      .content-table th, .content-table td { padding: 9px 10px; font-size: 12px; }
+      .status-item p, .next-item p, .sub-list li { font-size: 13px; line-height: 1.55; }
+      .next-band { padding: 18px 16px; border-radius: 12px; }
+      .rank-chart-wrap { margin-left: 0; margin-right: 0; padding: 8px 6px; overflow: hidden; }
+      .rank-chart-wrap:has(.rank-mobile-chart) .rank-chart { display: none !important; }
+      .rank-mobile-chart { display: block; max-height: 190px; }
+      .rank-mobile-chart .m-axis { font-size: 12px; fill: #8a8a8a; font-weight: 800; }
+      .rank-mobile-chart .m-date { font-size: 11px; fill: #737373; font-weight: 800; }
+      .rank-mobile-chart .m-label { font-size: 13px; fill: var(--primary); font-weight: 900; }
+      .rank-mobile-chart .m-line { fill: none; stroke: var(--blue); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+      .rank-mobile-chart .m-grid { stroke: #eee7dc; stroke-width: 1; }
+      .rank-mobile-chart .m-dot { fill: #fff; stroke: var(--blue); stroke-width: 3; }
+      [style*="grid-template-columns:1fr 1fr"],
+      [style*="grid-template-columns: 1fr 1fr"],
+      [style*="grid-template-columns:repeat(3"],
+      [style*="grid-template-columns: repeat(3"],
+      [style*="grid-template-columns:repeat(auto-fit"],
+      [style*="grid-template-columns: repeat(auto-fit"] { grid-template-columns: 1fr !important; }
+      [style*="font-size:36px"], [style*="font-size:34px"], [style*="font-size:32px"] { font-size: 26px !important; }
+      [style*="padding:22px 24px"], [style*="padding:24px 28px"], [style*="padding:28px 32px"] { padding: 16px 14px !important; }
+    }
+    @media(max-width: 380px) {
+      .metrics-grid { grid-template-columns: 1fr !important; }
+      .content-table { min-width: 480px; }
+    }
+    @media(max-width: 640px) {
+      .report-panel.active .section-body { overflow-x: visible; }
+      .report-panel.active .content-table,
+      .report-panel.active .ad-table { min-width: 0 !important; }
+      .report-panel.active .content-table thead,
+      .report-panel.active .ad-table thead { display: none; }
+      .report-panel.active .content-table,
+      .report-panel.active .content-table tbody,
+      .report-panel.active .content-table tr,
+      .report-panel.active .content-table td,
+      .report-panel.active .ad-table,
+      .report-panel.active .ad-table tbody,
+      .report-panel.active .ad-table tr,
+      .report-panel.active .ad-table td { display: block; width: 100%; }
+      .report-panel.active .content-table tr,
+      .report-panel.active .ad-table tr { margin: 0 0 10px; padding: 12px 13px; border: 1px solid var(--border); border-radius: 12px; background: #fff; }
+      .report-panel.active .content-table td,
+      .report-panel.active .ad-table td { border-bottom: none; padding: 3px 0; line-height: 1.45; }
+      .report-panel.active .content-table td:first-child,
+      .report-panel.active .ad-table td:first-child { font-size: 11px; font-weight: 800; color: var(--muted); }
+      .report-panel.active .content-table td:last-child,
+      .report-panel.active .ad-table td:last-child { margin-top: 5px; }
+      .report-panel.active .content-table tbody,
+      .report-panel.active .ad-table tbody { padding: 8px 0 2px; }
+      .report-panel.active .content-table tr,
+      .report-panel.active .ad-table tr { width: auto; margin: 0 8px 7px; padding: 9px 11px; border-radius: 10px; }
+      .report-panel.active .content-table td,
+      .report-panel.active .ad-table td { padding: 1px 0; font-size: 12px; line-height: 1.38; }
+      .report-panel.active .content-table td:first-child,
+      .report-panel.active .ad-table td:first-child { margin-bottom: 2px; }
+      .report-panel.active .content-table td:nth-child(2) { font-weight: 700; }
+      .report-panel.active .content-table .tag { font-size: 10px; padding: 1px 7px; margin-top: 3px; }
+      .report-panel.active .content-table tr:has(td:nth-child(3)) {
+        display: grid;
+        grid-template-columns: 20px minmax(0, 1fr) auto;
+        align-items: start;
+        column-gap: 8px;
+      }
+      .report-panel.active .content-table tr:has(td:nth-child(3)) td { width: auto; min-width: 0; }
+      .report-panel.active .content-table tr:has(td:nth-child(3)) td:first-child {
+        grid-column: 1;
+        margin: 1px 0 0;
+      }
+      .report-panel.active .content-table tr:has(td:nth-child(3)) td:nth-child(2) {
+        grid-column: 2;
+        display: -webkit-box;
+        overflow: hidden;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+      }
+      .report-panel.active .content-table tr:has(td:nth-child(3)) td:last-child {
+        grid-column: 3;
+        justify-self: end;
+        margin-top: 1px;
+      }
+    }
+    @media(max-width: 640px) {
+      .performance-flow {
+        grid-template-columns: 1fr !important;
+        gap: 7px !important;
+        margin: -6px 0 18px !important;
+      }
+      .flow-node,
+      .metric-card,
+      .source-item {
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        column-gap: 10px;
+        row-gap: 2px;
+        min-height: 0;
+        padding: 10px 12px !important;
+        border-radius: 12px !important;
+      }
+      .flow-node::after { display: none !important; }
+      .flow-kicker,
+      .metric-card .mc-label,
+      .source-item .s-label {
+        grid-column: 1;
+        grid-row: 1;
+        min-width: 0;
+        margin: 0 !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 11px !important;
+      }
+      .flow-value,
+      .metric-card .mc-value,
+      .source-item .s-value {
+        grid-column: 2;
+        grid-row: 1;
+        justify-self: end;
+        margin: 0 !important;
+        white-space: nowrap;
+        font-size: 20px !important;
+        line-height: 1.15 !important;
+      }
+      .flow-label,
+      .metric-card .mc-sub,
+      .source-item .s-sub {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        min-width: 0;
+        margin: 0 !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 11px !important;
+        line-height: 1.35 !important;
+      }
+      .metrics-grid,
+      .source-grid {
+        grid-template-columns: 1fr !important;
+        gap: 8px !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -301,15 +632,465 @@
 
   <!-- MONTH TABS -->
   <div class="month-tabs">
-    <div class="month-tab active" onclick="switchTab('apr')">2026년 4월</div>
-    <div class="month-tab" onclick="switchTab('mar')">2026년 3월</div>
-    <div class="month-tab" onclick="switchTab('feb')">2026년 2월</div>
+    <div class="month-tab active" onclick="switchTab('may', event)">2026년 5월</div>
+    <div class="month-tab" onclick="switchTab('apr', event)">2026년 4월</div>
+    <div class="month-tab" onclick="switchTab('mar', event)">2026년 3월</div>
+    <div class="month-tab" onclick="switchTab('feb', event)">2026년 2월</div>
   </div>
+
+  <!-- ══════════════════════════════════
+       5월 보고서
+  ══════════════════════════════════ -->
+  <div class="report-panel active" id="panel-may">
+
+    <!-- 요약 배너 -->
+    <div class="summary-band">
+      <div class="band-title">MONTHLY SUMMARY</div>
+      <div class="band-month">2026년 5월 결과보고</div>
+      <div class="band-points">
+        <div class="band-point">
+          <div class="dot"></div>
+          <p>5월 한 달 동안 홈페이지에 7,915회 방문이 있었고, 실제 방문자는 3,401명입니다. 네이버를 통해 들어온 방문이 가장 많았습니다.</p>
+        </div>
+        <div class="band-point">
+          <div class="dot"></div>
+          <p>네이버 순위는 월말에 다소 밀리는 흐름이 있었지만, 검색 유입은 유지되고 있어 회복 작업을 계속 진행 중입니다.</p>
+        </div>
+        <div class="band-point">
+          <div class="dot"></div>
+          <p>위챗 친구는 304명에서 384명으로 늘었고, 위챗·라인·인스타 상담도 44건 저장되어 외국인 상담 접점이 계속 커지고 있습니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="performance-flow">
+      <div class="flow-node">
+        <div class="flow-kicker">홈페이지</div>
+        <div class="flow-value">7,915</div>
+        <div class="flow-label">5월 방문 횟수</div>
+      </div>
+      <div class="flow-node">
+        <div class="flow-kicker">네이버</div>
+        <div class="flow-value">3,087</div>
+        <div class="flow-label">가장 큰 유입 경로</div>
+      </div>
+      <div class="flow-node">
+        <div class="flow-kicker">위챗 친구</div>
+        <div class="flow-value">+80명</div>
+        <div class="flow-label">304명 → 384명</div>
+      </div>
+      <div class="flow-node">
+        <div class="flow-kicker">상담</div>
+        <div class="flow-value">44건</div>
+        <div class="flow-label">위챗·라인·인스타</div>
+      </div>
+    </div>
+
+    <!-- 핵심 지표 -->
+    <div class="metrics-grid">
+      <div class="metric-card highlight">
+        <div class="mc-label">전체 방문 횟수</div>
+        <div class="mc-value">7,915</div>
+        <div class="mc-sub">방문자 3,401명</div>
+      </div>
+      <div class="metric-card">
+        <div class="mc-label">네이버 유입</div>
+        <div class="mc-value">3,087</div>
+        <div class="mc-sub">전체의 약 39%</div>
+      </div>
+      <div class="metric-card">
+        <div class="mc-label">위챗 친구</div>
+        <div class="mc-value">384<span style="font-size:16px;font-weight:400">명</span></div>
+        <div class="mc-sub">5/1 대비 +80명</div>
+      </div>
+      <div class="metric-card">
+        <div class="mc-label">외국인 상담</div>
+        <div class="mc-value">44<span style="font-size:16px;font-weight:400">건</span></div>
+        <div class="mc-sub">위챗 30 · 라인 11 · 인스타 3</div>
+      </div>
+    </div>
+
+    <!-- 홈페이지 유입 현황 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-blue">📊</div>
+        <h3>홈페이지 유입 현황</h3>
+      </div>
+      <div class="section-body">
+        <div class="source-grid">
+          <div class="source-item">
+            <div class="s-label">네이버에서 들어온 방문</div>
+            <div class="s-value">3,087</div>
+            <div class="s-sub">검색·플레이스에서 병원을 보고 홈페이지로 들어온 방문</div>
+          </div>
+          <div class="source-item">
+            <div class="s-label">병원을 알고 들어온 방문</div>
+            <div class="s-value">2,632</div>
+            <div class="s-sub">주소 입력, 즐겨찾기, 병원명 기억 후 재방문</div>
+          </div>
+          <div class="source-item">
+            <div class="s-label">구글에서 들어온 방문</div>
+            <div class="s-value">1,060</div>
+            <div class="s-sub">구글 검색을 통해 홈페이지로 연결된 방문</div>
+          </div>
+          <div class="source-item">
+            <div class="s-label">기타 경로</div>
+            <div class="s-value">1,236</div>
+            <div class="s-sub">카카오·다음·야후·기타 검색/링크 유입</div>
+          </div>
+        </div>
+
+        <div style="margin-bottom:20px;">
+          <div style="display:flex;height:12px;border-radius:8px;overflow:hidden;gap:2px;">
+            <div style="width:39%;background:#e07b2a;border-radius:8px 0 0 8px;"></div>
+            <div style="width:33%;background:#2d5fa8;"></div>
+            <div style="width:13%;background:#3a8c5c;"></div>
+            <div style="width:15%;background:#c0c0c0;border-radius:0 8px 8px 0;"></div>
+          </div>
+        </div>
+
+        <div class="status-item">
+          <div class="status-dot dot-gold"></div>
+          <p><strong>5월은 네이버에서 들어온 방문이 가장 많았습니다.</strong> 환자가 네이버 검색이나 플레이스에서 병원을 확인한 뒤 홈페이지까지 들어온 흐름입니다.</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-green"></div>
+          <p><strong>병원명을 알고 직접 들어온 방문도 안정적입니다.</strong> 이미 병원을 알고 있거나 다시 찾아보는 환자층이 꾸준하다는 의미입니다.</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-gold"></div>
+          <p><strong>모바일 네이버 검색·플레이스 유입이 특히 중요합니다.</strong> 실제 환자들이 휴대폰으로 병원을 비교하고 홈페이지를 확인하는 흐름이 뚜렷합니다.</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-green"></div>
+          <p><strong>구글과 야후재팬 유입도 확인됩니다.</strong> 외국인 환자나 제주 외 지역에서 검색하는 고객까지 홈페이지가 닿고 있습니다.</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-gold"></div>
+          <p><strong>AI 검색을 통한 유입도 소량 확인됩니다.</strong> ChatGPT, Perplexity, OpenAI 경로에서 들어온 방문이 있어 앞으로는 AI 검색 결과 안에서도 병원 정보가 노출될 가능성이 있습니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 네이버 순위 그래프 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-gold">🥇</div>
+        <h3>네이버 순위 추이 <span class="count-chip">제주피부과</span></h3>
+      </div>
+      <div class="section-body">
+        <div class="rank-chart-wrap">
+          <svg class="rank-chart" viewBox="0 0 640 220" role="img" aria-label="2026년 5월 제주피부과 네이버 순위 추이">
+            <line x1="28" y1="28" x2="612" y2="28" stroke="#eee7dc" />
+            <line x1="28" y1="69" x2="612" y2="69" stroke="#eee7dc" />
+            <line x1="28" y1="110" x2="612" y2="110" stroke="#eee7dc" />
+            <line x1="28" y1="151" x2="612" y2="151" stroke="#eee7dc" />
+            <line x1="28" y1="192" x2="612" y2="192" stroke="#eee7dc" />
+            <text x="4" y="31" class="rank-axis">4위</text>
+            <text x="4" y="72" class="rank-axis">6위</text>
+            <text x="4" y="113" class="rank-axis">8위</text>
+            <text x="0" y="154" class="rank-axis">10위</text>
+            <text x="0" y="195" class="rank-axis">12위</text>
+            <path class="rank-area" d="M28,48.5 L47.5,48.5 L66.9,28 L86.4,28 L105.9,28 L125.3,48.5 L144.8,89.5 L164.3,89.5 L183.7,89.5 L203.2,110 L222.7,89.5 L242.1,89.5 L261.6,89.5 L281.1,89.5 L300.5,110 L320,89.5 L339.5,110 L358.9,110 L378.4,89.5 L397.9,151 L417.3,110 L436.8,89.5 L456.3,89.5 L475.7,151 L495.2,171.5 L514.7,151 L534.1,192 L553.6,192 L573.1,110 L592.5,192 L612,151 L612,205 L28,205 Z" />
+            <polyline class="rank-line" points="28.0,48.5 47.5,48.5 66.9,28.0 86.4,28.0 105.9,28.0 125.3,48.5 144.8,89.5 164.3,89.5 183.7,89.5 203.2,110.0 222.7,89.5 242.1,89.5 261.6,89.5 281.1,89.5 300.5,110.0 320.0,89.5 339.5,110.0 358.9,110.0 378.4,89.5 397.9,151.0 417.3,110.0 436.8,89.5 456.3,89.5 475.7,151.0 495.2,171.5 514.7,151.0 534.1,192.0 553.6,192.0 573.1,110.0 592.5,192.0 612.0,151.0" />
+            <circle class="rank-dot" cx="28" cy="48.5" r="5" />
+            <circle class="rank-dot best" cx="66.9" cy="28" r="6" />
+            <circle class="rank-dot best" cx="105.9" cy="28" r="6" />
+            <circle class="rank-dot" cx="203.2" cy="110" r="5" />
+            <circle class="rank-dot" cx="300.5" cy="110" r="5" />
+            <circle class="rank-dot" cx="397.9" cy="151" r="5" />
+            <circle class="rank-dot low" cx="495.2" cy="171.5" r="5" />
+            <circle class="rank-dot low" cx="553.6" cy="192" r="6" />
+            <circle class="rank-dot" cx="612" cy="151" r="5" />
+            <text x="28" y="216" class="rank-axis">5/1</text>
+            <text x="306" y="216" class="rank-axis">5/16</text>
+            <text x="588" y="216" class="rank-axis">5/31</text>
+          </svg>
+          <svg class="rank-mobile-chart" viewBox="0 0 340 190" role="img" aria-label="모바일용 제주피부과 네이버 순위 요약 그래프">
+            <line class="m-grid" x1="40" y1="32" x2="326" y2="32" />
+            <line class="m-grid" x1="40" y1="94" x2="326" y2="94" />
+            <line class="m-grid" x1="40" y1="156" x2="326" y2="156" />
+            <text class="m-axis" x="8" y="36">4위</text>
+            <text class="m-axis" x="8" y="98">8위</text>
+            <text class="m-axis" x="2" y="160">12위</text>
+            <polyline class="m-line" points="40,48 88,48 136,79 184,94 232,125 280,156 326,125" />
+            <circle class="m-dot" cx="40" cy="48" r="5" />
+            <circle class="m-dot" cx="88" cy="48" r="5" />
+            <circle class="m-dot" cx="136" cy="79" r="5" />
+            <circle class="m-dot" cx="184" cy="94" r="5" />
+            <circle class="m-dot" cx="232" cy="125" r="5" />
+            <circle class="m-dot" cx="280" cy="156" r="5" />
+            <circle class="m-dot" cx="326" cy="125" r="5" />
+            <text class="m-label" x="40" y="27" text-anchor="middle">5위</text>
+            <text class="m-label" x="280" y="176" text-anchor="middle">12위</text>
+            <text class="m-label" x="326" y="116" text-anchor="middle">10위</text>
+            <text class="m-date" x="40" y="184" text-anchor="middle">5/1</text>
+            <text class="m-date" x="136" y="184" text-anchor="middle">5/12</text>
+            <text class="m-date" x="232" y="184" text-anchor="middle">5/24</text>
+            <text class="m-date" x="326" y="184" text-anchor="middle">5/31</text>
+          </svg>
+        </div>
+
+        <div style="padding:13px 15px;background:var(--blue-light);border-radius:10px;border-left:3px solid var(--blue);">
+          <p style="font-size:13px;line-height:1.7;color:#1a3a6b;">
+            5월 중순 이후 순위가 다소 밀리는 흐름이 있었지만, 검색 유입은 유지되고 있어 네이버 플레이스와 콘텐츠 신호를 함께 보강하며 회복 작업을 진행 중입니다.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 위챗 공식계정 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-green">💬</div>
+        <h3>위챗 공식계정 운영 현황</h3>
+      </div>
+      <div class="section-body">
+        <div class="metrics-grid" style="margin-bottom:20px;">
+          <div class="metric-card highlight">
+            <div class="mc-label">5월 말 친구 수</div>
+            <div class="mc-value">384<span style="font-size:16px;font-weight:400">명</span></div>
+            <div class="mc-sub">5/1 304명 → 현재 384명</div>
+          </div>
+          <div class="metric-card">
+            <div class="mc-label">순증가</div>
+            <div class="mc-value">+80<span style="font-size:16px;font-weight:400">명</span></div>
+            <div class="mc-sub">약 +26% 성장</div>
+          </div>
+          <div class="metric-card">
+            <div class="mc-label">신규 팔로워</div>
+            <div class="mc-value">88<span style="font-size:16px;font-weight:400">명</span></div>
+            <div class="mc-sub">위챗 통계 기준</div>
+          </div>
+          <div class="metric-card">
+            <div class="mc-label">검색 유입</div>
+            <div class="mc-value">48<span style="font-size:16px;font-weight:400">명</span></div>
+            <div class="mc-sub">신규의 54.55%</div>
+          </div>
+        </div>
+
+        <div class="wechat-grid">
+          <div class="wechat-donut">
+            <div class="wechat-donut-label">
+              <strong>88명</strong>
+              <span>신규 팔로워</span>
+            </div>
+          </div>
+          <div>
+            <div class="wechat-legend">
+              <div class="wechat-legend-item"><span class="legend-dot" style="background:#10b85f;"></span><p><strong>검색(搜一搜) 48명</strong><br>54.55% · 브랜드/시술 검색 기반 유입</p></div>
+              <div class="wechat-legend-item"><span class="legend-dot" style="background:#3bbf8f;"></span><p><strong>QR코드 스캔 26명</strong><br>29.55% · 원내/홍보물 접점 연계</p></div>
+              <div class="wechat-legend-item"><span class="legend-dot" style="background:#38c7d9;"></span><p><strong>게시물 팔로우 5명</strong><br>5.68% · 콘텐츠 기반 팔로우</p></div>
+              <div class="wechat-legend-item"><span class="legend-dot" style="background:#4b9fe5;"></span><p><strong>더보기 9명</strong><br>10.23% · 기타 경로 유입</p></div>
+            </div>
+            <div style="margin-top:16px;padding:13px 15px;background:var(--green-light);border-radius:10px;border-left:3px solid var(--green);">
+              <p style="font-size:13px;line-height:1.7;color:#1a3a1a;">
+                <strong>검색 유입 54.55%</strong>로 위챗 내 브랜드 검색 신호가 가장 강하게 나타났습니다. QR코드 유입도 26명으로 오프라인 접점과 외국인 상담 동선 연결이 유지됩니다.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 외국인 상담 문의 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-green">🌏</div>
+        <h3>위챗·라인·인스타 문의 흐름</h3>
+      </div>
+      <div class="section-body">
+        <div class="metrics-grid" style="margin-bottom:18px;">
+          <div class="metric-card highlight">
+            <div class="mc-label">다채널 상담</div>
+            <div class="mc-value">44<span style="font-size:16px;font-weight:400">건</span></div>
+            <div class="mc-sub">위챗 30 · 라인 11 · 인스타 3</div>
+          </div>
+          <div class="metric-card">
+            <div class="mc-label">예약·일정 문의</div>
+            <div class="mc-value">33<span style="font-size:16px;font-weight:400">건</span></div>
+            <div class="mc-sub">날짜 확인, 보증금, 시간 변경</div>
+          </div>
+          <div class="metric-card">
+            <div class="mc-label">리프팅 문의</div>
+            <div class="mc-value">19<span style="font-size:16px;font-weight:400">건</span></div>
+            <div class="mc-sub">울쎄라·XERF·온다 중심</div>
+          </div>
+          <div class="metric-card">
+            <div class="mc-label">가격표 문의</div>
+            <div class="mc-value">16<span style="font-size:16px;font-weight:400">건</span></div>
+            <div class="mc-sub">중국어 가격표 링크 반복 활용</div>
+          </div>
+        </div>
+
+        <div style="font-size:11px;font-weight:800;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;">예약 전환 및 조율 사례</div>
+        <div class="status-item">
+          <div class="status-dot dot-green"></div>
+          <p><span class="tag tag-line">라인</span> <strong>中井薫</strong> — 일본 고객 2명, XERF 리프팅·색소/기미·피부관리 상담 후 5월 9일 10시 예약 정상 완료.</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-green"></div>
+          <p><span class="tag tag-wechat">위챗</span> <strong>flpi</strong> — 물광주사 5월 29일 14:30 예약, 10만 원 예약 보증금 결제 확인 후 최종 예약 안내.</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-gold"></div>
+          <p><span class="tag tag-wechat">위챗</span> <strong>Effie</strong> — 2명 예약 문의, 6월 2일 시술 일정과 보증금 결제 방식 안내. 고가/준비 필요 시술은 보증금 기준 설명으로 대응.</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-gold"></div>
+          <p><span class="tag tag-wechat">위챗</span> <strong>木木</strong> — 울쎄라 PRIME + XERF + 리쥬란 조합을 제안하고 6월 10일 오전 예약 가능 시간과 보증금 절차 안내.</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-gold"></div>
+          <p><span class="tag tag-insta">인스타그램</span> <strong>중국어 상담</strong> — 3명 예약 문의 후 1인 10만 원 예약 보증금, 취소·환불 기준, 100% 예약제와 walk-in 불가 기준을 안내.</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-gold"></div>
+          <p><span class="tag tag-insta">인스타그램</span> <strong>영어 상담</strong> — 6월 2~19일 제주 방문 예정 고객이 색소 치료와 얼굴·목 리프팅 상담 문의. 바디 타이트닝은 미운영, 얼굴·목 시술 가능 범위 안내.</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-green"></div>
+          <p><span class="tag tag-insta">인스타그램</span> <strong>대만 고객 상담</strong> — 다음 달 제주 방문 전 라인 상담 채널 문의. 상담 링크를 안내하고 성형수술이 아닌 피부과 시술 중심 병원임을 설명.</p>
+        </div>
+
+        <div style="font-size:11px;font-weight:800;color:var(--muted);margin:18px 0 10px;text-transform:uppercase;letter-spacing:.5px;">주요 문의 패턴</div>
+        <div class="status-item">
+          <div class="status-dot dot-green"></div>
+          <p><strong>중국어권은 위챗 중심</strong> — 울쎄라, XERF, 리쥬란, 물광주사, 보톡스, 필러처럼 실제 시술 선택으로 이어지는 문의가 많았습니다.</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-green"></div>
+          <p><strong>일본어권은 라인 중심</strong> — XERF 리프팅, 색소·기미, 온다리프팅, 켈로이드 흉터 상담처럼 진료 가능 여부와 예약 가능 시간을 확인하는 흐름이 많았습니다.</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-green"></div>
+          <p><strong>인스타그램에서도 외국인 상담 발생</strong> — 중국어·영어·대만 고객 문의가 추가 확인되어, SNS에서 라인/위챗 상담으로 연결되는 보조 유입 흐름이 확인됩니다.</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-gold"></div>
+          <p><strong>예약이 꽉 찬 날짜의 대체 안내가 반복</strong> — 당일·주말 예약 문의가 많아, 가능한 평일 시간대 제안과 보증금 안내가 상담 전환의 핵심 포인트였습니다.</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-gold"></div>
+          <p><strong>가격표 링크가 상담 시작점으로 작동</strong> — 중국어 가격표와 교통 안내 링크를 반복 활용해 외국인 고객이 시술비와 위치를 빠르게 확인할 수 있게 했습니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 당근 광고 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-orange">🥕</div>
+        <h3>당근비즈니스 광고 성과</h3>
+      </div>
+      <div class="section-body">
+        <table class="ad-table">
+          <thead>
+            <tr><th>지표</th><th>수치</th><th>비고</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>노출수</td><td>17,078회</td><td>노형동 9,089 · 연동 7,989</td></tr>
+            <tr><td>도달수</td><td>5,155명</td><td>4월과 동일 수치</td></tr>
+            <tr><td>클릭수</td><td>319회</td><td>4월과 동일 수치</td></tr>
+            <tr><td>클릭률(CTR)</td><td>1.87%</td><td>4월 동일 유지</td></tr>
+            <tr><td>반응</td><td>8건</td><td>관심 7개 · 단골 1명</td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top:12px; padding:12px 14px; background:var(--orange-light); border-radius:8px; border-left:3px solid var(--orange);">
+          <p style="font-size:12px; line-height:1.6; color:#7a3510;">5월 당근비즈니스 광고는 4월과 동일한 운영 기준으로 진행했습니다. 지역 타깃은 노형동·연동 중심으로 유지했습니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 운영 및 추가 업무 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-gold">⚙️</div>
+        <h3>5월 운영 및 추가 업무 <span class="count-chip">12건+</span></h3>
+      </div>
+      <div class="section-body">
+        <div style="font-size:11px;font-weight:800;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;">5월 완료 업무</div>
+        <div class="status-item"><div class="status-dot dot-green"></div><p>원내대기실 TV 영상 내 비급여 이벤트 삭제 완료</p></div>
+        <div class="status-item"><div class="status-dot dot-green"></div><p>제로페이 도입 완료</p></div>
+        <div class="status-item"><div class="status-dot dot-green"></div><p>중국인 가격표 리뉴얼 및 위챗 공식계정 가격표 수정 완료</p></div>
+        <div class="status-item"><div class="status-dot dot-green"></div><p>브랜드 매거진 1차 제작 완료</p></div>
+        <div class="status-item"><div class="status-dot dot-green"></div><p>카카오상담 전용 크롬 확장프로그램 제작 완료 — 상담 문장 정리 및 외국어 번역 대응</p></div>
+        <div class="status-item"><div class="status-dot dot-green"></div><p>5월 휴진안내문 제작 완료</p></div>
+        <div class="status-item"><div class="status-dot dot-green"></div><p>중국어 홈페이지 내 대표원장 3인 경력사항 추가 완료</p></div>
+        <div class="status-item"><div class="status-dot dot-green"></div><p>후기 포스팅 제작 완료 — “내돈내산 노형아름다운피부과 리쥬란 받고 온 후기”</p></div>
+        <div class="status-item"><div class="status-dot dot-green"></div><p>피부과 매거진 10권 제작 및 배송 완료 — 원내·외국인 안내 접점 강화</p></div>
+        <div class="status-item"><div class="status-dot dot-green"></div><p>온라인 매거진 중국어 번역본 제작 및 QR 생성 완료 — 위챗·중국어 홈페이지 연계 기반 마련</p></div>
+        <div class="status-item"><div class="status-dot dot-green"></div><p>네이버플레이스 광고 타겟팅 정밀화 완료 — 모바일 검색·플레이스 유입 관리 강화</p></div>
+        <div class="status-item"><div class="status-dot dot-green"></div><p>당근비즈니스 의학정보 카드뉴스 운영 항목 정리</p></div>
+
+        <div style="font-size:11px;font-weight:800;color:var(--muted);margin:18px 0 10px;text-transform:uppercase;letter-spacing:.5px;">6월로 이어지는 업무</div>
+        <div class="status-item"><div class="status-dot dot-gold"></div><p>피부과 전용 외국어 번역 웹앱 제작</p></div>
+        <div class="status-item"><div class="status-dot dot-gold"></div><p>피부과 사후관리 안내문 리뉴얼 예정</p></div>
+        <div class="status-item"><div class="status-dot dot-gold"></div><p>써마지FLX, 리투오 도입 안내 예정</p></div>
+        <div class="status-item"><div class="status-dot dot-gold"></div><p>6월 관리 이벤트 디자인 완료 및 보림인쇄 의뢰 완료</p></div>
+      </div>
+    </div>
+
+    <!-- 콘텐츠 발행 내역 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-blue">📋</div>
+        <h3>콘텐츠 발행 내역 <span class="count-chip" id="may-chip">14건</span></h3>
+      </div>
+      <div id="may-content-area" style="overflow-x:auto;">
+        <table class="content-table">
+          <thead>
+            <tr><th>#</th><th>제목</th><th>채널</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>제주탈모관리, 증상이 뚜렷해지기 전부터 살펴야 하는 이유</td><td><span class="tag tag-homepage">홈페이지</span></td></tr>
+            <tr><td>2</td><td>제주 리프팅 언제 시작해야 할까? 나이보다 중요한 피부 신호</td><td><span class="tag tag-blog">블로그</span></td></tr>
+            <tr><td>3</td><td>제주 색소치료 기미와 잡티를 먼저 구분해야 하는 이유</td><td><span class="tag tag-blog">블로그</span></td></tr>
+            <tr><td>4</td><td>얼굴이 커 보이는 건 살 때문만이 아닙니다</td><td><span class="tag tag-insta">인스타그램</span></td></tr>
+            <tr><td>5</td><td>이중턱이 생기는 진짜 이유는 따로 있습니다</td><td><span class="tag tag-insta">인스타그램</span></td></tr>
+            <tr><td>6</td><td>눈 밑이 문제라면 먼저 구분해야 합니다</td><td><span class="tag tag-insta">인스타그램</span></td></tr>
+            <tr><td>7</td><td>피부과 시술이 한번으로 끝나지 않는 이유</td><td><span class="tag tag-insta">인스타그램</span></td></tr>
+            <tr><td>8</td><td>기미 치료 후에도 왜 다시 올라올까요?</td><td><span class="tag tag-insta">인스타그램</span></td></tr>
+            <tr><td>9</td><td>모공이 점점 커지는 건 피부 탓만이 아닙니다</td><td><span class="tag tag-insta">인스타그램</span></td></tr>
+            <tr><td>10</td><td>레이저 토닝을 오래하면 피부가 얇아질까요?</td><td><span class="tag tag-insta">인스타그램</span></td></tr>
+            <tr><td>11</td><td>여드름 흉터가 자연적으로 사라지지 않는 이유</td><td><span class="tag tag-insta">인스타그램</span></td></tr>
+            <tr><td>12</td><td>리프팅과 필러, 순서가 결과를 결정합니다</td><td><span class="tag tag-insta">인스타그램</span></td></tr>
+            <tr><td>13</td><td>집에서 할 수 있는 것과 병원 치료의 경계</td><td><span class="tag tag-insta">인스타그램</span></td></tr>
+            <tr><td>14</td><td>제주 피부과전문의 진료가 필요하다면, 노형아름다운피부과</td><td><span class="tag tag-homepage">홈페이지</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 6월 방향 -->
+    <div class="next-band">
+      <h4>6월 진행 방향</h4>
+      <div class="next-items">
+        <div class="next-item">
+          <div class="n-num">1</div>
+          <p>제주피부과 키워드 10위권 → 5위권 회복 집중, 월말 변동 구간 원인 점검</p>
+        </div>
+        <div class="next-item">
+          <div class="n-num">2</div>
+          <p>네이버 모바일 검색·플레이스 유입 유지와 플레이스 광고 타겟팅 추가 정밀화</p>
+        </div>
+        <div class="next-item">
+          <div class="n-num">3</div>
+          <p>위챗 친구 400명 돌파 목표 — 搜一搜 검색 유입과 QR 접점 동시 강화</p>
+        </div>
+        <div class="next-item">
+          <div class="n-num">4</div>
+          <p>중국어 온라인 매거진·QR 동선을 외국인 상담 전환 구조와 연결</p>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /panel-may -->
 
   <!-- ══════════════════════════════════
        4월 보고서
   ══════════════════════════════════ -->
-  <div class="report-panel active" id="panel-apr">
+  <div class="report-panel" id="panel-apr">
 
     <!-- 요약 배너 -->
     <div class="summary-band">
@@ -612,13 +1393,11 @@
             <tr><td>도달수</td><td>5,155명</td><td>—</td></tr>
             <tr><td>클릭수</td><td>319회</td><td>—</td></tr>
             <tr><td>클릭률(CTR)</td><td>1.87%</td><td>3월 동일 유지</td></tr>
-            <tr><td>클릭당 비용(CPC)</td><td>313원</td><td>—</td></tr>
-            <tr><td>총 지출</td><td>100,000원</td><td>3월 동일 예산 집행</td></tr>
             <tr><td>반응</td><td>8건</td><td>관심 7개 · 단골 1명</td></tr>
           </tbody>
         </table>
         <div style="margin-top:12px; padding:12px 14px; background:var(--orange-light); border-radius:8px; border-left:3px solid var(--orange);">
-          <p style="font-size:12px; line-height:1.6; color:#7a3510;">3월과 동일한 소재 및 예산으로 집행했습니다. 5월에는 시즌 소재 교체 및 타깃 최적화를 진행할 예정입니다.</p>
+          <p style="font-size:12px; line-height:1.6; color:#7a3510;">3월과 동일한 소재 기준으로 집행했습니다. 5월에는 시즌 소재 교체 및 타깃 최적화를 진행할 예정입니다.</p>
         </div>
       </div>
     </div>
@@ -971,8 +1750,6 @@
             <tr><td>도달수</td><td>5,155명</td><td>—</td></tr>
             <tr><td>클릭수</td><td>319회</td><td>—</td></tr>
             <tr><td>클릭률(CTR)</td><td>1.87%</td><td>2월 1.79% 대비 소폭 상승</td></tr>
-            <tr><td>클릭당 비용(CPC)</td><td>313원</td><td>—</td></tr>
-            <tr><td>총 지출</td><td>100,000원</td><td>2월 147,008원 대비 효율화</td></tr>
             <tr><td>반응</td><td>8건</td><td>관심 7개 · 단골 1명</td></tr>
           </tbody>
         </table>
@@ -1275,8 +2052,6 @@
             <tr><td>도달수</td><td>7,485명</td><td>—</td></tr>
             <tr><td>클릭수</td><td>483회</td><td>—</td></tr>
             <tr><td>클릭률(CTR)</td><td>1.79%</td><td>—</td></tr>
-            <tr><td>클릭당 비용(CPC)</td><td>304원</td><td>—</td></tr>
-            <tr><td>총 지출</td><td>147,008원</td><td>의료광고 사전심의 불필요 소재</td></tr>
           </tbody>
         </table>
       </div>
@@ -1357,6 +2132,15 @@
 <script>
   const API_URL = 'https://script.google.com/macros/s/AKfycbwUsy5dDEG-t4FszWRCj-f0-FLIOY4SPMatiNsm55xM7bFXzaAEFS6McQdvmXT85dT0/exec';
   const CLIENT_ID = 'btskin';
+  const MAY_MONTH = '2026-05';
+  const MAY_REPORT_START = '2026-05-01';
+  const MAY_REPORT_END = '2026-06-03';
+  const MAY_EXCLUDED_POST_IDS = new Set([
+    'pl-motimqxh',
+    'pl-motin3eh',
+    'pl-motinew8',
+    'pl-motinruq'
+  ]);
   const CURRENT_MONTH = '2026-03';
 
   const CHANNEL_TAG = {
@@ -1366,6 +2150,7 @@
     '홈페이지(일)':  '<span class="tag tag-homepage">홈페이지(일)</span>',
     '위챗':          '<span class="tag tag-wechat">위챗</span>',
     '인스타':        '<span class="tag tag-insta">인스타</span>',
+    '인스타그램':    '<span class="tag tag-insta">인스타그램</span>',
     '라인':          '<span class="tag tag-line">라인</span>',
   };
 
@@ -1376,6 +2161,21 @@
   function normalizeDate(v) {
     if (!v) return '';
     const s = String(v).trim();
+    if (/^\d{4}-\d{2}-\d{2}T/.test(s)) {
+      const d = new Date(s);
+      if (!Number.isNaN(d.getTime())) {
+        const parts = new Intl.DateTimeFormat('ko-KR', {
+          timeZone: 'Asia/Seoul',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        }).formatToParts(d).reduce((acc, part) => {
+          if (part.type !== 'literal') acc[part.type] = part.value;
+          return acc;
+        }, {});
+        return `${parts.year}-${parts.month}-${parts.day}`;
+      }
+    }
     const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
     return m ? `${m[1]}-${m[2]}-${m[3]}` : s;
   }
@@ -1389,10 +2189,17 @@
   function normalizePostLog(p) {
     return {
       ...p,
+      rawMonth: p.month || '',
       publishedAt: normalizeDate(p.publishedAt),
       month: normalizeMonth(p.month || p.publishedAt),
       channel: p.channel || p[''] || p.Channel || p['채널'] || '홈페이지'
     };
+  }
+
+  function cleanTitle(title) {
+    return String(title || '(제목없음)')
+      .replace('얼굴이 커 보이는건', '얼굴이 커 보이는 건')
+      .replace('살때문만이', '살 때문만이');
   }
 
   // ── 공통 렌더 헬퍼 ──
@@ -1413,8 +2220,8 @@
     }
     let rows = posts.map((p, i) => {
       const title = p.url
-        ? '<a href="' + p.url + '" target="_blank" style="color:var(--blue);text-decoration:none;">' + (p.title || '(제목없음)') + '</a>'
-        : (p.title || '(제목없음)');
+        ? '<a href="' + p.url + '" target="_blank" style="color:var(--blue);text-decoration:none;">' + cleanTitle(p.title) + '</a>'
+        : cleanTitle(p.title);
       const date = p.publishedAt ? '<span style="color:var(--muted);font-size:12px;"> ' + p.publishedAt + '</span>' : '';
       return '<tr><td>' + (i+1) + '</td><td>' + title + date + '</td><td>' + channelTag(p.channel || '홈페이지') + '</td></tr>';
     }).join('');
@@ -1436,6 +2243,30 @@
         if (!res.success) throw new Error(res.error || 'API 오류');
         summaryCache = (res.data.postLogs || []).map(normalizePostLog);
         return summaryCache;
+      });
+  }
+
+  // ── 5월 로딩 ──
+  let mayLoaded = false;
+  function loadMayContent() {
+    if (mayLoaded) return;
+    mayLoaded = true;
+    loadSummary()
+      .then(allPosts => {
+        const posts = allPosts
+          .filter(p => p.clientId === CLIENT_ID && (
+            (p.publishedAt || '') >= MAY_REPORT_START && (p.publishedAt || '') <= MAY_REPORT_END
+          ))
+          .filter(p => !MAY_EXCLUDED_POST_IDS.has(p.logId))
+          .sort((a, b) => (a.publishedAt || '').localeCompare(b.publishedAt || ''));
+        renderContentToArea(posts, 'may-chip', 'may-content-area');
+      })
+      .catch(() => {
+        const el = document.getElementById('may-content-area');
+        if (el) el.innerHTML = '<p style="font-size:14px;color:var(--muted);padding:20px;">데이터를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.</p>';
+        const chip = document.getElementById('may-chip');
+        if (chip) chip.textContent = '오류';
+        mayLoaded = false;
       });
   }
 
@@ -1483,17 +2314,18 @@
       });
   }
 
-  function switchTab(id) {
+  function switchTab(id, evt) {
     document.querySelectorAll('.month-tab').forEach(t => t.classList.remove('active'));
-    event.currentTarget.classList.add('active');
+    if (evt && evt.currentTarget) evt.currentTarget.classList.add('active');
     document.querySelectorAll('.report-panel').forEach(p => p.classList.remove('active'));
     document.getElementById('panel-' + id).classList.add('active');
+    if (id === 'may') loadMayContent();
     if (id === 'apr') loadAprilContent();
     if (id === 'mar') loadMarchContent();
   }
 
-  // 페이지 로드 시 4월 탭이 기본이므로 즉시 로드
-  document.addEventListener('DOMContentLoaded', loadAprilContent);
+  // 페이지 로드 시 5월 탭이 기본이므로 즉시 로드
+  document.addEventListener('DOMContentLoaded', loadMayContent);
 </script>
 
 </body>

@@ -53,6 +53,12 @@
     .band-point { display: flex; gap: 10px; align-items: flex-start; }
     .band-point .dot { width: 6px; height: 6px; background: #7ecfa5; border-radius: 50%; margin-top: 7px; flex-shrink: 0; }
     .band-point p { font-size: 14px; line-height: 1.6; color: rgba(255,255,255,0.85); }
+    .performance-flow { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: -12px 0 28px; }
+    .flow-node { position: relative; min-width: 0; background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px 14px; }
+    .flow-node:not(:last-child)::after { content: "→"; position: absolute; right: -11px; top: 50%; transform: translateY(-50%); width: 22px; height: 22px; border-radius: 50%; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; z-index: 1; }
+    .flow-kicker { font-size: 11px; font-weight: 800; color: var(--muted); margin-bottom: 6px; }
+    .flow-value { font-size: 22px; font-weight: 900; color: var(--primary); line-height: 1.1; }
+    .flow-label { font-size: 11px; color: var(--muted); margin-top: 6px; line-height: 1.4; }
 
     /* 지표 카드 */
     .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 28px; }
@@ -93,6 +99,8 @@
     /* 태그 */
     .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-right: 6px; }
     .tag-blog { background: #fff3e0; color: #e65100; }
+    .tag-homepage { background: #e4f2eb; color: var(--green); }
+    .tag-insta { background: #ffeaf1; color: #c13584; }
     .tag-done { background: #e4f2eb; color: var(--green); }
     .tag-wip { background: #fff8e6; color: #8a6230; }
     .tag-plan { background: #f0f0f0; color: #666; }
@@ -144,6 +152,207 @@
     .open-banner .ob-icon { font-size: 32px; flex-shrink: 0; }
     .open-banner .ob-text h3 { font-size: 16px; font-weight: 800; color: #7ecfa5; margin-bottom: 4px; }
     .open-banner .ob-text p { font-size: 13px; color: rgba(255,255,255,0.75); line-height: 1.6; }
+
+    /* 5월 파일럿 보고서 구조 */
+    .pilot-report .band-points { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .pilot-report .summary-band .band-sub { max-width: 680px; line-height: 1.7; }
+    .pilot-report .insight-card { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 14px 16px; }
+    .pilot-report .insight-card strong { display: block; color: #7ecfa5; font-size: 14px; margin-bottom: 5px; }
+    .pilot-report .insight-card p { font-size: 13px; line-height: 1.55; color: rgba(255,255,255,0.82); }
+    .pilot-report .kpi-title { font-size: 12px; font-weight: 800; color: var(--muted); letter-spacing: .4px; margin: 4px 0 12px; text-transform: uppercase; }
+    .pilot-report .primary-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 16px; }
+    .pilot-report .support-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+    .pilot-report .support-panel { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 22px; }
+    .pilot-report .support-panel summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; justify-content: space-between; font-size: 14px; font-weight: 800; color: var(--primary); list-style: none; }
+    .pilot-report .support-panel summary::-webkit-details-marker { display: none; }
+    .pilot-report .support-panel summary::after { content: "+"; width: 24px; height: 24px; border-radius: 50%; background: var(--accent-light); color: var(--accent); display: inline-flex; align-items: center; justify-content: center; font-weight: 900; }
+    .pilot-report .support-panel[open] summary::after { content: "-"; }
+    .pilot-report .section-nav { display: flex; gap: 8px; overflow-x: auto; margin: 0 -4px 22px; padding: 0 4px 4px; scrollbar-width: none; }
+    .pilot-report .section-nav::-webkit-scrollbar { display: none; }
+    .pilot-report .section-nav a { flex: 0 0 auto; min-height: 40px; display: inline-flex; align-items: center; padding: 8px 13px; border-radius: 999px; background: var(--card); border: 1px solid var(--border); color: var(--primary); font-size: 13px; font-weight: 800; text-decoration: none; }
+    .pilot-report .section-lead { background: var(--accent-light); border: 1px solid rgba(61,122,90,0.28); border-radius: 12px; padding: 15px 18px; margin-bottom: 16px; }
+    .pilot-report .section-lead strong { display: block; color: var(--accent); font-size: 14px; margin-bottom: 5px; }
+    .pilot-report .section-lead p { font-size: 14px; line-height: 1.7; color: #1a3a22; }
+    .pilot-report .metric-strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 16px; }
+    .pilot-report .mini-stat { border: 1px solid var(--border); background: var(--card); border-radius: 12px; padding: 13px 14px; }
+    .pilot-report .mini-stat span { display: block; color: var(--muted); font-size: 11px; font-weight: 800; margin-bottom: 6px; }
+    .pilot-report .mini-stat strong { display: block; color: var(--primary); font-size: 20px; line-height: 1.1; }
+    .pilot-report .details-box { border: 1px solid var(--border); border-radius: 12px; background: #fff; margin-top: 14px; }
+    .pilot-report .details-box summary { cursor: pointer; min-height: 44px; padding: 11px 14px; font-size: 13px; font-weight: 800; color: var(--primary); list-style: none; }
+    .pilot-report .details-box summary::-webkit-details-marker { display: none; }
+    .pilot-report .details-box .details-inner { padding: 0 14px 14px; }
+    .pilot-report .desktop-log-table { overflow-x: auto; }
+    .pilot-report .mobile-log-list { display: none; }
+    .pilot-report .log-card { border: 1px solid var(--border); border-radius: 12px; padding: 13px 14px; background: var(--card); }
+    .pilot-report .log-card + .log-card { margin-top: 10px; }
+    .pilot-report .log-meta { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 7px; color: var(--muted); font-size: 11px; font-weight: 800; }
+    .pilot-report .log-title { font-size: 14px; line-height: 1.55; font-weight: 700; color: var(--text); }
+    .pilot-report .rank-chart-card { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; margin-bottom: 16px; }
+    .pilot-report .rank-chart-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+    .pilot-report .rank-chart-head strong { display: block; color: var(--primary); font-size: 14px; margin-bottom: 4px; }
+    .pilot-report .rank-chart-head span { color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .pilot-report .rank-badge { flex: 0 0 auto; border-radius: 999px; background: var(--accent-light); color: var(--accent); padding: 6px 10px; font-size: 12px; font-weight: 900; }
+    .pilot-report .rank-svg { width: 100%; min-height: 190px; display: block; }
+    .pilot-report .rank-svg text { font-family: inherit; }
+    .pilot-report .rank-note-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+    .pilot-report .rank-note { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; }
+    .pilot-report .rank-note span { display: block; color: var(--muted); font-size: 11px; font-weight: 800; margin-bottom: 5px; }
+    .pilot-report .rank-note strong { display: block; color: var(--primary); font-size: 20px; line-height: 1.15; }
+    @media(max-width: 640px) {
+      .site-header { padding: 18px 16px; flex-direction: column; align-items: flex-start; gap: 12px; }
+      .site-header .logo { gap: 10px; }
+      .site-header .logo-badge { width: 36px; height: 36px; border-radius: 9px; font-size: 17px; }
+      .site-header .logo-text h1 { font-size: 16px; line-height: 1.35; }
+      .site-header .logo-text p { font-size: 11px; }
+      .header-tag { font-size: 11px; padding: 5px 10px; }
+      .container { padding: 28px 12px; }
+      .timeline-label { margin-bottom: 12px; }
+      .month-tabs { flex-wrap: nowrap; overflow-x: auto; gap: 8px; margin: 0 -12px 24px; padding: 0 12px 6px; scrollbar-width: none; }
+      .month-tabs::-webkit-scrollbar { display: none; }
+      .month-tab { flex: 0 0 auto; white-space: nowrap; padding: 7px 14px; font-size: 13px; }
+      .summary-band { padding: 20px 18px; border-radius: 14px; margin-bottom: 20px; }
+      .summary-band .band-month { font-size: 22px; line-height: 1.25; }
+      .summary-band .band-title { font-size: 11px; }
+      .summary-band .band-sub { font-size: 12px; margin-bottom: 14px; }
+      .summary-band .band-points { grid-template-columns: 1fr !important; gap: 10px; }
+      .band-point p { font-size: 13px; line-height: 1.55; }
+      .performance-flow { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; margin: -8px 0 20px; }
+      .flow-node { padding: 13px 11px; border-radius: 12px; }
+      .flow-node::after { display: none !important; }
+      .flow-kicker { font-size: 10px; }
+      .flow-value { font-size: 20px; }
+      .flow-label { font-size: 10px; }
+      .metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 10px; margin-bottom: 20px; }
+      .metric-card { padding: 16px 14px; border-radius: 12px; }
+      .metric-card .mc-label { font-size: 11px; }
+      .metric-card .mc-value { font-size: 24px !important; line-height: 1.1; }
+      .metric-card .mc-sub { font-size: 11px; line-height: 1.45; }
+      .section-card { border-radius: 12px; margin-bottom: 16px; }
+      .section-header { padding: 14px 16px; align-items: flex-start; }
+      .section-header .icon { width: 28px; height: 28px; font-size: 14px; flex-shrink: 0; }
+      .section-header h3 { font-size: 14px; line-height: 1.4; }
+      .section-body { padding: 16px 14px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .two-col, .progress-grid { grid-template-columns: 1fr !important; gap: 12px; }
+      .content-table { min-width: 540px; }
+      .content-table th, .content-table td { padding: 9px 10px; font-size: 12px; }
+      .status-item p, .next-item p, .sub-list li { font-size: 13px; line-height: 1.55; }
+      .next-band { padding: 18px 16px; border-radius: 12px; }
+      .open-banner { padding: 16px 14px; align-items: flex-start; }
+      [style*="grid-template-columns:1fr 1fr"],
+      [style*="grid-template-columns: 1fr 1fr"],
+      [style*="grid-template-columns:repeat(3"],
+      [style*="grid-template-columns: repeat(3"],
+      [style*="grid-template-columns:repeat(auto-fit"],
+      [style*="grid-template-columns: repeat(auto-fit"] { grid-template-columns: 1fr !important; }
+      [style*="font-size:36px"], [style*="font-size:34px"], [style*="font-size:32px"], [style*="font-size:28px"] { font-size: 24px !important; }
+      [style*="padding:22px 24px"], [style*="padding:24px 28px"], [style*="padding:28px 32px"] { padding: 16px 14px !important; }
+    }
+    @media(max-width: 380px) {
+      .metrics-grid { grid-template-columns: 1fr !important; }
+      .content-table { min-width: 500px; }
+    }
+    @media(max-width: 640px) {
+      .pilot-report .summary-band .band-points { grid-template-columns: 1fr !important; }
+      .pilot-report .insight-card { padding: 12px 13px; }
+      .pilot-report .primary-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+      .pilot-report .support-kpis, .pilot-report .metric-strip { grid-template-columns: 1fr; }
+      .pilot-report .support-panel { padding: 12px 14px; }
+      .pilot-report .section-body { overflow-x: visible; }
+      .pilot-report .section-lead { padding: 13px 14px; }
+      .pilot-report .section-lead p { font-size: 13px; }
+      .pilot-report .desktop-log-table { display: none; }
+      .pilot-report .mobile-log-list { display: block; }
+      .pilot-report .content-table { min-width: 0; }
+      .pilot-report .mobile-log-list { margin: 0 -4px; }
+      .pilot-report .log-card {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        align-items: start;
+        column-gap: 8px;
+        padding: 9px 11px;
+        border-radius: 10px;
+      }
+      .pilot-report .log-card + .log-card { margin-top: 7px; }
+      .pilot-report .log-meta { justify-content: flex-start; gap: 4px; margin: 1px 0 0; font-size: 10px; white-space: nowrap; }
+      .pilot-report .log-title {
+        display: -webkit-box;
+        overflow: hidden;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        font-size: 13px;
+        line-height: 1.38;
+      }
+      .pilot-report .details-box .details-inner { padding: 0 10px 10px; }
+      .pilot-report .rank-chart-card { padding: 13px 12px; }
+      .pilot-report .rank-chart-head { flex-direction: column; }
+      .pilot-report .rank-svg { min-height: 0; max-height: 190px; height: auto; }
+      .pilot-report .rank-note-grid { grid-template-columns: 1fr; }
+    }
+    @media(max-width: 380px) {
+      .pilot-report .primary-kpis { grid-template-columns: 1fr; }
+    }
+    @media(max-width: 640px) {
+      .performance-flow,
+      .pilot-report .primary-kpis,
+      .pilot-report .support-kpis,
+      .pilot-report .metric-strip {
+        grid-template-columns: 1fr !important;
+        gap: 8px !important;
+      }
+      .performance-flow { margin: -6px 0 18px !important; }
+      .flow-node,
+      .metric-card,
+      .pilot-report .mini-stat {
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        column-gap: 10px;
+        row-gap: 2px;
+        min-height: 0;
+        padding: 10px 12px !important;
+        border-radius: 12px !important;
+      }
+      .flow-node::after { display: none !important; }
+      .flow-kicker,
+      .metric-card .mc-label,
+      .pilot-report .mini-stat span {
+        grid-column: 1;
+        grid-row: 1;
+        min-width: 0;
+        margin: 0 !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 11px !important;
+      }
+      .flow-value,
+      .metric-card .mc-value,
+      .pilot-report .mini-stat strong {
+        grid-column: 2;
+        grid-row: 1;
+        justify-self: end;
+        margin: 0 !important;
+        white-space: nowrap;
+        font-size: 20px !important;
+        line-height: 1.15 !important;
+      }
+      .flow-label,
+      .metric-card .mc-sub {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        min-width: 0;
+        margin: 0 !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 11px !important;
+        line-height: 1.35 !important;
+      }
+      .metrics-grid {
+        grid-template-columns: 1fr !important;
+        gap: 8px !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -162,14 +371,525 @@
 <main class="container">
   <p class="timeline-label">보고서 목록</p>
   <div class="month-tabs">
-    <div class="month-tab active" onclick="switchTab('apr', event)">2026년 4월</div>
+    <div class="month-tab active" onclick="switchTab('may', event)">2026년 5월</div>
+    <div class="month-tab" onclick="switchTab('apr', event)">2026년 4월</div>
     <div class="month-tab" onclick="switchTab('mar', event)">2026년 3월</div>
   </div>
 
   <!-- ═══════════════════════════════════════
+       5월 보고서
+  ═══════════════════════════════════════ -->
+  <div class="report-panel active pilot-report" id="panel-may">
+
+    <!-- 요약 배너 -->
+    <div class="summary-band">
+      <div class="band-title">MONTHLY SUMMARY</div>
+      <div class="band-month">2026년 5월 마케팅 결과보고</div>
+      <div class="band-sub">5월은 홈페이지 유입이 크게 늘고, 블로그·인스타그램·지역 광고가 함께 작동하기 시작한 채널 확장 월입니다.</div>
+      <div class="band-points">
+        <div class="insight-card">
+          <strong>홈페이지 유입 성장</strong>
+          <p>페이지뷰는 4월 대비 약 131%, 방문자는 약 75% 증가했습니다.</p>
+        </div>
+        <div class="insight-card">
+          <strong>검색 키워드 방향 확인</strong>
+          <p>블로그 검색 유입에서 레이저제모 관련 키워드가 가장 뚜렷하게 잡혔습니다.</p>
+        </div>
+        <div class="insight-card">
+          <strong>신규 채널 테스트 시작</strong>
+          <p>인스타그램과 당근 광고에서 실제 노출·클릭·홈페이지 유입이 확인되었습니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="performance-flow">
+      <div class="flow-node">
+        <div class="flow-kicker">홈페이지</div>
+        <div class="flow-value">1,043</div>
+        <div class="flow-label">5월 페이지뷰</div>
+      </div>
+      <div class="flow-node">
+        <div class="flow-kicker">블로그</div>
+        <div class="flow-value">2,492</div>
+        <div class="flow-label">네이버블로그 조회수</div>
+      </div>
+      <div class="flow-node">
+        <div class="flow-kicker">지역 광고</div>
+        <div class="flow-value">33,276</div>
+        <div class="flow-label">당근 노출</div>
+      </div>
+      <div class="flow-node">
+        <div class="flow-kicker">콘텐츠</div>
+        <div class="flow-value">12건</div>
+        <div class="flow-label">월 목표 초과</div>
+      </div>
+    </div>
+
+    <!-- 핵심 지표 -->
+    <div class="kpi-title">핵심 KPI</div>
+    <div class="primary-kpis">
+      <div class="metric-card highlight">
+        <div class="mc-label">홈페이지 페이지뷰</div>
+        <div class="mc-value">1,043</div>
+        <div class="mc-sub">4월 452 대비 +131%</div>
+      </div>
+      <div class="metric-card">
+        <div class="mc-label">홈페이지 방문자</div>
+        <div class="mc-value">435명</div>
+        <div class="mc-sub">4월 249명 대비 +75%</div>
+      </div>
+      <div class="metric-card">
+        <div class="mc-label">네이버 유입</div>
+        <div class="mc-value">509</div>
+        <div class="mc-sub">전체 방문의 약 47%</div>
+      </div>
+      <div class="metric-card">
+        <div class="mc-label">블로그 조회수</div>
+        <div class="mc-value">2,492</div>
+        <div class="mc-sub">4월 대비 -16% · 3월 대비 +25%</div>
+      </div>
+    </div>
+
+    <details class="support-panel">
+      <summary>운영 참고지표 보기</summary>
+      <div class="support-kpis">
+        <div class="metric-card">
+          <div class="mc-label">홈페이지 방문</div>
+          <div class="mc-value">1,091</div>
+          <div class="mc-sub">유입분석 기준 방문 횟수</div>
+        </div>
+        <div class="metric-card highlight">
+          <div class="mc-label">콘텐츠 발행</div>
+          <div class="mc-value">12건</div>
+          <div class="mc-sub">월 목표 5건 초과 달성</div>
+        </div>
+        <div class="metric-card">
+          <div class="mc-label">인스타그램 포스팅</div>
+          <div class="mc-value">7건</div>
+          <div class="mc-sub">kbhani_skin 초기 콘텐츠 구축</div>
+        </div>
+        <div class="metric-card warn">
+          <div class="mc-label">당근 광고 노출</div>
+          <div class="mc-value">33,276</div>
+          <div class="mc-sub">클릭 558 · 반응 15건</div>
+        </div>
+      </div>
+    </details>
+
+    <nav class="section-nav" aria-label="5월 보고서 섹션">
+      <a href="#may-homepage">홈페이지</a>
+      <a href="#may-place">플레이스</a>
+      <a href="#may-blog">블로그</a>
+      <a href="#may-ads">SNS/광고</a>
+      <a href="#may-content">발행내역</a>
+      <a href="#may-ops">업무</a>
+    </nav>
+
+    <!-- 홈페이지 유입 현황 -->
+    <div class="section-card" id="may-homepage">
+      <div class="section-header">
+        <div class="icon icon-green">🏠</div>
+        <h3>홈페이지 유입 현황</h3>
+      </div>
+      <div class="section-body">
+        <div class="section-lead">
+          <strong>한 줄 결론</strong>
+          <p>홈페이지는 4월보다 크게 성장했고, 네이버 검색/플레이스와 직접방문이 유입의 중심입니다.</p>
+        </div>
+
+        <div class="metric-strip">
+          <div class="mini-stat"><span>페이지뷰</span><strong>1,043</strong></div>
+          <div class="mini-stat"><span>방문자</span><strong>435명</strong></div>
+          <div class="mini-stat"><span>네이버 유입</span><strong>509회</strong></div>
+          <div class="mini-stat"><span>직접유입</span><strong>402회</strong></div>
+        </div>
+
+        <details class="details-box">
+          <summary>세부 유입 경로 보기</summary>
+          <div class="details-inner">
+        <div class="two-col" style="margin-bottom:0;">
+          <div>
+            <p style="font-size:12px;font-weight:800;color:var(--muted);margin-bottom:10px;">유입분석 기준</p>
+            <div style="display:grid;gap:10px;">
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:5px;"><span>네이버</span><span>509회</span></div>
+                <div style="height:9px;background:var(--border);border-radius:6px;overflow:hidden;"><div style="height:100%;width:47%;background:var(--accent);border-radius:6px;"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:5px;"><span>직접유입</span><span>402회</span></div>
+                <div style="height:9px;background:var(--border);border-radius:6px;overflow:hidden;"><div style="height:100%;width:37%;background:#6aa57c;border-radius:6px;"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:5px;"><span>자사 도메인</span><span>98회</span></div>
+                <div style="height:9px;background:var(--border);border-radius:6px;overflow:hidden;"><div style="height:100%;width:9%;background:var(--blue);border-radius:6px;"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:5px;"><span>인스타그램 UTM</span><span>26회</span></div>
+                <div style="height:9px;background:var(--border);border-radius:6px;overflow:hidden;"><div style="height:100%;width:3%;background:#c13584;border-radius:6px;"></div></div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <p style="font-size:12px;font-weight:800;color:var(--muted);margin-bottom:10px;">유입사이트 기준</p>
+            <ul class="sub-list">
+              <li><div class="sub-num">1</div><span><strong>직접방문 261회</strong> — 기존 고객/병원명 인지 후 접속으로 해석 가능</span></li>
+              <li><div class="sub-num">2</div><span><strong>네이버 모바일검색 110회</strong> — 모바일 검색 유입이 가장 큰 외부 경로</span></li>
+              <li><div class="sub-num">3</div><span><strong>네이버 플레이스 78회</strong> — 모바일 49회, PC 지도 29회로 병원 정보 탐색 유입 확인</span></li>
+              <li><div class="sub-num">4</div><span><strong>인스타그램 15회</strong> — 피부클리닉 계정/광고 연결 후 홈페이지 유입 발생</span></li>
+            </ul>
+          </div>
+        </div>
+          </div>
+        </details>
+
+        <div class="status-item">
+          <div class="status-dot dot-green"></div>
+          <p><strong>해석</strong> — 5월은 "네이버에서 보고 들어오거나, 병원명을 알고 직접 들어온 방문"이 대부분입니다. 여기에 인스타그램 유입이 새로 붙기 시작했습니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 네이버 플레이스 순위 관리 -->
+    <div class="section-card" id="may-place">
+      <div class="section-header">
+        <div class="icon icon-green">📍</div>
+        <h3>네이버 플레이스 순위 관리</h3>
+      </div>
+      <div class="section-body">
+        <div class="section-lead">
+          <strong>한 줄 결론</strong>
+          <p>5월 18일부터 365경희부부한의원 화북점 플레이스 순위 작업을 시작해, 한의원 정보를 확인하는 과정에서 피부클리닉 정보까지 자연스럽게 볼 수 있도록 연결했습니다.</p>
+        </div>
+
+        <div class="rank-chart-card">
+          <div class="rank-chart-head">
+            <div>
+              <strong>화북점 플레이스 순위 추이</strong>
+              <span>5월 18일 23위에서 5월 31일 10위까지 상승</span>
+            </div>
+            <div class="rank-badge">13계단 상승</div>
+          </div>
+
+          <svg class="rank-svg" viewBox="0 0 360 200" role="img" aria-label="365경희부부한의원 화북점 네이버 플레이스 순위 추이 그래프">
+            <rect x="0" y="0" width="360" height="200" rx="12" fill="#f8faf8"></rect>
+            <line x1="38" y1="28" x2="342" y2="28" stroke="#dfe7df" stroke-width="1"></line>
+            <line x1="38" y1="84" x2="342" y2="84" stroke="#dfe7df" stroke-width="1"></line>
+            <line x1="38" y1="140" x2="342" y2="140" stroke="#dfe7df" stroke-width="1"></line>
+            <text x="10" y="32" fill="#6b756f" font-size="11" font-weight="800">10위</text>
+            <text x="10" y="88" fill="#6b756f" font-size="11" font-weight="800">17위</text>
+            <text x="10" y="144" fill="#6b756f" font-size="11" font-weight="800">23위</text>
+
+            <polyline points="38,140 62,124 86,116 110,124 134,124 158,108 182,116 206,92 230,92 254,92 278,76 302,68 326,60 342,36" fill="none" stroke="#2d8c52" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></polyline>
+            <polygon points="336,36 342,36 342,42" fill="#2d8c52"></polygon>
+
+            <circle cx="38" cy="140" r="4.5" fill="#fff" stroke="#2d8c52" stroke-width="3"></circle>
+            <circle cx="62" cy="124" r="3.5" fill="#2d8c52"></circle>
+            <circle cx="86" cy="116" r="3.5" fill="#2d8c52"></circle>
+            <circle cx="110" cy="124" r="3.5" fill="#2d8c52"></circle>
+            <circle cx="134" cy="124" r="3.5" fill="#2d8c52"></circle>
+            <circle cx="158" cy="108" r="3.5" fill="#2d8c52"></circle>
+            <circle cx="182" cy="116" r="3.5" fill="#2d8c52"></circle>
+            <circle cx="206" cy="92" r="3.5" fill="#2d8c52"></circle>
+            <circle cx="230" cy="92" r="3.5" fill="#2d8c52"></circle>
+            <circle cx="254" cy="92" r="3.5" fill="#2d8c52"></circle>
+            <circle cx="278" cy="76" r="3.5" fill="#2d8c52"></circle>
+            <circle cx="302" cy="68" r="3.5" fill="#2d8c52"></circle>
+            <circle cx="326" cy="60" r="3.5" fill="#2d8c52"></circle>
+            <circle cx="342" cy="36" r="5" fill="#fff" stroke="#2d8c52" stroke-width="3"></circle>
+
+            <text x="38" y="162" text-anchor="middle" fill="#6b756f" font-size="11" font-weight="800">5/18</text>
+            <text x="182" y="162" text-anchor="middle" fill="#6b756f" font-size="11" font-weight="800">5/24</text>
+            <text x="342" y="162" text-anchor="middle" fill="#6b756f" font-size="11" font-weight="800">5/31</text>
+            <text x="38" y="132" text-anchor="middle" fill="#1f5e49" font-size="12" font-weight="900">23위</text>
+            <text x="206" y="84" text-anchor="middle" fill="#1f5e49" font-size="12" font-weight="900">17위</text>
+            <text x="302" y="60" text-anchor="middle" fill="#1f5e49" font-size="12" font-weight="900">14위</text>
+            <text x="342" y="25" text-anchor="middle" fill="#d52d2d" font-size="13" font-weight="900">10위</text>
+          </svg>
+        </div>
+
+        <div class="rank-note-grid">
+          <div class="rank-note">
+            <span>작업 시작</span>
+            <strong>5/18</strong>
+          </div>
+          <div class="rank-note">
+            <span>시작 순위</span>
+            <strong>23위</strong>
+          </div>
+          <div class="rank-note">
+            <span>월말 순위</span>
+            <strong>10위</strong>
+          </div>
+        </div>
+
+        <div class="status-item">
+          <div class="status-dot dot-green"></div>
+          <p><strong>해석</strong> — 화북점 플레이스 순위가 올라가면 기존 한의원 정보를 찾는 이용자가 피부클리닉 안내까지 함께 확인할 수 있습니다. 5월 후반부터 순위가 빠르게 개선되어 6월에도 연결 효과를 이어갈 수 있는 상태입니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 블로그 유입 분석 -->
+    <div class="section-card" id="may-blog">
+      <div class="section-header">
+        <div class="icon icon-blue">📊</div>
+        <h3>네이버 블로그 유입 분석</h3>
+      </div>
+      <div class="section-body">
+        <div class="section-lead">
+          <strong>한 줄 결론</strong>
+          <p>블로그 조회수는 4월보다 낮아졌지만, 레이저제모 중심의 검색 키워드가 확인되어 6월 콘텐츠 방향이 분명해졌습니다.</p>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px;">
+          <div style="text-align:center;padding:16px;background:#f5f7f5;border-radius:12px;border:1px solid var(--border);">
+            <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;">2026년 3월</div>
+            <div style="font-size:24px;font-weight:800;color:var(--muted);">1,992</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:4px;">운영 초기</div>
+          </div>
+          <div style="text-align:center;padding:16px;background:var(--accent);border-radius:12px;">
+            <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.7);margin-bottom:6px;">2026년 4월</div>
+            <div style="font-size:24px;font-weight:800;color:#fff;">2,960</div>
+            <div style="font-size:11px;color:#b3e8cc;margin-top:4px;">고점 형성</div>
+          </div>
+          <div style="text-align:center;padding:16px;background:#f5f7f5;border-radius:12px;border:1px solid var(--border);">
+            <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;">2026년 5월</div>
+            <div style="font-size:24px;font-weight:800;color:var(--primary);">2,492</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:4px;">4월 대비 -16%, 3월 대비 +25%</div>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div>
+            <p style="font-size:12px;font-weight:800;color:var(--muted);margin-bottom:10px;">주요 유입 경로</p>
+            <ul class="sub-list">
+              <li><div class="sub-num">1</div><span><strong>사이트 유입 68.75%</strong> — 블로그 내부/플레이스 등에서 넘어오는 방문 비중이 큼</span></li>
+              <li><div class="sub-num">2</div><span><strong>검색 유입 29.91%</strong> — 네이버 통합검색에서 피부클리닉 키워드 유입 확인</span></li>
+              <li><div class="sub-num">3</div><span><strong>네이버 블로그_PC 29.35%</strong> — 블로그 생태계 안에서 기존 글 소비 지속</span></li>
+              <li><div class="sub-num">4</div><span><strong>네이버 플레이스_모바일 18.36%</strong> — 플레이스 확인 후 블로그로 이어지는 흐름 유지</span></li>
+            </ul>
+          </div>
+          <div>
+            <p style="font-size:12px;font-weight:800;color:var(--muted);margin-bottom:10px;">검색 키워드 흐름</p>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;">
+              <span class="tag tag-done">제주 레이저제모 6.90%</span>
+              <span class="tag tag-blog">제주 브라질리언 레이저 3.17%</span>
+              <span class="tag tag-done">365경희부부한의원 1.87%</span>
+              <span class="tag tag-blog">제주 제모 1.49%</span>
+              <span class="tag tag-blog">제주도 레이저제모 1.49%</span>
+              <span class="tag tag-blog">힐트레이저 제주 1.12%</span>
+            </div>
+            <div class="status-item">
+              <div class="status-dot dot-blue"></div>
+              <p><strong>핵심</strong> — 5월 검색에서는 레이저제모 관련 키워드가 가장 뚜렷합니다. 특히 "제주 레이저 제모 브라질리언, 남자도 위생 관리를 위해" 글이 167조회로 5월 발행 글 중 가장 높은 반응을 만들었습니다.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SNS 및 지역 광고 성과 -->
+    <div class="section-card" id="may-ads">
+      <div class="section-header">
+        <div class="icon icon-orange">📣</div>
+        <h3>SNS 및 지역 광고 성과</h3>
+      </div>
+      <div class="section-body">
+        <div class="section-lead">
+          <strong>한 줄 결론</strong>
+          <p>인스타그램은 브랜드 첫 화면을 만들었고, 당근 광고는 지역 생활권에서 클릭과 쿠폰 반응을 만들었습니다.</p>
+        </div>
+
+        <div class="two-col">
+          <div>
+            <div style="background:#fff7fb;border:1px solid #f2bfd4;border-radius:12px;padding:18px 20px;margin-bottom:14px;">
+              <p style="font-size:12px;font-weight:800;color:#c13584;margin-bottom:8px;">인스타그램 운영</p>
+              <div style="font-size:28px;font-weight:800;color:#c13584;line-height:1;">7건</div>
+              <p style="font-size:12px;color:var(--muted);margin-top:6px;">@kbhani_skin 계정 초기 포스팅 구축</p>
+            </div>
+            <ul class="sub-list">
+              <li><div class="sub-num">1</div><span><strong>피부가 예민할 때 바로 시술해도 괜찮을까요?</strong> — 982회 노출</span></li>
+              <li><div class="sub-num">2</div><span><strong>한철기미다 피부가 흔들린다면, 이유가 있습니다</strong> — 903회 노출</span></li>
+              <li><div class="sub-num">3</div><span><strong>어느 날부터 짙어진 얼굴빛, 안에서 시작된 신호</strong> — 741회 노출</span></li>
+              <li><div class="sub-num">4</div><span><strong>브랜드 소개/전문장비/맞춤케어 소재</strong> — 계정 첫 화면에서 병원 콘셉트가 바로 보이도록 구성</span></li>
+            </ul>
+          </div>
+          <div>
+            <div style="background:var(--orange-light);border:1px solid var(--orange);border-radius:12px;padding:18px 20px;margin-bottom:14px;">
+              <p style="font-size:12px;font-weight:800;color:var(--orange);margin-bottom:8px;">당근비즈니스 광고</p>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div>
+                  <div style="font-size:22px;font-weight:800;color:var(--orange);">33,276</div>
+                  <div style="font-size:11px;color:var(--muted);">노출</div>
+                </div>
+                <div>
+                  <div style="font-size:22px;font-weight:800;color:var(--orange);">6,571명</div>
+                  <div style="font-size:11px;color:var(--muted);">도달</div>
+                </div>
+                <div>
+                  <div style="font-size:22px;font-weight:800;color:var(--orange);">558</div>
+                  <div style="font-size:11px;color:var(--muted);">클릭</div>
+                </div>
+                <div>
+                  <div style="font-size:22px;font-weight:800;color:var(--orange);">1.68%</div>
+                  <div style="font-size:11px;color:var(--muted);">월간 클릭률</div>
+                </div>
+              </div>
+            </div>
+            <ul class="sub-list">
+              <li><div class="sub-num">1</div><span><strong>도달 6,571명</strong> — 지역 이용자에게 반복 노출되는 생활권 광고 집행</span></li>
+              <li><div class="sub-num">2</div><span><strong>반응 15건</strong> — 댓글 6명, 쿠폰 다운로드 5회, 관심 4개 발생</span></li>
+              <li><div class="sub-num">3</div><span><strong>최근 7일 클릭률 1.26%</strong> — 병원 업종 평균 0.57% 대비 높은 수준</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <div style="margin-top:18px;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px 20px;">
+          <p style="font-size:12px;font-weight:800;color:var(--muted);margin-bottom:12px;">당근 광고 주요 노출 지역</p>
+          <div style="display:grid;gap:9px;">
+            <div><div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:4px;"><span>일도2동</span><span>9,348회</span></div><div style="height:8px;background:#e6e6e6;border-radius:6px;overflow:hidden;"><div style="width:100%;height:100%;background:var(--orange);border-radius:6px;"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:4px;"><span>삼양동</span><span>4,601회</span></div><div style="height:8px;background:#e6e6e6;border-radius:6px;overflow:hidden;"><div style="width:49%;height:100%;background:var(--orange);border-radius:6px;"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:4px;"><span>화북동</span><span>4,467회</span></div><div style="height:8px;background:#e6e6e6;border-radius:6px;overflow:hidden;"><div style="width:48%;height:100%;background:var(--orange);border-radius:6px;"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:4px;"><span>화북일동</span><span>3,493회</span></div><div style="height:8px;background:#e6e6e6;border-radius:6px;overflow:hidden;"><div style="width:37%;height:100%;background:var(--orange);border-radius:6px;"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:4px;"><span>도련일동</span><span>3,423회</span></div><div style="height:8px;background:#e6e6e6;border-radius:6px;overflow:hidden;"><div style="width:37%;height:100%;background:var(--orange);border-radius:6px;"></div></div></div>
+          </div>
+          <div class="status-item" style="margin-top:12px;padding-bottom:0;">
+            <div class="status-dot dot-orange"></div>
+            <p><strong>해석</strong> — 당근 광고는 병원 반경의 생활권 노출을 넓히는 역할입니다. 실제 클릭과 쿠폰 다운로드가 발생했기 때문에, 6월에는 지역/소재별 효율을 보며 문구와 쿠폰 구성을 조정하는 방식이 좋습니다.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 콘텐츠 발행 내역 -->
+    <div class="section-card" id="may-content">
+      <div class="section-header">
+        <div class="icon" style="background:var(--accent-light);">📝</div>
+        <h3>콘텐츠 발행 내역 <span class="count-chip">12건</span></h3>
+      </div>
+      <div class="section-body">
+        <div class="section-lead">
+          <strong>한 줄 결론</strong>
+          <p>5월에는 레이저제모·기미잡티·여드름·홍조처럼 피부클리닉 검색 수요가 있는 주제로 콘텐츠를 확장했습니다.</p>
+        </div>
+        <div class="desktop-log-table">
+        <table class="content-table">
+          <thead>
+            <tr><th style="width:48px;">#</th><th style="width:84px;">일자</th><th>제목</th><th style="width:90px;">분류</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>5/8</td><td>레이저 치료 전 꼭 확인해야 할 피부 상태별 주의사항</td><td><span class="tag tag-homepage">콘텐츠</span></td></tr>
+            <tr><td>2</td><td>5/8</td><td>제주 레이저 제모 브라질리언, 남자도 위생 관리를 위해</td><td><span class="tag tag-blog">블로그</span></td></tr>
+            <tr><td>3</td><td>5/9</td><td>제주 레이저토닝 기미와 잡티가 짙어질 때 확인해야 할 점</td><td><span class="tag tag-blog">블로그</span></td></tr>
+            <tr><td>4</td><td>5/11</td><td>피부가 예민할 때 바로 시술해도 괜찮을까요?</td><td><span class="tag tag-homepage">콘텐츠</span></td></tr>
+            <tr><td>5</td><td>5/13</td><td>제주 여드름 치료 반복되는 성인 여드름, 피부 열감부터 살펴봐야 하는 이유</td><td><span class="tag tag-blog">블로그</span></td></tr>
+            <tr><td>6</td><td>5/13</td><td>화북 피부관리 기미와 잡티, 비슷해 보여도 관리 방향이 다른 이유</td><td><span class="tag tag-blog">블로그</span></td></tr>
+            <tr><td>7</td><td>5/13</td><td>제주 홍조치료, 민감성 피부와 반복되는 안면홍조는 어떻게 구분할까요</td><td><span class="tag tag-homepage">콘텐츠</span></td></tr>
+            <tr><td>8</td><td>5/13</td><td>삼화지구 피부과 건조한데 트러블이 반복된다면</td><td><span class="tag tag-blog">블로그</span></td></tr>
+            <tr><td>9</td><td>5/13</td><td>제주시 여드름 자국, 붉은 자국과 갈색 자국은 치료 방향이 다릅니다</td><td><span class="tag tag-blog">블로그</span></td></tr>
+            <tr><td>10</td><td>5/13</td><td>제주 잡티제거, 기미와 주근깨부터 정확히 구분해야 하는 이유</td><td><span class="tag tag-blog">블로그</span></td></tr>
+            <tr><td>11</td><td>5/20</td><td>제주기미잡티 제거｜같은 기미가 아닙니다, 한방에서 보는 기미의 세 가지 유형</td><td><span class="tag tag-homepage">홈페이지</span></td></tr>
+            <tr><td>12</td><td>5/26</td><td>삼화지구 제모, 레이저 제모 전후 관리까지</td><td><span class="tag tag-blog">블로그</span></td></tr>
+          </tbody>
+        </table>
+        </div>
+        <div class="mobile-log-list">
+          <div class="log-card"><div class="log-meta"><span>5/8</span><span>콘텐츠</span></div><div class="log-title">레이저 치료 전 꼭 확인해야 할 피부 상태별 주의사항</div></div>
+          <div class="log-card"><div class="log-meta"><span>5/8</span><span>블로그</span></div><div class="log-title">제주 레이저 제모 브라질리언, 남자도 위생 관리를 위해</div></div>
+          <div class="log-card"><div class="log-meta"><span>5/9</span><span>블로그</span></div><div class="log-title">제주 레이저토닝 기미와 잡티가 짙어질 때 확인해야 할 점</div></div>
+          <div class="log-card"><div class="log-meta"><span>5/11</span><span>콘텐츠</span></div><div class="log-title">피부가 예민할 때 바로 시술해도 괜찮을까요?</div></div>
+          <details class="details-box">
+            <summary>나머지 발행 내역 8건 보기</summary>
+            <div class="details-inner">
+              <div class="log-card"><div class="log-meta"><span>5/13</span><span>블로그</span></div><div class="log-title">제주 여드름 치료 반복되는 성인 여드름, 피부 열감부터 살펴봐야 하는 이유</div></div>
+              <div class="log-card"><div class="log-meta"><span>5/13</span><span>블로그</span></div><div class="log-title">화북 피부관리 기미와 잡티, 비슷해 보여도 관리 방향이 다른 이유</div></div>
+              <div class="log-card"><div class="log-meta"><span>5/13</span><span>콘텐츠</span></div><div class="log-title">제주 홍조치료, 민감성 피부와 반복되는 안면홍조는 어떻게 구분할까요</div></div>
+              <div class="log-card"><div class="log-meta"><span>5/13</span><span>블로그</span></div><div class="log-title">삼화지구 피부과 건조한데 트러블이 반복된다면</div></div>
+              <div class="log-card"><div class="log-meta"><span>5/13</span><span>블로그</span></div><div class="log-title">제주시 여드름 자국, 붉은 자국과 갈색 자국은 치료 방향이 다릅니다</div></div>
+              <div class="log-card"><div class="log-meta"><span>5/13</span><span>블로그</span></div><div class="log-title">제주 잡티제거, 기미와 주근깨부터 정확히 구분해야 하는 이유</div></div>
+              <div class="log-card"><div class="log-meta"><span>5/20</span><span>홈페이지</span></div><div class="log-title">제주기미잡티 제거｜같은 기미가 아닙니다, 한방에서 보는 기미의 세 가지 유형</div></div>
+              <div class="log-card"><div class="log-meta"><span>5/26</span><span>블로그</span></div><div class="log-title">삼화지구 제모, 레이저 제모 전후 관리까지</div></div>
+            </div>
+          </details>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5월 운영 업무 -->
+    <div class="section-card" id="may-ops">
+      <div class="section-header" style="background:var(--accent-light);">
+        <div class="icon" style="background:#fff;">🧩</div>
+        <h3>5월 운영 업무 및 서브업무</h3>
+      </div>
+      <div class="section-body">
+        <div class="section-lead">
+          <strong>한 줄 결론</strong>
+          <p>5월에는 신규 SNS 운영, 광고 리세팅, 플레이스 정비, 원내 안내물 제작처럼 채널과 상담 기반을 넓히는 작업이 진행되었습니다.</p>
+        </div>
+
+        <div class="progress-grid">
+          <div class="progress-item progress-done">
+            <div class="p-status">완료</div>
+            <div class="p-title">인스타그램 계정 생성 및 초안작업</div>
+          </div>
+          <div class="progress-item progress-done">
+            <div class="p-status">완료</div>
+            <div class="p-title">피부클리닉 인스타 유료광고 등록</div>
+          </div>
+          <div class="progress-item progress-done">
+            <div class="p-status">완료</div>
+            <div class="p-title">파워링크·플레이스 광고 리세팅</div>
+          </div>
+          <div class="progress-item progress-done">
+            <div class="p-status">완료</div>
+            <div class="p-title">2층 한의원 네이버플레이스 이미지 교체</div>
+          </div>
+          <div class="progress-item progress-done">
+            <div class="p-status">완료</div>
+            <div class="p-title">추나장비 현수막 시안 제작</div>
+          </div>
+          <div class="progress-item progress-wip">
+            <div class="p-status">진행</div>
+            <div class="p-title">네이버블로그 디자인 및 홈페이지 버튼 추가</div>
+          </div>
+        </div>
+
+        <ul class="sub-list" style="margin-top:16px;">
+          <li><div class="sub-num">1</div><span><strong>해외환자 유치업 허가 진행</strong> — 외국인 환자 유입 기반 준비 업무 진행</span></li>
+          <li><div class="sub-num">2</div><span><strong>카카오맵·카카오채널·플레이스 정보 정비</strong> — 신규 피부클리닉 채널 정보 일관성 보강</span></li>
+          <li><div class="sub-num">3</div><span><strong>원내 안내물/이벤트물 정비</strong> — 리뷰 이벤트, 시술 주의사항, 가격표, 전단지 등 상담 보조 자료 제작</span></li>
+          <li><div class="sub-num">4</div><span><strong>지역 후기/맘카페 보조 작업</strong> — 초기 인지도 확보를 위한 외부 노출 보조 진행</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 6월 방향 -->
+    <div class="next-band">
+      <h3>💡 6월 중점 방향</h3>
+      <div class="next-item">
+        <div class="n-num">1</div>
+        <p>블로그 조회수 회복 대응 — 레이저제모·기미잡티·여드름·홍조 등 실제 검색 유입이 확인된 주제 중심으로 콘텐츠 강화</p>
+      </div>
+      <div class="next-item">
+        <div class="n-num">2</div>
+        <p>화북점 플레이스 순위 유지 및 홈페이지-인스타그램 연결 강화 — 플레이스에서 피부클리닉 정보까지 자연스럽게 확인되는 흐름 점검</p>
+      </div>
+      <div class="next-item">
+        <div class="n-num">3</div>
+        <p>당근비즈니스 광고 효율 개선 — 일도2동·삼양동·화북동 등 반응 지역을 중심으로 소재와 쿠폰 문구 조정</p>
+      </div>
+      <div class="next-item">
+        <div class="n-num">4</div>
+        <p>네이버블로그 디자인 및 홈페이지 버튼 작업 마무리 — 블로그 방문자가 홈페이지/상담 경로로 이동하기 쉽게 연결 구조 개선</p>
+      </div>
+    </div>
+
+  </div><!-- /panel-may -->
+
+  <!-- ═══════════════════════════════════════
        4월 보고서
   ═══════════════════════════════════════ -->
-  <div class="report-panel active" id="panel-apr">
+  <div class="report-panel" id="panel-apr">
 
     <!-- 요약 배너 -->
     <div class="summary-band">

@@ -28,6 +28,11 @@
     .band-point { display:flex; gap:10px; align-items:flex-start; }
     .band-point .dot { width:6px; height:6px; background:var(--accent); border-radius:50%; margin-top:7px; flex-shrink:0; }
     .band-point p { font-size:14px; line-height:1.6; color:rgba(255,255,255,0.85); }
+    .performance-flow { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin:-12px 0 28px; }
+    .flow-node { min-width:0; background:var(--card); border:1px solid var(--border); border-radius:14px; padding:16px 14px; }
+    .flow-kicker { font-size:11px; font-weight:800; color:var(--muted); margin-bottom:6px; }
+    .flow-value { font-size:22px; font-weight:900; color:var(--primary); line-height:1.1; }
+    .flow-label { font-size:11px; color:var(--muted); margin-top:6px; line-height:1.4; }
     .section-card { background:var(--card); border-radius:14px; border:1px solid var(--border); margin-bottom:20px; overflow:hidden; }
     .section-header { padding:18px 24px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
     .section-header .icon { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px; background:#fff8e6; }
@@ -37,11 +42,129 @@
     .status-item:last-child { border-bottom:none; }
     .status-dot { width:8px; height:8px; border-radius:50%; margin-top:6px; flex-shrink:0; background:#c9a96e; }
     .status-item p { font-size:14px; line-height:1.6; }
+    .rank-chart-wrap { overflow:hidden; padding:4px 0 10px; margin-bottom:16px; }
+    .rank-chart { width:100%; max-width:720px; height:auto; display:block; margin:0 auto; }
+    .rank-mobile-chart { display:none; width:100%; height:auto; }
+    .rank-mobile-chart text { font-family:inherit; }
+    .rank-grid { stroke:#e5e7eb; stroke-width:1; }
+    .rank-axis-text { fill:#6b7280; font-size:12px; font-weight:700; }
+    .rank-line { fill:none; stroke:var(--accent); stroke-width:4; stroke-linecap:round; stroke-linejoin:round; }
+    .rank-marker circle { fill:#fff; stroke:var(--accent); stroke-width:3; }
+    .rank-marker text { fill:var(--primary); font-size:12px; font-weight:800; }
+    .rank-marker .rank-date { fill:#6b7280; font-size:11px; font-weight:700; }
+    @media(max-width:600px) {
+      .section-body { padding:16px 12px; }
+      .rank-chart-wrap { margin-left:-4px; margin-right:-4px; }
+      .rank-axis-text { font-size:16px; }
+      .rank-line { stroke-width:6; }
+      .rank-marker circle { stroke-width:4; }
+      .rank-marker text { font-size:16px; }
+      .rank-marker .rank-date { font-size:14px; }
+    }
+    @media(max-width:640px) {
+      .site-header { padding:18px 16px; flex-direction:column; align-items:flex-start; gap:12px; }
+      .logo { gap:10px; }
+      .logo-badge { width:36px; height:36px; border-radius:9px; font-size:17px; }
+      .logo-text h1 { font-size:16px; line-height:1.35; }
+      .logo-text p { font-size:11px; }
+      .header-tag { font-size:11px; padding:5px 10px; }
+      .container { padding:28px 12px; }
+      .timeline-label { margin-bottom:12px; }
+      .month-tabs { flex-wrap:nowrap; overflow-x:auto; gap:8px; margin:0 -12px 24px; padding:0 12px 6px; scrollbar-width:none; }
+      .month-tabs::-webkit-scrollbar { display:none; }
+      .month-tab { flex:0 0 auto; white-space:nowrap; padding:7px 14px; font-size:13px; }
+      .summary-band { padding:20px 18px; border-radius:14px; margin-bottom:20px; }
+      .band-month { font-size:22px; line-height:1.25; margin-bottom:12px; }
+      .band-title { font-size:11px; }
+      .band-points { grid-template-columns:1fr !important; gap:10px; }
+      .band-point p { font-size:13px; line-height:1.55; }
+      .performance-flow { grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; margin:-8px 0 20px; }
+      .flow-node { padding:13px 11px; border-radius:12px; }
+      .flow-kicker { font-size:10px; }
+      .flow-value { font-size:20px; }
+      .flow-label { font-size:10px; }
+      .section-card { border-radius:12px; margin-bottom:16px; }
+      .section-header { padding:14px 16px; align-items:flex-start; }
+      .section-header .icon { width:28px; height:28px; font-size:14px; flex-shrink:0; }
+      .section-header h3 { font-size:14px; line-height:1.4; }
+      .section-body { padding:16px 14px; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+      .status-item p { font-size:13px; line-height:1.55; }
+      .rank-chart-wrap { margin-left:0; margin-right:0; padding:8px 6px; overflow:hidden; }
+      .rank-chart-wrap:has(.rank-mobile-chart) .rank-chart { display:none !important; }
+      .rank-mobile-chart { display:block; max-height:190px; }
+      .rank-mobile-chart .m-axis { font-size:12px; fill:#6b7280; font-weight:800; }
+      .rank-mobile-chart .m-date { font-size:11px; fill:#6b7280; font-weight:800; }
+      .rank-mobile-chart .m-label { font-size:13px; fill:var(--primary); font-weight:900; }
+      .rank-mobile-chart .m-line { fill:none; stroke:var(--accent); stroke-width:4; stroke-linecap:round; stroke-linejoin:round; }
+      .rank-mobile-chart .m-grid { stroke:#e5e7eb; stroke-width:1; }
+      .rank-mobile-chart .m-dot { fill:#fff; stroke:var(--accent); stroke-width:3; }
+      [style*="grid-template-columns:1fr 1fr"],
+      [style*="grid-template-columns: 1fr 1fr"],
+      [style*="grid-template-columns:repeat(3"],
+      [style*="grid-template-columns: repeat(3"],
+      [style*="grid-template-columns:repeat(auto-fit"],
+      [style*="grid-template-columns: repeat(auto-fit"] { grid-template-columns:1fr !important; }
+      [style*="font-size:36px"], [style*="font-size:34px"], [style*="font-size:32px"], [style*="font-size:28px"] { font-size:24px !important; }
+      [style*="padding:22px 24px"], [style*="padding:24px 28px"], [style*="padding:28px 32px"] { padding:16px 14px !important; }
+      .report-panel.active .section-body { overflow-x:visible; }
+      .report-panel.active .rank-chart { max-height:220px; }
+      .report-panel.active .section-body > div[style*="minmax(180px"] { grid-template-columns:repeat(3,minmax(0,1fr)) !important; gap:6px !important; }
+      .report-panel.active .section-body > div[style*="minmax(180px"] > div { padding:10px 7px !important; border-radius:9px !important; }
+      .report-panel.active .section-body > div[style*="minmax(180px"] > div > div:first-child { font-size:20px !important; line-height:1.1 !important; }
+      .report-panel.active .section-body > div[style*="minmax(180px"] > div > div:last-child { font-size:10px !important; line-height:1.25 !important; }
+    }
     .site-footer { background:var(--primary); color:rgba(255,255,255,0.35); text-align:center; padding:20px; font-size:12px; margin-top:60px; }
     .empty-state { text-align:center; padding:80px 20px; color:var(--muted); }
     .empty-state .e-icon { font-size:48px; margin-bottom:16px; }
     .empty-state h3 { font-size:18px; margin-bottom:8px; color:var(--text); }
     .empty-state p { font-size:14px; line-height:1.7; }
+    @media(max-width:640px) {
+      .performance-flow {
+        grid-template-columns:1fr !important;
+        gap:7px !important;
+        margin:-6px 0 18px !important;
+      }
+      .flow-node {
+        display:grid !important;
+        grid-template-columns:minmax(0,1fr) auto;
+        align-items:center;
+        column-gap:10px;
+        row-gap:2px;
+        min-height:0;
+        padding:10px 12px !important;
+        border-radius:12px !important;
+      }
+      .flow-kicker {
+        grid-column:1;
+        grid-row:1;
+        min-width:0;
+        margin:0 !important;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        white-space:nowrap;
+        font-size:11px !important;
+      }
+      .flow-value {
+        grid-column:2;
+        grid-row:1;
+        justify-self:end;
+        margin:0 !important;
+        white-space:nowrap;
+        font-size:20px !important;
+        line-height:1.15 !important;
+      }
+      .flow-label {
+        grid-column:1 / -1;
+        grid-row:2;
+        min-width:0;
+        margin:0 !important;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        white-space:nowrap;
+        font-size:11px !important;
+        line-height:1.35 !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -55,13 +178,288 @@
 <main class="container">
   <p class="timeline-label">보고서 목록</p>
   <div class="month-tabs">
-    <div class="month-tab active" onclick="switchTab('apr', event)">2026년 4월</div>
+    <div class="month-tab active" onclick="switchTab('may', event)">2026년 5월</div>
+    <div class="month-tab" onclick="switchTab('apr', event)">2026년 4월</div>
     <div class="month-tab" onclick="switchTab('mar', event)">2026년 3월</div>
     <div class="month-tab" onclick="switchTab('feb', event)">2026년 2월</div>
   </div>
 
+  <!-- ═══════ 5월 보고서 ═══════ -->
+  <div class="report-panel active" id="panel-may">
+
+    <!-- 요약 배너 -->
+    <div class="summary-band">
+      <div class="band-title">MONTHLY SUMMARY</div>
+      <div class="band-month">2026년 5월 마케팅 결과보고</div>
+      <div class="band-points">
+        <div class="band-point"><div class="dot"></div><p><strong>홈페이지 방문 1,361건</strong> — 방문자 923명, 네이버 697건과 구글 308건 중심의 검색 유입 유지</p></div>
+        <div class="band-point"><div class="dot"></div><p><strong>플레이스 순위 변동 지속</strong> — 월초 25위에서 출발했으나 40~60위권 등락이 반복되어 원인 확인 중</p></div>
+        <div class="band-point"><div class="dot"></div><p><strong>순위관리용 블로그 +106개</strong> — 블로그 수 309개에서 415개로 증가, 6월에는 네이버블로그 운영도 병행 예정</p></div>
+      </div>
+    </div>
+
+    <div class="performance-flow">
+      <div class="flow-node">
+        <div class="flow-kicker">홈페이지</div>
+        <div class="flow-value">1,361</div>
+        <div class="flow-label">5월 총 방문</div>
+      </div>
+      <div class="flow-node">
+        <div class="flow-kicker">검색 유입</div>
+        <div class="flow-value">1,005</div>
+        <div class="flow-label">네이버 697 · 구글 308</div>
+      </div>
+      <div class="flow-node">
+        <div class="flow-kicker">월말 순위</div>
+        <div class="flow-value">49위</div>
+        <div class="flow-label">확인 및 대응 중</div>
+      </div>
+      <div class="flow-node">
+        <div class="flow-kicker">블로그 작업</div>
+        <div class="flow-value">+106</div>
+        <div class="flow-label">309개 → 415개</div>
+      </div>
+    </div>
+
+    <!-- 핵심 지표 -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:28px;">
+      <div style="background:#fff;border-radius:14px;padding:22px 24px;border:1px solid var(--border);">
+        <div style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:8px;">홈페이지 총 방문</div>
+        <div style="font-size:26px;font-weight:800;color:var(--primary);">1,361</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:6px;">5월 전체 방문 횟수</div>
+      </div>
+      <div style="background:#fff;border-radius:14px;padding:22px 24px;border:1px solid var(--border);">
+        <div style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:8px;">방문자 수</div>
+        <div style="font-size:26px;font-weight:800;color:var(--primary);">923명</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:6px;">5월 순 방문자</div>
+      </div>
+      <div style="background:#dbeafe;border-radius:14px;padding:22px 24px;border:1px solid var(--accent);">
+        <div style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:8px;">네이버 유입</div>
+        <div style="font-size:26px;font-weight:800;color:#1d4ed8;">697</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:6px;">전체 방문의 51%</div>
+      </div>
+      <div style="background:#fff;border-radius:14px;padding:22px 24px;border:1px solid var(--border);">
+        <div style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:8px;">구글 유입</div>
+        <div style="font-size:26px;font-weight:800;color:#ea4335;">308</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:6px;">전체 방문의 23%</div>
+      </div>
+      <div style="background:#fff7ed;border-radius:14px;padding:22px 24px;border:1px solid #fed7aa;">
+        <div style="font-size:12px;color:#c2410c;font-weight:600;margin-bottom:8px;">월말 순위</div>
+        <div style="font-size:26px;font-weight:800;color:#c2410c;">49위</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:6px;">5/31 기준</div>
+      </div>
+      <div style="background:#ecfdf5;border-radius:14px;padding:22px 24px;border:1px solid #6ee7b7;">
+        <div style="font-size:12px;color:#065f46;font-weight:600;margin-bottom:8px;">순위관리용 블로그</div>
+        <div style="font-size:26px;font-weight:800;color:#059669;">+106개</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:6px;">309개 → 415개</div>
+      </div>
+    </div>
+
+    <!-- 네이버 플레이스 순위 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon">📍</div>
+        <h3>네이버 플레이스 순위 추이</h3>
+      </div>
+      <div class="section-body">
+        <div class="rank-chart-wrap" aria-label="2026년 5월 서울업치과 네이버 플레이스 순위 그래프">
+          <svg class="rank-chart" viewBox="0 0 720 260" role="img" aria-label="5월 1일부터 31일까지 네이버 플레이스 순위 추이">
+            <line class="rank-grid" x1="54" y1="34" x2="698" y2="34"></line>
+            <line class="rank-grid" x1="54" y1="70.8" x2="698" y2="70.8"></line>
+            <line class="rank-grid" x1="54" y1="107.6" x2="698" y2="107.6"></line>
+            <line class="rank-grid" x1="54" y1="144.4" x2="698" y2="144.4"></line>
+            <line class="rank-grid" x1="54" y1="181.2" x2="698" y2="181.2"></line>
+            <line class="rank-grid" x1="54" y1="218" x2="698" y2="218"></line>
+            <text class="rank-axis-text" x="15" y="38">20위</text>
+            <text class="rank-axis-text" x="15" y="75">30위</text>
+            <text class="rank-axis-text" x="15" y="112">40위</text>
+            <text class="rank-axis-text" x="15" y="149">50위</text>
+            <text class="rank-axis-text" x="15" y="186">60위</text>
+            <text class="rank-axis-text" x="15" y="222">70위</text>
+            <polyline class="rank-line" points="54.0,52.4 75.5,63.4 96.9,92.9 118.4,107.6 139.9,115.0 161.3,166.5 182.8,137.0 204.3,122.3 225.7,115.0 247.2,133.4 268.7,144.4 290.1,140.7 311.6,210.6 333.1,162.8 354.5,137.0 376.0,159.1 397.5,188.6 418.9,214.3 440.4,129.7 461.9,129.7 483.3,166.5 504.8,159.1 526.3,133.4 547.7,140.7 569.2,188.6 590.7,203.3 612.1,181.2 633.6,195.9 655.1,166.5 676.5,166.5 698.0,140.7"></polyline>
+            <g class="rank-marker">
+              <circle cx="54" cy="52.4" r="6"></circle>
+              <text x="42" y="42">25위</text>
+              <text class="rank-date" x="43" y="242">5/1</text>
+            </g>
+            <g class="rank-marker">
+              <circle cx="311.6" cy="210.6" r="6"></circle>
+              <text x="298" y="199">68위</text>
+              <text class="rank-date" x="298" y="242">5/13</text>
+            </g>
+            <g class="rank-marker">
+              <circle cx="418.9" cy="214.3" r="6"></circle>
+              <text x="405" y="203">69위</text>
+              <text class="rank-date" x="405" y="242">5/18</text>
+            </g>
+            <g class="rank-marker">
+              <circle cx="698" cy="140.7" r="6"></circle>
+              <text x="672" y="130">49위</text>
+              <text class="rank-date" x="674" y="242">5/31</text>
+            </g>
+          </svg>
+          <svg class="rank-mobile-chart" viewBox="0 0 340 190" role="img" aria-label="모바일용 서울업치과 네이버 플레이스 순위 요약 그래프">
+            <line class="m-grid" x1="42" y1="32" x2="326" y2="32" />
+            <line class="m-grid" x1="42" y1="92" x2="326" y2="92" />
+            <line class="m-grid" x1="42" y1="152" x2="326" y2="152" />
+            <text class="m-axis" x="2" y="36">20위</text>
+            <text class="m-axis" x="2" y="96">50위</text>
+            <text class="m-axis" x="2" y="156">70위</text>
+            <polyline class="m-line" points="42,43 112,118 184,150 254,122 326,103" />
+            <circle class="m-dot" cx="42" cy="43" r="5" />
+            <circle class="m-dot" cx="112" cy="118" r="5" />
+            <circle class="m-dot" cx="184" cy="150" r="5" />
+            <circle class="m-dot" cx="254" cy="122" r="5" />
+            <circle class="m-dot" cx="326" cy="103" r="5" />
+            <text class="m-label" x="42" y="28" text-anchor="middle">25위</text>
+            <text class="m-label" x="184" y="170" text-anchor="middle">69위</text>
+            <text class="m-label" x="326" y="93" text-anchor="middle">49위</text>
+            <text class="m-date" x="42" y="184" text-anchor="middle">5/1</text>
+            <text class="m-date" x="112" y="184" text-anchor="middle">5/13</text>
+            <text class="m-date" x="184" y="184" text-anchor="middle">5/18</text>
+            <text class="m-date" x="326" y="184" text-anchor="middle">5/31</text>
+          </svg>
+        </div>
+
+        <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:16px 20px;margin-bottom:12px;">
+          <div style="font-size:12px;font-weight:800;color:#c2410c;margin-bottom:8px;">⚠️ 5월 순위 유지 불안정 — 원인 확인 중</div>
+          <div style="font-size:13px;line-height:1.7;color:#7c2d12;">
+            5월 순위는 월초 25위에서 시작했지만 중순 이후 40~60위권 등락이 반복되었고, 5/18에는 69위까지 밀렸습니다. 순위가 안정적으로 유지되지 않고 있어 <strong>경쟁 업체 활동·플레이스 신호·콘텐츠 신호·알고리즘 변동</strong>을 함께 확인 중입니다. 6월에는 순위관리용 블로그와 함께 <strong>네이버블로그 운영을 병행</strong>해 대응하겠습니다.
+          </div>
+        </div>
+
+        <div class="status-item">
+          <div class="status-dot" style="background:#059669;"></div>
+          <p>5월 최고 순위는 5/1 기준 <strong>25위</strong>, 최저 순위는 5/18 기준 <strong>69위</strong>로 확인됩니다.</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot" style="background:#dc2626;"></div>
+          <p>월 평균 순위는 약 <strong>51위권</strong>으로, 6월에는 순위 회복보다 먼저 변동 폭을 줄이는 안정화 작업이 필요합니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 홈페이지 유입 채널 분석 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon">📊</div>
+        <h3>홈페이지 유입 채널 분석</h3>
+      </div>
+      <div class="section-body">
+        <div style="margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:4px;"><span>네이버(Naver)</span><span style="color:var(--accent);font-weight:800;">697 · 51%</span></div>
+          <div style="background:#f0f0f0;border-radius:4px;height:10px;"><div style="background:var(--accent);height:10px;border-radius:4px;width:51%;"></div></div>
+        </div>
+        <div style="margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:4px;"><span>구글(Google)</span><span style="color:#ea4335;font-weight:800;">308 · 23%</span></div>
+          <div style="background:#f0f0f0;border-radius:4px;height:10px;"><div style="background:#ea4335;height:10px;border-radius:4px;width:23%;"></div></div>
+        </div>
+        <div style="margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:4px;"><span>직접유입</span><span style="color:var(--primary);font-weight:800;">163 · 12%</span></div>
+          <div style="background:#f0f0f0;border-radius:4px;height:10px;"><div style="background:var(--primary);height:10px;border-radius:4px;width:12%;"></div></div>
+        </div>
+        <div style="margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:4px;"><span>자사 도메인</span><span style="color:#059669;font-weight:800;">39 · 3%</span></div>
+          <div style="background:#f0f0f0;border-radius:4px;height:10px;"><div style="background:#059669;height:10px;border-radius:4px;width:3%;"></div></div>
+        </div>
+        <div style="margin-bottom:14px;">
+          <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:4px;"><span>카카오·다음·빙·기타</span><span style="color:var(--muted);font-weight:800;">153 · 11%</span></div>
+          <div style="background:#f0f0f0;border-radius:4px;height:10px;"><div style="background:#a0aec0;height:10px;border-radius:4px;width:11%;"></div></div>
+        </div>
+
+        <div style="background:#f0f7ff;border-radius:12px;padding:14px 18px;margin-bottom:12px;border:1px solid #bfdbfe;">
+          <div style="font-size:11px;font-weight:800;color:var(--accent);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;">유입사이트 세부 확인</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;text-align:center;">
+            <div>
+              <div style="font-size:10px;color:var(--muted);margin-bottom:3px;">m.search.naver.com</div>
+              <div style="font-size:15px;font-weight:800;color:#1d4ed8;">399건</div>
+              <div style="font-size:10px;color:var(--muted);">모바일 네이버 검색</div>
+            </div>
+            <div>
+              <div style="font-size:10px;color:var(--muted);margin-bottom:3px;">www.google.com</div>
+              <div style="font-size:15px;font-weight:800;color:#ea4335;">296건</div>
+              <div style="font-size:10px;color:var(--muted);">구글 유입</div>
+            </div>
+            <div>
+              <div style="font-size:10px;color:var(--muted);margin-bottom:3px;">직접방문 도메인</div>
+              <div style="font-size:15px;font-weight:800;color:#059669;">635건</div>
+              <div style="font-size:10px;color:var(--muted);">www 포함 합산</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="status-item">
+          <div class="status-dot" style="background:var(--accent);"></div>
+          <p>네이버 유입 697건으로 검색 채널 중 가장 큰 비중을 유지했습니다. 순위 변동과 별개로 모바일 네이버 검색 유입은 계속 확인됩니다.</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot" style="background:#ea4335;"></div>
+          <p>구글 유입 308건으로 두 번째 비중을 차지했습니다. 검색 채널 다각화 흐름은 유지되고 있습니다.</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot"></div>
+          <p>copilot.com UTM 유입 1건도 확인되어, AI 검색 계열 유입은 추적 대상으로 유지합니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 블로그 콘텐츠 발행 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon">📝</div>
+        <h3>순위관리용 블로그 발행 <span style="display:inline-block;background:var(--accent);color:#fff;font-size:11px;font-weight:800;padding:3px 9px;border-radius:10px;margin-left:8px;vertical-align:middle;">+106개</span></h3>
+      </div>
+      <div class="section-body">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:16px;">
+          <div style="background:#fff;border-radius:10px;padding:16px;text-align:center;border:1px solid var(--border);">
+            <div style="font-size:30px;font-weight:800;color:var(--primary);">309개</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px;">5/1 블로그 수</div>
+          </div>
+          <div style="background:#ecfdf5;border-radius:10px;padding:16px;text-align:center;border:1px solid #6ee7b7;">
+            <div style="font-size:30px;font-weight:800;color:#059669;">415개</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px;">5/31 블로그 수</div>
+          </div>
+          <div style="background:#dbeafe;border-radius:10px;padding:16px;text-align:center;border:2px solid var(--accent);">
+            <div style="font-size:30px;font-weight:800;color:#1d4ed8;">+106개</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px;">5월 증가분</div>
+          </div>
+        </div>
+        <div class="status-item">
+          <div class="status-dot" style="background:var(--accent);"></div>
+          <p>순위관리용 블로그 수가 5월 한 달 동안 <strong>309개에서 415개로 106개 증가</strong>했습니다.</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot" style="background:#c9a96e;"></div>
+          <p>발행량은 늘었지만 순위가 안정적으로 유지되지 않아, 6월에는 <strong>네이버블로그 운영을 함께 병행</strong>해 검색 신호를 보강하겠습니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6월 방향 -->
+    <div style="background:var(--accent-light);border:1px solid var(--accent);border-radius:14px;padding:24px 28px;margin-bottom:20px;">
+      <h3 style="font-size:15px;font-weight:700;color:#1d4ed8;margin-bottom:16px;">💡 6월 중점 방향</h3>
+      <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:10px;">
+        <div style="min-width:24px;height:24px;background:var(--accent);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;">1</div>
+        <p style="font-size:14px;line-height:1.6;padding-top:2px;"><strong>순위 불안정 원인 확인</strong> — 5월 40~60위권 등락 원인을 경쟁사·플레이스·콘텐츠 신호 기준으로 점검</p>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:10px;">
+        <div style="min-width:24px;height:24px;background:var(--accent);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;">2</div>
+        <p style="font-size:14px;line-height:1.6;padding-top:2px;">네이버블로그 운영 병행 — 순위관리용 블로그 외에 실제 검색 유입을 만들 수 있는 병원명·진료 키워드 콘텐츠 발행</p>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:10px;">
+        <div style="min-width:24px;height:24px;background:var(--accent);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;">3</div>
+        <p style="font-size:14px;line-height:1.6;padding-top:2px;">플레이스 정보 신호 보강 — 진료 항목·사진·리뷰·외부 콘텐츠 연결 상태를 함께 점검</p>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:12px;">
+        <div style="min-width:24px;height:24px;background:var(--accent);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;">4</div>
+        <p style="font-size:14px;line-height:1.6;padding-top:2px;">네이버·구글 유입 유지 — 검색 유입은 유지되고 있으므로 순위 회복과 홈페이지 방문 전환을 같이 관리</p>
+      </div>
+    </div>
+
+  </div><!-- /panel-may -->
+
   <!-- ═══════ 4월 보고서 ═══════ -->
-  <div class="report-panel active" id="panel-apr">
+  <div class="report-panel" id="panel-apr">
 
     <!-- 요약 배너 -->
     <div class="summary-band">

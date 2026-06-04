@@ -4,6 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "check": "node scripts/ops-check.mjs",
+    "check:syntax": "node --check scripts/naver-review-monitor.mjs",
     "review:monitor": "node scripts/naver-review-monitor.mjs",
     "review:monitor:dry-run": "node scripts/naver-review-monitor.mjs --dry-run",
     "review:monitor:check": "node --check scripts/naver-review-monitor.mjs"

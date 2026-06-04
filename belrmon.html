@@ -45,6 +45,12 @@
     .band-point { display: flex; gap: 10px; align-items: flex-start; }
     .band-point .dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; margin-top: 7px; flex-shrink: 0; }
     .band-point p { font-size: 14px; line-height: 1.6; color: rgba(255,255,255,0.85); }
+    .performance-flow { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: -12px 0 28px; }
+    .flow-node { position: relative; background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px 14px; min-width: 0; }
+    .flow-node:not(:last-child)::after { content: "→"; position: absolute; right: -11px; top: 50%; transform: translateY(-50%); width: 22px; height: 22px; border-radius: 50%; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; z-index: 1; }
+    .flow-kicker { font-size: 11px; font-weight: 800; color: var(--muted); margin-bottom: 6px; }
+    .flow-value { font-size: 22px; font-weight: 900; color: var(--primary); line-height: 1.1; }
+    .flow-label { font-size: 11px; color: var(--muted); margin-top: 6px; line-height: 1.4; }
     .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 28px; }
     .metric-card { background: var(--card); border-radius: 14px; padding: 22px 24px; border: 1px solid var(--border); }
     .metric-card .mc-label { font-size: 12px; color: var(--muted); font-weight: 600; margin-bottom: 8px; }
@@ -74,6 +80,9 @@
     .tag-blog { background: #fff3e0; color: #e65100; }
     .tag-homepage { background: #f3e5f5; color: #6a1b9a; }
     .tag-insta { background: #fce4ec; color: #ad1457; }
+    .tag-daangn { background: #fff3e0; color: #b45309; }
+    .tag-ad { background: #eaf0fb; color: #1d4ed8; }
+    .tag-page { background: #ede9fe; color: #5b21b6; }
     .content-table { width: 100%; border-collapse: collapse; }
     .content-table th, .content-table td { text-align: left; padding: 10px 14px; font-size: 13px; border-bottom: 1px solid var(--border); }
     .content-table th { font-weight: 700; color: var(--muted); font-size: 11px; letter-spacing: 0.5px; background: var(--bg); }
@@ -91,6 +100,51 @@
     .chart-label { display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; margin-bottom: 4px; }
     .chart-bar-bg { background: #f0f0f0; border-radius: 4px; height: 10px; }
     .chart-bar { height: 10px; border-radius: 4px; }
+    .visual-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+    .visual-card { border: 1px solid var(--border); border-radius: 12px; padding: 14px; background: #fff; min-width: 0; }
+    .visual-card .v-label { font-size: 11px; font-weight: 800; color: var(--muted); margin-bottom: 8px; }
+    .visual-card .v-value { font-size: 22px; font-weight: 850; color: var(--primary); line-height: 1.1; }
+    .visual-card .v-sub { font-size: 11px; color: var(--muted); margin-top: 6px; line-height: 1.45; }
+    .visual-card.emph { background: var(--accent-light); border-color: var(--accent); }
+    .visual-card.emph .v-value { color: #5b21b6; }
+    .region-graph { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin: 4px 0 14px; }
+    .region-title { display: flex; justify-content: space-between; gap: 10px; align-items: center; font-size: 12px; font-weight: 800; color: var(--primary); margin-bottom: 12px; }
+    .region-row { display: grid; grid-template-columns: 58px minmax(0, 1fr) 58px; gap: 8px; align-items: center; margin-bottom: 9px; font-size: 12px; }
+    .region-row:last-child { margin-bottom: 0; }
+    .region-name { font-weight: 800; color: var(--text); white-space: nowrap; }
+    .region-track { height: 10px; border-radius: 999px; background: #f0f0f0; overflow: hidden; }
+    .region-fill { height: 100%; border-radius: 999px; background: var(--orange); }
+    .region-count { text-align: right; font-weight: 800; color: var(--primary); white-space: nowrap; }
+    .insight-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .insight-chip { display: inline-flex; align-items: center; gap: 6px; padding: 7px 10px; border-radius: 999px; background: var(--bg); border: 1px solid var(--border); font-size: 12px; font-weight: 800; color: var(--text); }
+    .channel-visual { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 14px; margin-bottom: 16px; }
+    .donut-card { border: 1px solid var(--border); border-radius: 12px; padding: 16px; background: #fff; display: flex; align-items: center; gap: 16px; }
+    .donut {
+      --line: 14px;
+      width: 112px;
+      height: 112px;
+      border-radius: 50%;
+      background: conic-gradient(var(--green) 0 58.8%, var(--accent) 58.8% 100%);
+      position: relative;
+      flex-shrink: 0;
+    }
+    .donut::after { content: ""; position: absolute; inset: var(--line); background: #fff; border-radius: 50%; }
+    .donut-center { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; z-index: 1; font-weight: 900; color: var(--primary); }
+    .donut-center span { font-size: 11px; color: var(--muted); font-weight: 800; margin-top: 2px; }
+    .legend-list { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+    .legend-item { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 12px; font-weight: 800; color: var(--text); }
+    .legend-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+    .friend-bars { border: 1px solid var(--border); border-radius: 12px; padding: 16px; background: #fff; }
+    .friend-row { margin-bottom: 11px; }
+    .friend-row:last-child { margin-bottom: 0; }
+    .friend-label { display: flex; justify-content: space-between; gap: 10px; font-size: 12px; font-weight: 800; margin-bottom: 5px; }
+    .friend-track { height: 10px; border-radius: 999px; background: #f0f0f0; overflow: hidden; }
+    .friend-fill { height: 100%; border-radius: 999px; background: var(--green); }
+    .friend-fill.line { background: var(--accent); }
+    .topic-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
+    .topic-card { border: 1px solid var(--border); border-radius: 10px; background: var(--bg); padding: 10px; min-height: 64px; }
+    .topic-card strong { display: block; font-size: 12px; color: var(--primary); margin-bottom: 5px; }
+    .topic-card span { display: block; font-size: 11px; color: var(--muted); line-height: 1.4; }
     /* 당근 테이블 */
     .daangn-table { width: 100%; border-collapse: collapse; }
     .daangn-table th, .daangn-table td { text-align: center; padding: 10px 12px; font-size: 13px; border-bottom: 1px solid var(--border); }
@@ -109,6 +163,251 @@
     .next-item:last-child { margin-bottom: 0; }
     .n-num { min-width: 24px; height: 24px; background: var(--accent); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; flex-shrink: 0; }
     .next-item p { font-size: 14px; line-height: 1.6; color: var(--text); padding-top: 2px; }
+    @media(max-width: 640px) {
+      .site-header { padding: 18px 16px; flex-direction: column; align-items: flex-start; gap: 12px; }
+      .site-header .logo { gap: 10px; }
+      .site-header .logo-badge { width: 36px; height: 36px; border-radius: 9px; font-size: 17px; }
+      .site-header .logo-text h1 { font-size: 16px; line-height: 1.35; }
+      .site-header .logo-text p { font-size: 11px; }
+      .header-tag { font-size: 11px; padding: 5px 10px; }
+      .container { padding: 28px 12px; }
+      .timeline-label { margin-bottom: 12px; }
+      .month-tabs { flex-wrap: nowrap; overflow-x: auto; gap: 8px; margin: 0 -12px 24px; padding: 0 12px 6px; scrollbar-width: none; }
+      .month-tabs::-webkit-scrollbar { display: none; }
+      .month-tab { flex: 0 0 auto; white-space: nowrap; padding: 7px 14px; font-size: 13px; }
+      .summary-band { padding: 20px 18px; border-radius: 14px; margin-bottom: 20px; }
+      .summary-band .band-month { font-size: 22px; line-height: 1.25; }
+      .summary-band .band-title { font-size: 11px; }
+      .summary-band .band-points { grid-template-columns: 1fr !important; gap: 10px; }
+      .band-point p { font-size: 13px; line-height: 1.55; }
+      .performance-flow { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; margin: -8px 0 20px; }
+      .flow-node { padding: 13px 11px; border-radius: 12px; }
+      .flow-node::after { display: none !important; }
+      .flow-kicker { font-size: 10px; }
+      .flow-value { font-size: 20px; }
+      .flow-label { font-size: 10px; }
+      .metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 10px; margin-bottom: 20px; }
+      .metric-card { padding: 16px 14px; border-radius: 12px; }
+      .metric-card .mc-label { font-size: 11px; }
+      .metric-card .mc-value { font-size: 24px !important; line-height: 1.1; }
+      .metric-card .mc-sub { font-size: 11px; line-height: 1.45; }
+      .section-card { border-radius: 12px; margin-bottom: 16px; }
+      .section-header { padding: 14px 16px; align-items: flex-start; }
+      .section-header .icon { width: 28px; height: 28px; font-size: 14px; flex-shrink: 0; }
+      .section-header h3 { font-size: 14px; line-height: 1.4; }
+      .section-body { padding: 16px 14px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .two-col { grid-template-columns: 1fr !important; gap: 12px; }
+      .content-table, .daangn-table { min-width: 520px; }
+      .content-table th, .content-table td, .daangn-table th, .daangn-table td { padding: 9px 10px; font-size: 12px; }
+      .status-item p, .next-item p, .sub-list li { font-size: 13px; line-height: 1.55; }
+      .next-band { padding: 18px 16px; border-radius: 12px; }
+      .visual-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 12px; }
+      .visual-card { padding: 11px 9px; border-radius: 10px; }
+      .visual-card .v-label { font-size: 10px; min-height: 24px; margin-bottom: 6px; line-height: 1.25; }
+      .visual-card .v-value { font-size: 19px; }
+      .visual-card .v-sub { font-size: 10px; line-height: 1.35; }
+      .region-graph { padding: 13px 11px; border-radius: 10px; }
+      .region-title { font-size: 11px; margin-bottom: 10px; }
+      .region-row { grid-template-columns: 52px minmax(0, 1fr) 44px; gap: 6px; font-size: 11px; margin-bottom: 8px; }
+      .channel-visual { grid-template-columns: 1fr; gap: 10px; }
+      .donut-card { padding: 12px; gap: 12px; }
+      .donut { width: 96px; height: 96px; --line: 12px; }
+      .friend-bars { padding: 12px; }
+      .insight-chips { gap: 6px; }
+      .insight-chip { font-size: 11px; padding: 6px 8px; }
+      [style*="grid-template-columns:1fr 1fr"],
+      [style*="grid-template-columns: 1fr 1fr"],
+      [style*="grid-template-columns:repeat(3"],
+      [style*="grid-template-columns: repeat(3"],
+      [style*="grid-template-columns:repeat(auto-fit"],
+      [style*="grid-template-columns: repeat(auto-fit"] { grid-template-columns: 1fr !important; }
+      [style*="font-size:36px"], [style*="font-size:34px"], [style*="font-size:32px"], [style*="font-size:28px"] { font-size: 24px !important; }
+      [style*="padding:22px 24px"], [style*="padding:24px 28px"], [style*="padding:28px 32px"] { padding: 16px 14px !important; }
+    }
+    @media(max-width: 380px) {
+      .metrics-grid { grid-template-columns: 1fr !important; }
+      .content-table, .daangn-table { min-width: 480px; }
+    }
+    @media(max-width: 640px) {
+      .report-panel.active .section-body { overflow-x: visible; }
+      .report-panel.active .content-table { min-width: 0 !important; }
+      .report-panel.active .content-table thead { display: none; }
+      .report-panel.active .content-table,
+      .report-panel.active .content-table tbody,
+      .report-panel.active .content-table tr,
+      .report-panel.active .content-table td { display: block; width: 100%; }
+      .report-panel.active .content-table tr { margin: 0 0 10px; padding: 12px 13px; border: 1px solid var(--border); border-radius: 12px; background: #fff; }
+      .report-panel.active .content-table td { border-bottom: none; padding: 3px 0; line-height: 1.45; }
+      .report-panel.active .content-table td:first-child { font-size: 11px; font-weight: 800; color: var(--muted); }
+      .report-panel.active .content-table td:last-child { margin-top: 5px; }
+      .report-panel.active .daangn-table { min-width: 0 !important; }
+      .report-panel.active .content-table tbody { padding: 8px 0 2px; }
+      .report-panel.active .content-table tr { width: auto; margin: 0 8px 7px; padding: 9px 11px; border-radius: 10px; }
+      .report-panel.active .content-table td { padding: 1px 0; font-size: 12px; line-height: 1.38; }
+      .report-panel.active .content-table td:first-child { margin-bottom: 2px; }
+      .report-panel.active .content-table td:last-child { font-weight: 700; }
+      .report-panel.active .content-table .tag { font-size: 10px; padding: 1px 7px; margin-top: 3px; }
+      .report-panel.active .content-table tr:has(td:nth-child(3)):not(:has(td:nth-child(4))) {
+        display: grid;
+        grid-template-columns: 20px minmax(0, 1fr) auto;
+        align-items: start;
+        column-gap: 8px;
+      }
+      .report-panel.active .content-table tr:has(td:nth-child(3)):not(:has(td:nth-child(4))) td { width: auto; min-width: 0; }
+      .report-panel.active .content-table tr:has(td:nth-child(3)):not(:has(td:nth-child(4))) td:first-child { grid-column: 1; margin: 1px 0 0; }
+      .report-panel.active .content-table tr:has(td:nth-child(3)):not(:has(td:nth-child(4))) td:nth-child(2) {
+        grid-column: 2;
+        display: -webkit-box;
+        overflow: hidden;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+      }
+      .report-panel.active .content-table tr:has(td:nth-child(3)):not(:has(td:nth-child(4))) td:last-child { grid-column: 3; justify-self: end; margin-top: 1px; }
+      .report-panel.active .content-table tr:has(td:nth-child(4)) {
+        display: grid;
+        grid-template-columns: 18px auto 38px minmax(0, 1fr);
+        align-items: start;
+        column-gap: 7px;
+      }
+      .report-panel.active .content-table tr:has(td:nth-child(4)) td { width: auto; min-width: 0; }
+      .report-panel.active .content-table tr:has(td:nth-child(4)) td:first-child { grid-column: 1; margin: 1px 0 0; }
+      .report-panel.active .content-table tr:has(td:nth-child(4)) td:nth-child(2) { grid-column: 2; }
+      .report-panel.active .content-table tr:has(td:nth-child(4)) td:nth-child(3) { grid-column: 3; white-space: nowrap; }
+      .report-panel.active .content-table tr:has(td:nth-child(4)) td:last-child {
+        grid-column: 4;
+        display: -webkit-box;
+        overflow: hidden;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+      }
+      .report-panel.active .visit-table tr:has(td:nth-child(3)):not(:has(td:nth-child(4))) {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto auto;
+        align-items: center;
+        column-gap: 8px;
+      }
+      .report-panel.active .visit-table tr:has(td:nth-child(3)):not(:has(td:nth-child(4))) td:first-child {
+        grid-column: 1;
+        margin: 0;
+        color: var(--text);
+        font-size: 12px;
+        font-weight: 700;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .report-panel.active .visit-table tr:has(td:nth-child(3)):not(:has(td:nth-child(4))) td:nth-child(2) {
+        grid-column: 2;
+        display: block;
+        color: var(--muted);
+        font-size: 11px;
+        overflow: visible;
+        white-space: nowrap;
+      }
+      .report-panel.active .visit-table tr:has(td:nth-child(3)):not(:has(td:nth-child(4))) td:last-child {
+        grid-column: 3;
+        justify-self: end;
+        margin-top: 0;
+        font-size: 12px;
+        font-weight: 800;
+        white-space: nowrap;
+      }
+      .report-panel.active .publish-table tr:has(td:nth-child(3)):not(:has(td:nth-child(4))) {
+        display: grid;
+        grid-template-columns: 18px auto minmax(0, 1fr);
+        align-items: start;
+        column-gap: 8px;
+      }
+      .report-panel.active .publish-table tr:has(td:nth-child(3)):not(:has(td:nth-child(4))) td:first-child {
+        grid-column: 1;
+        margin: 1px 0 0;
+      }
+      .report-panel.active .publish-table tr:has(td:nth-child(3)):not(:has(td:nth-child(4))) td:nth-child(2) {
+        grid-column: 2;
+        display: block;
+        overflow: visible;
+        white-space: nowrap;
+      }
+      .report-panel.active .publish-table tr:has(td:nth-child(3)):not(:has(td:nth-child(4))) td:last-child {
+        grid-column: 3;
+        justify-self: auto;
+        margin-top: 0;
+        display: -webkit-box;
+        overflow: hidden;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+      }
+      .report-panel.active .chart-label {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 8px;
+        align-items: start;
+        font-size: 11px;
+        line-height: 1.35;
+      }
+      .report-panel.active .chart-label span:first-child {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+    @media(max-width: 640px) {
+      .performance-flow {
+        grid-template-columns: 1fr !important;
+        gap: 7px !important;
+        margin: -6px 0 18px !important;
+      }
+      .flow-node,
+      .metric-card {
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        column-gap: 10px;
+        row-gap: 2px;
+        min-height: 0;
+        padding: 10px 12px !important;
+        border-radius: 12px !important;
+      }
+      .flow-node::after { display: none !important; }
+      .flow-kicker,
+      .metric-card .mc-label {
+        grid-column: 1;
+        grid-row: 1;
+        min-width: 0;
+        margin: 0 !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 11px !important;
+      }
+      .flow-value,
+      .metric-card .mc-value {
+        grid-column: 2;
+        grid-row: 1;
+        justify-self: end;
+        margin: 0 !important;
+        white-space: nowrap;
+        font-size: 20px !important;
+        line-height: 1.15 !important;
+      }
+      .flow-label,
+      .metric-card .mc-sub {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        min-width: 0;
+        margin: 0 !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 11px !important;
+        line-height: 1.35 !important;
+      }
+      .metrics-grid {
+        grid-template-columns: 1fr !important;
+        gap: 8px !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -127,15 +426,445 @@
 <main class="container">
   <p class="timeline-label">보고서 목록</p>
   <div class="month-tabs">
-    <div class="month-tab active" onclick="switchTab('apr', event)">2026년 4월</div>
+    <div class="month-tab active" onclick="switchTab('may', event)">2026년 5월</div>
+    <div class="month-tab" onclick="switchTab('apr', event)">2026년 4월</div>
     <div class="month-tab" onclick="switchTab('mar', event)">2026년 3월</div>
     <div class="month-tab" onclick="switchTab('feb', event)">2026년 2월</div>
   </div>
 
   <!-- ═══════════════════════════════════════
+       5월 보고서
+  ═══════════════════════════════════════ -->
+  <div class="report-panel active" id="panel-may">
+
+    <div class="summary-band">
+      <div class="band-title">MONTHLY SUMMARY</div>
+      <div class="band-month">2026년 5월 마케팅 결과보고</div>
+      <div class="band-points">
+        <div class="band-point"><div class="dot"></div><p><strong>홈페이지 방문 증가</strong> — 페이지뷰와 방문자가 모두 전월보다 늘었습니다.</p></div>
+        <div class="band-point"><div class="dot"></div><p><strong>광고·콘텐츠 동시 운영</strong> — 인스타, 당근, 채용글 광고와 발행 콘텐츠를 함께 운영했습니다.</p></div>
+        <div class="band-point"><div class="dot"></div><p><strong>외국인 상담 채널 확대</strong> — 라인·위챗 친구와 상담 유입이 함께 증가했습니다.</p></div>
+      </div>
+    </div>
+
+    <div class="performance-flow">
+      <div class="flow-node">
+        <div class="flow-kicker">콘텐츠</div>
+        <div class="flow-value">14건</div>
+        <div class="flow-label">홈페이지·인스타 발행</div>
+      </div>
+      <div class="flow-node">
+        <div class="flow-kicker">인스타 광고</div>
+        <div class="flow-value">5.9만+</div>
+        <div class="flow-label">3개 소재 조회</div>
+      </div>
+      <div class="flow-node">
+        <div class="flow-kicker">홈페이지</div>
+        <div class="flow-value">3,834명</div>
+        <div class="flow-label">5월 방문자</div>
+      </div>
+      <div class="flow-node">
+        <div class="flow-kicker">상담</div>
+        <div class="flow-value">17건</div>
+        <div class="flow-label">라인·인스타 합산</div>
+      </div>
+    </div>
+
+    <div class="metrics-grid">
+      <div class="metric-card highlight">
+        <div class="mc-label">홈페이지 페이지뷰</div>
+        <div class="mc-value">5,602</div>
+        <div class="mc-sub">4월 4,825 대비 +777</div>
+      </div>
+      <div class="metric-card highlight">
+        <div class="mc-label">홈페이지 방문자</div>
+        <div class="mc-value">3,834<span style="font-size:16px;font-weight:400">명</span></div>
+        <div class="mc-sub">4월 2,957 대비 +877명</div>
+      </div>
+      <div class="metric-card">
+        <div class="mc-label">인스타 광고 방문</div>
+        <div class="mc-value">660</div>
+        <div class="mc-sub">상시 광고 3건 합산</div>
+      </div>
+      <div class="metric-card">
+        <div class="mc-label">콘텐츠 발행</div>
+        <div class="mc-value">14<span style="font-size:16px;font-weight:400">건</span></div>
+        <div class="mc-sub">홈페이지 7 · 인스타 7</div>
+      </div>
+    </div>
+
+    <!-- 홈페이지 성과 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-blue">📈</div>
+        <h3>홈페이지 방문 현황</h3>
+      </div>
+      <div class="section-body">
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:18px;">
+          <div style="text-align:center;padding:16px;background:var(--blue-light);border-radius:12px;">
+            <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;">5월 페이지뷰</div>
+            <div style="font-size:28px;font-weight:800;color:var(--blue);">5,602</div>
+          </div>
+          <div style="text-align:center;padding:16px;background:var(--accent-light);border-radius:12px;">
+            <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;">5월 방문자</div>
+            <div style="font-size:28px;font-weight:800;color:#5b21b6;">3,834</div>
+          </div>
+          <div style="text-align:center;padding:16px;background:var(--green-light);border-radius:12px;">
+            <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;">방문자 증가</div>
+            <div style="font-size:28px;font-weight:800;color:var(--green);">+877</div>
+          </div>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-green"></div>
+          <p>4월 대비 페이지뷰는 약 16%, 방문자는 약 30% 증가해 홈페이지를 확인하는 실제 이용자 규모가 커졌습니다.</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-blue"></div>
+          <p>홈, 벨르몬 칼럼, 중문/일문 병원 소개, 써마지·리프팅·눈밑지방제거 등 시술 페이지까지 방문이 분산되어 브랜드 탐색과 시술 탐색이 함께 나타났습니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 유입 사이트 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-green">🔎</div>
+        <h3>홈페이지 유입 경로</h3>
+      </div>
+      <div class="section-body">
+        <div class="chart-row">
+          <div class="chart-label"><span>직접방문·자사 도메인</span><span style="color:var(--primary);font-weight:800;">4,946</span></div>
+          <div class="chart-bar-bg"><div class="chart-bar" style="width:100%;background:var(--primary);"></div></div>
+        </div>
+        <div class="chart-row">
+          <div class="chart-label"><span>구글</span><span style="color:#3182ce;font-weight:800;">255</span></div>
+          <div class="chart-bar-bg"><div class="chart-bar" style="width:52%;background:#3182ce;"></div></div>
+        </div>
+        <div class="chart-row">
+          <div class="chart-label"><span>네이버 검색·플레이스·블로그</span><span style="color:var(--green);font-weight:800;">230</span></div>
+          <div class="chart-bar-bg"><div class="chart-bar" style="width:47%;background:var(--green);"></div></div>
+        </div>
+        <div class="chart-row">
+          <div class="chart-label"><span>인스타그램</span><span style="color:#ad1457;font-weight:800;">105</span></div>
+          <div class="chart-bar-bg"><div class="chart-bar" style="width:21%;background:#ad1457;"></div></div>
+        </div>
+        <div class="chart-row">
+          <div class="chart-label"><span>다음·카카오·야후·빙 기타</span><span style="color:var(--muted);font-weight:800;">62</span></div>
+          <div class="chart-bar-bg"><div class="chart-bar" style="width:13%;background:#a0aec0;"></div></div>
+        </div>
+        <div class="status-item" style="margin-top:14px;">
+          <div class="status-dot dot-green"></div>
+          <p>직접방문 비중이 높아 병원명·브랜드 인지 기반 유입이 강하게 유지되고 있습니다.</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-purple"></div>
+          <p>인스타그램 유입 105건, 구글 255건, 야후재팬 유입도 확인되어 SNS와 외국인 검색 접점이 함께 작동했습니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 방문 페이지 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-purple">📄</div>
+        <h3>5월 주요 방문 페이지</h3>
+      </div>
+      <div class="section-body" style="padding:0;">
+        <div style="overflow-x:auto;">
+          <table class="content-table visit-table">
+            <thead>
+              <tr><th>페이지</th><th>URL</th><th>조회</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Home</td><td>/Home</td><td>1,824</td></tr>
+              <tr><td>벨르몬 칼럼</td><td>/blog</td><td>1,129</td></tr>
+              <tr><td>商家动态</td><td>/news</td><td>236</td></tr>
+              <tr><td>济州岛皮肤科 BELLEMORN</td><td>/cn</td><td>126</td></tr>
+              <tr><td>주사/시술</td><td>/97</td><td>79</td></tr>
+              <tr><td>병원소개</td><td>/about</td><td>72</td></tr>
+              <tr><td>의료진</td><td>/doctors</td><td>68</td></tr>
+              <tr><td>일본어 병원 소개</td><td>/jp</td><td>65</td></tr>
+              <tr><td>써마지FLX</td><td>/Thermage-FLX</td><td>62</td></tr>
+              <tr><td>눈밑지방제거</td><td>/under-eye-fat</td><td>56</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size:12px;color:var(--muted);padding:10px 20px;">블로그와 뉴스, 중국어/일본어 소개 페이지 방문이 함께 확인되어 콘텐츠형 유입과 외국인 안내 페이지의 역할이 유지되고 있습니다.</p>
+      </div>
+    </div>
+
+    <!-- 인스타 광고 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-purple">📣</div>
+        <h3>인스타그램 상시 광고</h3>
+      </div>
+      <div class="section-body">
+        <div class="metrics-grid" style="margin-bottom:18px;">
+          <div class="metric-card highlight">
+            <div class="mc-label">운영 광고</div>
+            <div class="mc-value">3건</div>
+            <div class="mc-sub">종료일 없이 상시 게재</div>
+          </div>
+          <div class="metric-card">
+            <div class="mc-label">조회수</div>
+            <div class="mc-value">약 5.9만</div>
+            <div class="mc-sub">1.6만 + 1.5만 + 2.8만</div>
+          </div>
+          <div class="metric-card">
+            <div class="mc-label">웹사이트 방문</div>
+            <div class="mc-value">660</div>
+            <div class="mc-sub">297 · 120 · 243 합산</div>
+          </div>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-purple"></div>
+          <p>인스타 광고는 일회성 캠페인이 아니라 상시 노출 구조로 운영되고 있어, 홈페이지 방문과 브랜드 인지도 누적에 초점을 맞췄습니다.</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-green"></div>
+          <p>홈페이지 유입 사이트에서도 instagram.com 유입 105건이 확인되어, 광고·게시물 노출이 실제 홈페이지 확인으로 이어지는 흐름이 있습니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 당근비즈니스 광고 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-orange">🥕</div>
+        <h3>당근비즈니스 게시글 광고</h3>
+      </div>
+      <div class="section-body">
+        <div class="visual-grid">
+          <div class="visual-card emph">
+            <div class="v-label">전체 광고 성과</div>
+            <div class="v-value">23,738</div>
+            <div class="v-sub">노출 · 클릭 243회</div>
+          </div>
+          <div class="visual-card">
+            <div class="v-label">비즈프로필 소식</div>
+            <div class="v-value">14,746</div>
+            <div class="v-sub">클릭 190 · CTR 1.29%</div>
+          </div>
+          <div class="visual-card">
+            <div class="v-label">비즈프로필 스토리</div>
+            <div class="v-value">8,992</div>
+            <div class="v-sub">클릭 53 · CTR 0.59%</div>
+          </div>
+        </div>
+        <div class="region-graph">
+          <div class="region-title">
+            <span>지역별 노출 집중도</span>
+            <span>2개 광고 합산</span>
+          </div>
+          <div class="region-row">
+            <div class="region-name">애월읍</div>
+            <div class="region-track"><div class="region-fill" style="width:100%;"></div></div>
+            <div class="region-count">5,014</div>
+          </div>
+          <div class="region-row">
+            <div class="region-name">대정읍</div>
+            <div class="region-track"><div class="region-fill" style="width:73%;"></div></div>
+            <div class="region-count">3,651</div>
+          </div>
+          <div class="region-row">
+            <div class="region-name">한림읍</div>
+            <div class="region-track"><div class="region-fill" style="width:52%;"></div></div>
+            <div class="region-count">2,597</div>
+          </div>
+          <div class="region-row">
+            <div class="region-name">중문동</div>
+            <div class="region-track"><div class="region-fill" style="width:49%;"></div></div>
+            <div class="region-count">2,451</div>
+          </div>
+          <div class="region-row">
+            <div class="region-name">안덕면</div>
+            <div class="region-track"><div class="region-fill" style="width:43%;"></div></div>
+            <div class="region-count">2,155</div>
+          </div>
+          <div class="region-row">
+            <div class="region-name">강정동</div>
+            <div class="region-track"><div class="region-fill" style="width:39%;"></div></div>
+            <div class="region-count">1,930</div>
+          </div>
+          <div class="region-row">
+            <div class="region-name">서홍동</div>
+            <div class="region-track"><div class="region-fill" style="width:35%;"></div></div>
+            <div class="region-count">1,734</div>
+          </div>
+        </div>
+        <div class="insight-chips">
+          <span class="insight-chip">신화월드 생활권 집중</span>
+          <span class="insight-chip">소식형 광고 클릭 우세</span>
+          <span class="insight-chip">전화 문의 1건</span>
+          <span class="insight-chip">관심 반응 4건</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 중국 코디네이터 채용 광고 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-blue">👥</div>
+        <h3>중국 코디네이터 채용글 광고</h3>
+      </div>
+      <div class="section-body">
+        <div class="metrics-grid" style="margin-bottom:18px;">
+          <div class="metric-card highlight">
+            <div class="mc-label">채용글 광고</div>
+            <div class="mc-value">2회</div>
+            <div class="mc-sub">중국어 가능자/중국인 가능 채용글</div>
+          </div>
+          <div class="metric-card">
+            <div class="mc-label">노출</div>
+            <div class="mc-value">13,337</div>
+            <div class="mc-sub">7,456 + 5,881</div>
+          </div>
+          <div class="metric-card">
+            <div class="mc-label">클릭</div>
+            <div class="mc-value">292</div>
+            <div class="mc-sub">154 + 138</div>
+          </div>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-blue"></div>
+          <p>중국어 가능 코디네이터 채용글에 광고를 2회 집행해 채용 공고 자체 노출과 클릭을 확보했습니다.</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-purple"></div>
+          <p>클릭률은 각각 2.07%, 2.35%로 비즈프로필 게시글 광고보다 높게 나타났습니다. 채용 목적 콘텐츠가 지역 내 관심 클릭을 만드는 소재로 작동했습니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 채널별 상담 내역 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-green">💬</div>
+        <h3>채널별 상담 내역</h3>
+      </div>
+      <div class="section-body">
+        <div class="channel-visual">
+          <div class="donut-card">
+            <div class="donut">
+              <div class="donut-center">17건<span>상담 합계</span></div>
+            </div>
+            <div class="legend-list">
+              <div class="legend-item">
+                <span><span class="legend-dot" style="background:var(--green);display:inline-block;margin-right:7px;"></span>라인</span>
+                <strong>10건 · 59%</strong>
+              </div>
+              <div class="legend-item">
+                <span><span class="legend-dot" style="background:var(--accent);display:inline-block;margin-right:7px;"></span>인스타</span>
+                <strong>7건 · 41%</strong>
+              </div>
+            </div>
+          </div>
+          <div class="friend-bars">
+            <div class="friend-row">
+              <div class="friend-label"><span>위챗 친구</span><strong>202 → 254명</strong></div>
+              <div class="friend-track"><div class="friend-fill" style="width:100%;"></div></div>
+            </div>
+            <div class="friend-row">
+              <div class="friend-label"><span>라인 친구</span><strong>63 → 81명</strong></div>
+              <div class="friend-track"><div class="friend-fill line" style="width:35%;"></div></div>
+            </div>
+            <div class="friend-row">
+              <div class="friend-label"><span>상담 채널 친구 증가</span><strong>+70명</strong></div>
+              <div class="friend-track"><div class="friend-fill" style="width:100%;background:var(--primary);"></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="insight-chips">
+          <span class="insight-chip">가격표 요청</span>
+          <span class="insight-chip">예약 가능 시간</span>
+          <span class="insight-chip">일본어 상담</span>
+          <span class="insight-chip">위챗 연결</span>
+          <span class="insight-chip">울쎄라·보톡스</span>
+          <span class="insight-chip">신화월드 고객 응대</span>
+          <span class="insight-chip">리뷰 후속 관리</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5월 운영 업무 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-blue">⚙️</div>
+        <h3>5월 운영 업무</h3>
+      </div>
+      <div class="section-body">
+        <ul class="sub-list">
+          <li><div class="sub-num">1</div><span>홈페이지 포스팅 7건, 인스타그램 포스팅 7건 발행으로 시술 정보와 광고 소재를 함께 보강했습니다.</span></li>
+          <li><div class="sub-num">2</div><span>인스타그램 상시 광고 3건과 신화월드 연계 릴스 광고를 운영해 홈페이지 방문과 브랜드 노출을 유지했습니다.</span></li>
+          <li><div class="sub-num">3</div><span>당근 의학정보 카드뉴스 업로드 및 게시글 광고 2건을 운영해 신화월드 인근 생활권 노출을 확보했습니다.</span></li>
+          <li><div class="sub-num">4</div><span>중국 코디네이터 채용글을 작성하고 광고를 2회 집행해 외국인 응대 인프라 보강을 지원했습니다.</span></li>
+          <li><div class="sub-num">5</div><span>데스크 TV 영상, 김서현 아나운서 후기영상, 인스타 릴스 광고영상을 제작해 병원 내외부 안내 소재를 정리했습니다.</span></li>
+          <li><div class="sub-num">6</div><span>병원 페이팔 계정 생성 및 보증금 결제 링크 제작, 카카오채널 상담 문구 개선 등 외국인 상담 동선을 보완했습니다.</span></li>
+          <li><div class="sub-num">7</div><span>네이버플레이스 광고 타겟팅을 정밀화하고, 플레이스 순위는 5위 이내 유지 상태로 관리했습니다.</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 콘텐츠 발행 내역 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-purple">📝</div>
+        <h3>발행 글 목록 <span class="count-chip">14건</span></h3>
+      </div>
+      <div class="section-body" style="padding:0;">
+        <div style="overflow-x:auto;">
+          <table class="content-table publish-table">
+            <thead>
+              <tr><th>#</th><th>채널</th><th>제목</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>1</td><td><span class="tag tag-insta">인스타그램</span></td><td>피부가 예민하고 푸석하다면, 리쥬란</td></tr>
+              <tr><td>2</td><td><span class="tag tag-insta">인스타그램</span></td><td>피부가 예민하고 푸석하다면, 리쥬란</td></tr>
+              <tr><td>3</td><td><span class="tag tag-insta">인스타그램</span></td><td>피부에 힘이 빠진 느낌이라면, 써마지FLX</td></tr>
+              <tr><td>4</td><td><span class="tag tag-insta">인스타그램</span></td><td>얼굴선이 무너져보인다면, 울쎄라피프라임</td></tr>
+              <tr><td>5</td><td><span class="tag tag-blog">블로그</span></td><td>제주 상안검, 나이 들수록 눈이 무거워지는 이유와 보호자가 살펴볼 점</td></tr>
+              <tr><td>6</td><td><span class="tag tag-homepage">홈페이지</span></td><td>제주 필러, 많이 채우는 것보다 중요한 것은 얼굴의 비율입니다</td></tr>
+              <tr><td>7</td><td><span class="tag tag-homepage">홈페이지</span></td><td>제주도 리프팅 써마지FLX가 필요한 이유</td></tr>
+              <tr><td>8</td><td><span class="tag tag-blog">블로그</span></td><td>제주 눈밑지방, 눈밑 지방일까 꺼짐일까 피곤해 보이는 이유</td></tr>
+              <tr><td>9</td><td><span class="tag tag-insta">인스타그램</span></td><td>당근 스토리광고 영상</td></tr>
+              <tr><td>10</td><td><span class="tag tag-insta">인스타그램</span></td><td>신화월드연계 릴스광고영상</td></tr>
+              <tr><td>11</td><td><span class="tag tag-blog">블로그</span></td><td>제주 울쎄라피프라임 피부 처짐이 고민될 때 알아둘 점</td></tr>
+              <tr><td>12</td><td><span class="tag tag-blog">블로그</span></td><td>제주성형외과 환절기 피부관리 방법은?</td></tr>
+              <tr><td>13</td><td><span class="tag tag-blog">블로그</span></td><td>제주 눈성형 안검하수와 처진 눈꺼풀 구별하기</td></tr>
+              <tr><td>14</td><td><span class="tag tag-insta">인스타그램</span></td><td>요즘 거울 속 내얼굴, 리프팅 타이밍일까? (당근포함)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="next-band">
+      <h3>6월 중점 방향</h3>
+      <div class="next-item">
+        <div class="n-num">1</div>
+        <p>인스타 광고는 상시 운영을 유지하되, 홈페이지 방문으로 이어지는 소재를 중심으로 효율을 비교합니다.</p>
+      </div>
+      <div class="next-item">
+        <div class="n-num">2</div>
+        <p>당근 게시글 광고는 반응이 더 높았던 비즈프로필 소식형 소재를 기준으로 지역 타깃과 문구를 보강합니다.</p>
+      </div>
+      <div class="next-item">
+        <div class="n-num">3</div>
+        <p>중국 코디네이터 채용글 광고 결과를 바탕으로 외국인 응대 인프라와 중문 상담 전환 구조를 이어갑니다.</p>
+      </div>
+      <div class="next-item">
+        <div class="n-num">4</div>
+        <p>방문이 많은 벨르몬 칼럼과 중문/일문 페이지를 시술별 상담 동선으로 연결해 홈페이지 체류와 문의 전환을 높입니다.</p>
+      </div>
+    </div>
+
+  </div><!-- /panel-may -->
+
+  <!-- ═══════════════════════════════════════
        4월 보고서
   ═══════════════════════════════════════ -->
-  <div class="report-panel active" id="panel-apr">
+  <div class="report-panel" id="panel-apr">
 
     <!-- 요약 배너 -->
     <div class="summary-band">
@@ -710,7 +1439,7 @@
           <table class="daangn-table">
             <thead>
               <tr>
-                <th>노출</th><th>도달</th><th>클릭</th><th>CTR</th><th>CPC</th><th>총 지출</th>
+                <th>노출</th><th>도달</th><th>클릭</th><th>CTR</th>
               </tr>
             </thead>
             <tbody>
@@ -719,8 +1448,6 @@
                 <td>2,324명</td>
                 <td>86회</td>
                 <td>1.27%</td>
-                <td>466원</td>
-                <td style="color:var(--orange);">40,125원</td>
               </tr>
             </tbody>
           </table>
@@ -731,7 +1458,7 @@
         </div>
         <div class="status-item">
           <div class="status-dot dot-green"></div>
-          <p>반응 1건 · 관심 1개 — 소규모 예산(4만원) 대비 안정적 도달 확인</p>
+          <p>반응 1건 · 관심 1개 — 서귀포 권역 대상 노출과 클릭 흐름이 확인되었습니다.</p>
         </div>
       </div>
     </div>

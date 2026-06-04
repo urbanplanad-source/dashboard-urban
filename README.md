@@ -6,9 +6,18 @@ Urbanplanad client report dashboard and Naver Place visitor review monitor.
 
 - Main dashboard: `index.html`
 - Client reports: `btskin.html`, `belrmon.html`, `gyunghee.html`, and other client HTML files
-- Apps Script API notes: `오픈클로_API_가이드.md`
+- Codex project guide: `AGENTS.md`
+- Detailed Apps Script API reference: `docs/apps-script-api.md`
+- Apps Script patch snippets: `apps-script/`
 
-This project is a static HTML dashboard. GitHub Pages can serve it directly from the repository root.
+This project is a static HTML dashboard. The primary working file is the local `index.html`; GitHub Pages serves the same repository root for remote access.
+
+## Operating Modes
+
+- Local: open `index.html` directly from this folder.
+- Remote: use the GitHub Pages deployment of the same root files.
+- Keep dashboard links relative, such as `btskin.html`, so local file use and GitHub Pages stay in sync.
+- Before uploading changes, run `npm run check` or `npm.cmd run check`.
 
 ## Visitor Review Monitor
 
@@ -25,12 +34,14 @@ The monitor reads `visitorReviewsTotal` from each Naver visitor review page, com
 ## Commands
 
 ```bash
-npm run review:monitor
+npm run check
+npm run check:syntax
 npm run review:monitor:dry-run
 npm run review:monitor:check
+npm run review:monitor
 ```
 
-No npm dependencies are required. Node.js 20 or newer is enough.
+`npm run check` runs the operational guardrails for this Codex-managed repository, including report-file link checks. No npm dependencies are required. Node.js 20 or newer is enough.
 
 ## GitHub Actions
 

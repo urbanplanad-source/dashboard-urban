@@ -28,6 +28,12 @@
     .band-point { display:flex; gap:10px; align-items:flex-start; }
     .band-point .dot { width:6px; height:6px; background:var(--accent); border-radius:50%; margin-top:7px; flex-shrink:0; }
     .band-point p { font-size:14px; line-height:1.6; color:rgba(255,255,255,0.85); }
+    .performance-flow { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin:-12px 0 28px; }
+    .flow-node { position:relative; min-width:0; background:var(--card); border:1px solid var(--border); border-radius:14px; padding:16px 14px; }
+    .flow-node:not(:last-child)::after { content:"→"; position:absolute; right:-11px; top:50%; transform:translateY(-50%); width:22px; height:22px; border-radius:50%; background:var(--primary); color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; z-index:1; }
+    .flow-kicker { font-size:11px; font-weight:800; color:var(--muted); margin-bottom:6px; }
+    .flow-value { font-size:22px; font-weight:900; color:var(--primary); line-height:1.1; }
+    .flow-label { font-size:11px; color:var(--muted); margin-top:6px; line-height:1.4; }
     .metrics-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-bottom:28px; }
     .metric-card { background:var(--card); border-radius:14px; padding:22px 24px; border:1px solid var(--border); }
     .mc-label { font-size:12px; color:var(--muted); font-weight:600; margin-bottom:8px; }
@@ -60,6 +66,179 @@
     .empty-state .e-icon { font-size:48px; margin-bottom:16px; }
     .empty-state h3 { font-size:18px; margin-bottom:8px; color:var(--text); }
     .empty-state p { font-size:14px; line-height:1.7; }
+    @media(max-width:640px) {
+      .site-header { padding:18px 16px; flex-direction:column; align-items:flex-start; gap:12px; }
+      .logo { gap:10px; }
+      .logo-badge { width:36px; height:36px; border-radius:9px; font-size:17px; }
+      .logo-text h1 { font-size:16px; line-height:1.35; }
+      .logo-text p { font-size:11px; }
+      .header-tag { font-size:11px; padding:5px 10px; }
+      .container { padding:28px 12px; }
+      .timeline-label { margin-bottom:12px; }
+      .month-tabs { flex-wrap:nowrap; overflow-x:auto; gap:8px; margin:0 -12px 24px; padding:0 12px 6px; scrollbar-width:none; }
+      .month-tabs::-webkit-scrollbar { display:none; }
+      .month-tab { flex:0 0 auto; white-space:nowrap; padding:7px 14px; font-size:13px; }
+      .summary-band { padding:20px 18px; border-radius:14px; margin-bottom:20px; }
+      .band-month { font-size:22px; line-height:1.25; margin-bottom:12px; }
+      .band-title { font-size:11px; }
+      .band-points { grid-template-columns:1fr !important; gap:10px; }
+      .band-point p { font-size:13px; line-height:1.55; }
+      .performance-flow { grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; margin:-8px 0 20px; }
+      .flow-node { padding:13px 11px; border-radius:12px; }
+      .flow-node::after { display:none !important; }
+      .flow-kicker { font-size:10px; }
+      .flow-value { font-size:20px; }
+      .flow-label { font-size:10px; }
+      .metrics-grid { grid-template-columns:repeat(2,minmax(0,1fr)) !important; gap:10px; margin-bottom:20px; }
+      .metric-card { padding:16px 14px; border-radius:12px; }
+      .metric-card .mc-label { font-size:11px; }
+      .metric-card .mc-value { font-size:24px !important; line-height:1.1; }
+      .metric-card .mc-sub { font-size:11px; line-height:1.45; }
+      .section-card { border-radius:12px; margin-bottom:16px; }
+      .section-header { padding:14px 16px; align-items:flex-start; }
+      .section-header .icon { width:28px; height:28px; font-size:14px; flex-shrink:0; }
+      .section-header h3 { font-size:14px; line-height:1.4; }
+      .section-body { padding:16px 14px; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+      .two-col { grid-template-columns:1fr !important; gap:12px; }
+      .content-table { min-width:540px; }
+      .content-table th,.content-table td { padding:9px 10px; font-size:12px; }
+      .status-item p { font-size:13px; line-height:1.55; }
+      [style*="grid-template-columns:1fr 1fr"],
+      [style*="grid-template-columns: 1fr 1fr"],
+      [style*="grid-template-columns:repeat(3"],
+      [style*="grid-template-columns: repeat(3"],
+      [style*="grid-template-columns:repeat(auto-fit"],
+      [style*="grid-template-columns: repeat(auto-fit"] { grid-template-columns:1fr !important; }
+      [style*="font-size:36px"], [style*="font-size:34px"], [style*="font-size:32px"], [style*="font-size:28px"] { font-size:24px !important; }
+      [style*="padding:22px 24px"], [style*="padding:24px 28px"], [style*="padding:28px 32px"] { padding:16px 14px !important; }
+    }
+    @media(max-width:380px) {
+      .metrics-grid { grid-template-columns:1fr !important; }
+      .content-table { min-width:500px; }
+    }
+    @media(max-width:640px) {
+      .report-panel.active .section-body { overflow-x:visible; }
+      .report-panel.active .content-table { min-width:0 !important; }
+      .report-panel.active .content-table thead { display:none; }
+      .report-panel.active .content-table,
+      .report-panel.active .content-table tbody,
+      .report-panel.active .content-table tr,
+      .report-panel.active .content-table td { display:block; width:100%; }
+      .report-panel.active .content-table tr { margin:0 0 10px; padding:12px 13px; border:1px solid var(--border); border-radius:12px; background:#fff; }
+      .report-panel.active .content-table td { border-bottom:none; padding:3px 0; line-height:1.45; }
+      .report-panel.active .content-table td:first-child { font-size:11px; font-weight:800; color:var(--muted); }
+      .report-panel.active .content-table td:last-child { margin-top:5px; }
+      .report-panel.active .content-table tbody { padding:8px 0 2px; }
+      .report-panel.active .content-table tr { width:auto; margin:0 8px 7px; padding:9px 11px; border-radius:10px; }
+      .report-panel.active .content-table td { padding:1px 0; font-size:12px; line-height:1.38; }
+      .report-panel.active .content-table td:first-child { margin-bottom:2px; }
+      .report-panel.active .content-table td:nth-child(3) { font-weight:700; }
+      .report-panel.active .content-table span[style*="border-radius"] { font-size:10px !important; padding:1px 7px !important; margin-top:3px; }
+      .report-panel.active .content-table tr:has(td:nth-child(3)):not(:has(td:nth-child(4))) {
+        display:grid;
+        grid-template-columns:20px minmax(0,1fr) auto;
+        align-items:start;
+        column-gap:8px;
+      }
+      .report-panel.active .content-table tr:has(td:nth-child(3)):not(:has(td:nth-child(4))) td { width:auto; min-width:0; }
+      .report-panel.active .content-table tr:has(td:nth-child(3)):not(:has(td:nth-child(4))) td:first-child { grid-column:1; margin:1px 0 0; }
+      .report-panel.active .content-table tr:has(td:nth-child(3)):not(:has(td:nth-child(4))) td:nth-child(2) {
+        grid-column:2;
+        display:-webkit-box;
+        overflow:hidden;
+        -webkit-line-clamp:2;
+        -webkit-box-orient:vertical;
+        font-weight:700;
+      }
+      .report-panel.active .content-table tr:has(td:nth-child(3)):not(:has(td:nth-child(4))) td:last-child { grid-column:3; justify-self:end; margin-top:1px; }
+      .report-panel.active .content-table tr:has(td:nth-child(4)) {
+        display:grid;
+        grid-template-columns:18px 32px minmax(0,1fr) auto;
+        align-items:start;
+        column-gap:7px;
+      }
+      .report-panel.active .content-table tr:has(td:nth-child(4)) td { width:auto; min-width:0; }
+      .report-panel.active .content-table tr:has(td:nth-child(4)) td:first-child { grid-column:1; margin:1px 0 0; }
+      .report-panel.active .content-table tr:has(td:nth-child(4)) td:nth-child(2) { grid-column:2; white-space:nowrap; }
+      .report-panel.active .content-table tr:has(td:nth-child(4)) td:nth-child(3) {
+        grid-column:3;
+        display:-webkit-box;
+        overflow:hidden;
+        -webkit-line-clamp:2;
+        -webkit-box-orient:vertical;
+      }
+      .report-panel.active .content-table tr:has(td:nth-child(4)) td:last-child { grid-column:4; justify-self:end; margin-top:1px; }
+      .report-panel.active .section-body div[style*="justify-content:space-between"] {
+        display:grid !important;
+        grid-template-columns:minmax(0,1fr) auto;
+        gap:8px;
+        align-items:start;
+        font-size:11px !important;
+        line-height:1.35;
+      }
+      .report-panel.active .section-body div[style*="justify-content:space-between"] span:first-child {
+        min-width:0;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        white-space:nowrap;
+      }
+    }
+    @media(max-width:640px) {
+      .performance-flow {
+        grid-template-columns:1fr !important;
+        gap:7px !important;
+        margin:-6px 0 18px !important;
+      }
+      .flow-node,
+      .metric-card {
+        display:grid !important;
+        grid-template-columns:minmax(0,1fr) auto;
+        align-items:center;
+        column-gap:10px;
+        row-gap:2px;
+        min-height:0;
+        padding:10px 12px !important;
+        border-radius:12px !important;
+      }
+      .flow-node::after { display:none !important; }
+      .flow-kicker,
+      .metric-card .mc-label {
+        grid-column:1;
+        grid-row:1;
+        min-width:0;
+        margin:0 !important;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        white-space:nowrap;
+        font-size:11px !important;
+      }
+      .flow-value,
+      .metric-card .mc-value {
+        grid-column:2;
+        grid-row:1;
+        justify-self:end;
+        margin:0 !important;
+        white-space:nowrap;
+        font-size:20px !important;
+        line-height:1.15 !important;
+      }
+      .flow-label,
+      .metric-card .mc-sub {
+        grid-column:1 / -1;
+        grid-row:2;
+        min-width:0;
+        margin:0 !important;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        white-space:nowrap;
+        font-size:11px !important;
+        line-height:1.35 !important;
+      }
+      .metrics-grid {
+        grid-template-columns:1fr !important;
+        gap:8px !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -73,13 +252,293 @@
 <main class="container">
   <p class="timeline-label">보고서 목록</p>
   <div class="month-tabs">
-    <div class="month-tab active" onclick="switchTab('apr',event)">2026년 4월</div>
+    <div class="month-tab active" onclick="switchTab('may',event)">2026년 5월</div>
+    <div class="month-tab" onclick="switchTab('apr',event)">2026년 4월</div>
     <div class="month-tab" onclick="switchTab('mar',event)">2026년 3월</div>
     <div class="month-tab" onclick="switchTab('feb',event)">2026년 2월</div>
   </div>
 
+  <!-- ===== 5월 패널 ===== -->
+  <div class="report-panel active" id="panel-may">
+
+    <!-- 요약 배너 -->
+    <div class="summary-band">
+      <div class="band-title">MONTHLY SUMMARY</div>
+      <div class="band-month">2026년 5월 마케팅 결과보고</div>
+      <div class="band-points">
+        <div class="band-point"><div class="dot"></div><p><strong>홈페이지 방문 488회</strong> — 방문자 351명, 네이버 유입 327회로 검색 기반 방문 흐름이 유지되었습니다.</p></div>
+        <div class="band-point"><div class="dot"></div><p><strong>블로그 8건 발행</strong> — 성산구·가음동·가음정 지역 키워드와 충치·잇몸·임플란트·소아치과 콘텐츠를 확장했습니다.</p></div>
+        <div class="band-point"><div class="dot"></div><p><strong>네이버 블로그 조회수 155회</strong> — 4월 133회 대비 +22회, 4월부터 시작한 블로그 활용 흐름이 이어지고 있습니다.</p></div>
+      </div>
+    </div>
+
+    <div class="performance-flow">
+      <div class="flow-node">
+        <div class="flow-kicker">홈페이지</div>
+        <div class="flow-value">488</div>
+        <div class="flow-label">5월 총 방문</div>
+      </div>
+      <div class="flow-node">
+        <div class="flow-kicker">네이버</div>
+        <div class="flow-value">327</div>
+        <div class="flow-label">검색 기반 유입</div>
+      </div>
+      <div class="flow-node">
+        <div class="flow-kicker">블로그</div>
+        <div class="flow-value">155</div>
+        <div class="flow-label">4월 대비 +22회</div>
+      </div>
+      <div class="flow-node">
+        <div class="flow-kicker">발행</div>
+        <div class="flow-value">8건</div>
+        <div class="flow-label">지역 SEO 콘텐츠</div>
+      </div>
+    </div>
+
+    <!-- 핵심 지표 -->
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="mc-label">홈페이지 총 방문</div>
+        <div class="mc-value">488</div>
+        <div class="mc-sub">5월 전체 방문 횟수</div>
+      </div>
+      <div class="metric-card">
+        <div class="mc-label">방문자 수</div>
+        <div class="mc-value">351</div>
+        <div class="mc-sub">5월 순 방문자</div>
+      </div>
+      <div class="metric-card highlight">
+        <div class="mc-label">네이버 유입</div>
+        <div class="mc-value">327</div>
+        <div class="mc-sub">전체 방문의 67%</div>
+      </div>
+      <div class="metric-card">
+        <div class="mc-label">직접 유입</div>
+        <div class="mc-value">117</div>
+        <div class="mc-sub">전체 방문의 24%</div>
+      </div>
+      <div class="metric-card highlight">
+        <div class="mc-label">블로그 조회수</div>
+        <div class="mc-value">155</div>
+        <div class="mc-sub">4월 133회 대비 +16.5%↑</div>
+      </div>
+      <div class="metric-card">
+        <div class="mc-label">블로그 발행</div>
+        <div class="mc-value">8건</div>
+        <div class="mc-sub">지역 SEO 중심</div>
+      </div>
+    </div>
+
+    <!-- 키워드 + 유입 채널 -->
+    <div class="two-col">
+      <div class="section-card">
+        <div class="section-header">
+          <div class="icon icon-gold">🥇</div>
+          <h3>네이버 키워드 현황</h3>
+        </div>
+        <div class="section-body">
+          <div style="background:var(--accent-light);border:1px solid var(--accent);border-radius:12px;padding:16px 18px;margin-bottom:12px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+              <div style="background:var(--accent);color:#fff;font-size:13px;font-weight:800;padding:4px 12px;border-radius:20px;">검색 유입 확대</div>
+              <span style="font-size:12px;color:var(--muted);">5월 기준</span>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;">
+              <span style="background:#fff;border:1.5px solid var(--accent);color:#065f46;font-size:12px;font-weight:700;padding:5px 12px;border-radius:8px;">성산구 치아 신경</span>
+              <span style="background:#fff;border:1.5px solid var(--accent);color:#065f46;font-size:12px;font-weight:700;padding:5px 12px;border-radius:8px;">이고치과의원</span>
+              <span style="background:#fff;border:1.5px solid var(--accent);color:#065f46;font-size:12px;font-weight:700;padding:5px 12px;border-radius:8px;">치아가 시린 이유</span>
+              <span style="background:#fff;border:1.5px solid var(--accent);color:#065f46;font-size:12px;font-weight:700;padding:5px 12px;border-radius:8px;">이고치과</span>
+              <span style="background:#fff;border:1.5px solid var(--accent);color:#065f46;font-size:12px;font-weight:700;padding:5px 12px;border-radius:8px;">가음동 치과</span>
+              <span style="background:#fff;border:1.5px solid var(--accent);color:#065f46;font-size:12px;font-weight:700;padding:5px 12px;border-radius:8px;">가음정 이고치과</span>
+              <span style="background:#fff;border:1.5px solid var(--accent);color:#065f46;font-size:12px;font-weight:700;padding:5px 12px;border-radius:8px;">성산구 사랑니 뽑기</span>
+              <span style="background:#fff;border:1.5px solid var(--accent);color:#065f46;font-size:12px;font-weight:700;padding:5px 12px;border-radius:8px;">성산구 임플란트 후 관리</span>
+              <span style="background:#fff;border:1.5px solid var(--accent);color:#065f46;font-size:12px;font-weight:700;padding:5px 12px;border-radius:8px;">성산구 충치신경치료</span>
+            </div>
+          </div>
+          <div class="status-item">
+            <div class="status-dot dot-green"></div>
+            <p>네이버 블로그 검색 유입에서 <strong>성산구 치아 신경·치아 시림·이고치과</strong> 관련 키워드가 확인되어, 5월 발행 주제와 검색 노출이 연결되고 있습니다.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-header">
+          <div class="icon icon-blue">📊</div>
+          <h3>홈페이지 유입 채널 분석</h3>
+        </div>
+        <div class="section-body">
+          <div style="margin-bottom:10px;">
+            <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:4px;"><span>네이버(Naver)</span><span style="color:var(--accent);font-weight:800;">327 · 67%</span></div>
+            <div style="background:#f0f0f0;border-radius:4px;height:9px;"><div style="background:var(--accent);height:9px;border-radius:4px;width:67%;"></div></div>
+          </div>
+          <div style="margin-bottom:10px;">
+            <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:4px;"><span>직접방문</span><span style="color:var(--primary);font-weight:800;">117 · 24%</span></div>
+            <div style="background:#f0f0f0;border-radius:4px;height:9px;"><div style="background:var(--primary);height:9px;border-radius:4px;width:24%;"></div></div>
+          </div>
+          <div style="margin-bottom:10px;">
+            <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:4px;"><span>구글(Google)</span><span style="color:var(--blue);font-weight:800;">19 · 4%</span></div>
+            <div style="background:#f0f0f0;border-radius:4px;height:9px;"><div style="background:var(--blue);height:9px;border-radius:4px;width:4%;"></div></div>
+          </div>
+          <div style="margin-bottom:10px;">
+            <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:4px;"><span>자사 도메인</span><span style="color:#c9a96e;font-weight:800;">11 · 2%</span></div>
+            <div style="background:#f0f0f0;border-radius:4px;height:9px;"><div style="background:#c9a96e;height:9px;border-radius:4px;width:2%;"></div></div>
+          </div>
+          <div style="margin-bottom:14px;">
+            <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:4px;"><span>카카오·다음·기타</span><span style="color:var(--muted);font-weight:800;">11 · 2%</span></div>
+            <div style="background:#f0f0f0;border-radius:4px;height:9px;"><div style="background:#a0aec0;height:9px;border-radius:4px;width:2%;"></div></div>
+          </div>
+          <div class="status-item">
+            <div class="status-dot dot-gold"></div>
+            <p style="font-size:13px;">유입 사이트 기준 m.search.naver.com 184건, search.naver.com 44건, m.place.naver.com 17건으로 네이버 검색·플레이스 유입이 중심입니다.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 블로그 발행 내역 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-blue">📝</div>
+        <h3>블로그 발행 내역 <span class="count-chip">8건</span></h3>
+      </div>
+      <div class="section-body" style="padding:0;">
+        <div style="overflow-x:auto;">
+          <table class="content-table">
+            <thead>
+              <tr>
+                <th>#</th><th>발행월</th><th>제목</th><th>키워드</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td><td style="color:var(--muted);white-space:nowrap;">5월</td>
+                <td>성산구 충치, 찬물 마실 때 치아가 시린 이유는 무엇일까요</td>
+                <td><span style="display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;background:var(--accent-light);color:#065f46;">충치·시린이</span></td>
+              </tr>
+              <tr>
+                <td>2</td><td style="color:var(--muted);white-space:nowrap;">5월</td>
+                <td>성산구 치과 양치할 때 잇몸에서 피가 난다면 확인해야 할 것</td>
+                <td><span style="display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;background:var(--accent-light);color:#065f46;">잇몸</span></td>
+              </tr>
+              <tr>
+                <td>3</td><td style="color:var(--muted);white-space:nowrap;">5월</td>
+                <td>성산구 임플란트 전 잇몸뼈와 전신 건강을 함께 확인해야 하는 이유</td>
+                <td><span style="display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;background:var(--accent-light);color:#065f46;">임플란트</span></td>
+              </tr>
+              <tr>
+                <td>4</td><td style="color:var(--muted);white-space:nowrap;">5월</td>
+                <td>성산구 충치 초기에는 아프지 않을 수 있어 정기검진이 중요합니다</td>
+                <td><span style="display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;background:var(--accent-light);color:#065f46;">충치</span></td>
+              </tr>
+              <tr>
+                <td>5</td><td style="color:var(--muted);white-space:nowrap;">5월</td>
+                <td>가음동 사랑니 무조건 발치해야 할까요 상태에 따라 판단이 달라집니다</td>
+                <td><span style="display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;background:var(--accent-light);color:#065f46;">사랑니</span></td>
+              </tr>
+              <tr>
+                <td>6</td><td style="color:var(--muted);white-space:nowrap;">5월</td>
+                <td>가음정 치과 찬물에 치아가 시릴 때 충치만 의심해야 할까요</td>
+                <td><span style="display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;background:var(--accent-light);color:#065f46;">시린이</span></td>
+              </tr>
+              <tr>
+                <td>7</td><td style="color:var(--muted);white-space:nowrap;">5월</td>
+                <td>성산구 스케일링 깎는 치료가 아니라 잇몸 건강을 위한 관리입니다</td>
+                <td><span style="display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;background:var(--accent-light);color:#065f46;">스케일링</span></td>
+              </tr>
+              <tr>
+                <td>8</td><td style="color:var(--muted);white-space:nowrap;">5월</td>
+                <td>성산구 소아치과, 아이가 양치를 싫어할 때</td>
+                <td><span style="display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;background:var(--accent-light);color:#065f46;">소아치과</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="padding:12px 20px;background:var(--bg);font-size:12px;color:var(--muted);">
+          ※ 성산구·가음동·가음정 지역 키워드 + 충치·시린이·잇몸·임플란트·사랑니·스케일링·소아치과 주제 확장
+        </div>
+      </div>
+    </div>
+
+    <!-- 블로그 조회수 성장 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-gold">📈</div>
+        <h3>네이버 블로그 조회수 성장</h3>
+      </div>
+      <div class="section-body">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:20px;">
+          <div style="background:var(--bg);border-radius:12px;padding:18px 20px;text-align:center;border:1px solid var(--border);">
+            <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;">3월 조회수</div>
+            <div style="font-size:32px;font-weight:800;color:var(--primary);">34</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px;">운영 전 기준</div>
+          </div>
+          <div style="background:#fff;border-radius:12px;padding:18px 20px;text-align:center;border:1px solid var(--border);">
+            <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;">4월 조회수</div>
+            <div style="font-size:32px;font-weight:800;color:var(--primary);">133</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px;">블로그 활용 시작</div>
+          </div>
+          <div style="background:var(--accent-light);border-radius:12px;padding:18px 20px;text-align:center;border:2px solid var(--accent);">
+            <div style="font-size:11px;font-weight:700;color:#065f46;margin-bottom:6px;">5월 조회수</div>
+            <div style="font-size:32px;font-weight:800;color:#065f46;">155</div>
+            <div style="font-size:12px;color:#065f46;margin-top:4px;font-weight:700;">4월 대비 +16.5% ↑</div>
+          </div>
+        </div>
+
+        <div style="background:var(--bg);border-radius:10px;padding:16px 18px;margin-bottom:16px;">
+          <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:12px;">블로그 유입 분석 — 검색 유입 52.31%</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            <span style="background:#fff;border:1.5px solid var(--accent);color:#065f46;font-size:12px;font-weight:700;padding:5px 12px;border-radius:8px;">성산구 치아 신경 8.82%</span>
+            <span style="background:#fff;border:1.5px solid var(--accent);color:#065f46;font-size:12px;font-weight:700;padding:5px 12px;border-radius:8px;">이고치과의원 8.82%</span>
+            <span style="background:#fff;border:1.5px solid var(--accent);color:#065f46;font-size:12px;font-weight:700;padding:5px 12px;border-radius:8px;">치아가 시린 이유 8.82%</span>
+            <span style="background:#fff;border:1.5px solid var(--border);color:var(--text);font-size:12px;font-weight:600;padding:5px 12px;border-radius:8px;">이고치과 5.88%</span>
+            <span style="background:#fff;border:1.5px solid var(--border);color:var(--text);font-size:12px;font-weight:600;padding:5px 12px;border-radius:8px;">가음동 치과</span>
+            <span style="background:#fff;border:1.5px solid var(--border);color:var(--text);font-size:12px;font-weight:600;padding:5px 12px;border-radius:8px;">성산구 사랑니 뽑기</span>
+          </div>
+        </div>
+
+        <div style="margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:4px;"><span>네이버 통합검색_모바일</span><span style="color:var(--accent);font-weight:800;">35.38%</span></div>
+          <div style="background:#f0f0f0;border-radius:4px;height:9px;"><div style="background:var(--accent);height:9px;border-radius:4px;width:35.38%;"></div></div>
+        </div>
+        <div style="margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:4px;"><span>네이버 플레이스_모바일</span><span style="color:var(--primary);font-weight:800;">15.38%</span></div>
+          <div style="background:#f0f0f0;border-radius:4px;height:9px;"><div style="background:var(--primary);height:9px;border-radius:4px;width:15.38%;"></div></div>
+        </div>
+        <div style="margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:4px;"><span>네이버 블로그_PC</span><span style="color:#c9a96e;font-weight:800;">10.77%</span></div>
+          <div style="background:#f0f0f0;border-radius:4px;height:9px;"><div style="background:#c9a96e;height:9px;border-radius:4px;width:10.77%;"></div></div>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-green"></div>
+          <p>4월부터 네이버 블로그를 적극 활용한 이후 조회수는 133회에서 155회로 증가했고, 5월에는 검색 유입 비중이 52.31%까지 확인되었습니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6월 중점방향 -->
+    <div style="background:var(--primary);border-radius:16px;padding:28px 32px;margin-bottom:28px;color:#fff;">
+      <div style="font-size:13px;color:rgba(255,255,255,0.5);font-weight:600;letter-spacing:0.5px;margin-bottom:6px;">NEXT MONTH PLAN</div>
+      <div style="font-size:20px;font-weight:800;color:var(--accent);margin-bottom:20px;">6월 중점 방향</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;">
+        <div style="display:flex;gap:10px;align-items:flex-start;">
+          <div style="width:24px;height:24px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;margin-top:1px;">1</div>
+          <p style="font-size:14px;line-height:1.6;color:rgba(255,255,255,0.85);">블로그 발행 지속 — 성산구 치아 신경·시린이·충치·잇몸 등 실제 검색어와 연결되는 주제 강화</p>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start;">
+          <div style="width:24px;height:24px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;margin-top:1px;">2</div>
+          <p style="font-size:14px;line-height:1.6;color:rgba(255,255,255,0.85);">네이버 검색·플레이스 유입 연계 — 홈페이지 방문으로 이어지는 모바일 검색 흐름 유지</p>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start;">
+          <div style="width:24px;height:24px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;margin-top:1px;">3</div>
+          <p style="font-size:14px;line-height:1.6;color:rgba(255,255,255,0.85);">소아치과·임플란트·사랑니 등 전환 가능성이 높은 진료 키워드 콘텐츠를 꾸준히 보강</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
   <!-- ===== 4월 패널 ===== -->
-  <div class="report-panel active" id="panel-apr">
+  <div class="report-panel" id="panel-apr">
 
     <!-- 요약 배너 -->
     <div class="summary-band">

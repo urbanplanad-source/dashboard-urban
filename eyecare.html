@@ -126,6 +126,41 @@
       margin-top: 7px; flex-shrink: 0;
     }
     .band-point p { font-size: 14px; line-height: 1.6; color: rgba(255,255,255,0.85); }
+    .performance-flow {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin: -12px 0 28px;
+    }
+    .flow-node {
+      position: relative;
+      min-width: 0;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 14px;
+    }
+    .flow-node:not(:last-child)::after {
+      content: "→";
+      position: absolute;
+      right: -11px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 800;
+      z-index: 1;
+    }
+    .flow-kicker { font-size: 11px; font-weight: 800; color: var(--muted); margin-bottom: 6px; }
+    .flow-value { font-size: 22px; font-weight: 900; color: var(--primary); line-height: 1.1; }
+    .flow-label { font-size: 11px; color: var(--muted); margin-top: 6px; line-height: 1.4; }
 
     /* ─── GRID ─── */
     .metrics-grid {
@@ -247,6 +282,169 @@
     .empty-state .e-icon { font-size: 48px; margin-bottom: 16px; }
     .empty-state h3 { font-size: 18px; margin-bottom: 8px; color: var(--text); }
     .empty-state p { font-size: 14px; line-height: 1.7; }
+    @media(max-width: 640px) {
+      .site-header { padding: 18px 16px; flex-direction: column; align-items: flex-start; gap: 12px; }
+      .site-header .logo { gap: 10px; }
+      .site-header .logo-badge { width: 36px; height: 36px; border-radius: 9px; font-size: 17px; }
+      .site-header .logo-text h1 { font-size: 16px; line-height: 1.35; letter-spacing: 0; }
+      .site-header .logo-text p { font-size: 11px; }
+      .header-tag { font-size: 11px; padding: 5px 10px; }
+      .container { padding: 28px 12px; }
+      .timeline-label { margin-bottom: 12px; }
+      .month-tabs { flex-wrap: nowrap; overflow-x: auto; gap: 8px; margin: 0 -12px 24px; padding: 0 12px 6px; scrollbar-width: none; }
+      .month-tabs::-webkit-scrollbar { display: none; }
+      .month-tab { flex: 0 0 auto; white-space: nowrap; padding: 7px 14px; font-size: 13px; }
+      .summary-band { padding: 20px 18px; border-radius: 14px; margin-bottom: 20px; }
+      .summary-band .band-month { font-size: 22px; line-height: 1.25; }
+      .summary-band .band-title { font-size: 11px; }
+      .summary-band .band-sub { font-size: 12px; margin-bottom: 14px; }
+      .summary-band .band-points { grid-template-columns: 1fr !important; gap: 10px; }
+      .band-point p { font-size: 13px; line-height: 1.55; }
+      .performance-flow { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; margin: -8px 0 20px; }
+      .flow-node { padding: 13px 11px; border-radius: 12px; }
+      .flow-node::after { display: none !important; }
+      .flow-kicker { font-size: 10px; }
+      .flow-value { font-size: 20px; }
+      .flow-label { font-size: 10px; }
+      .metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 10px; margin-bottom: 20px; }
+      .metric-card { padding: 16px 14px; border-radius: 12px; }
+      .metric-card .mc-label { font-size: 11px; }
+      .metric-card .mc-value { font-size: 24px !important; line-height: 1.1; }
+      .metric-card .mc-sub { font-size: 11px; line-height: 1.45; }
+      .section-card { border-radius: 12px; margin-bottom: 16px; }
+      .section-header { padding: 14px 16px; align-items: flex-start; }
+      .section-header .icon { width: 28px; height: 28px; font-size: 14px; flex-shrink: 0; }
+      .section-header h3 { font-size: 14px; line-height: 1.4; }
+      .section-body { padding: 16px 14px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .two-col { grid-template-columns: 1fr !important; gap: 12px; }
+      .content-table { min-width: 540px; }
+      .content-table th, .content-table td { padding: 9px 10px; font-size: 12px; }
+      .status-item p { font-size: 13px; line-height: 1.55; }
+      [style*="grid-template-columns:1fr 1fr"],
+      [style*="grid-template-columns: 1fr 1fr"],
+      [style*="grid-template-columns:repeat(3"],
+      [style*="grid-template-columns: repeat(3"],
+      [style*="grid-template-columns:repeat(auto-fit"],
+      [style*="grid-template-columns: repeat(auto-fit"] { grid-template-columns: 1fr !important; }
+      [style*="font-size:36px"], [style*="font-size:34px"], [style*="font-size:32px"], [style*="font-size:28px"] { font-size: 24px !important; }
+      [style*="padding:22px 24px"], [style*="padding:24px 28px"], [style*="padding:28px 32px"] { padding: 16px 14px !important; }
+    }
+    @media(max-width: 380px) {
+      .metrics-grid { grid-template-columns: 1fr !important; }
+      .content-table { min-width: 500px; }
+    }
+    @media(max-width: 640px) {
+      .report-panel.active .section-body { overflow-x: visible; }
+      .report-panel.active .content-table { min-width: 0 !important; }
+      .report-panel.active .content-table thead { display: none; }
+      .report-panel.active .content-table,
+      .report-panel.active .content-table tbody,
+      .report-panel.active .content-table tr,
+      .report-panel.active .content-table td { display: block; width: 100%; }
+      .report-panel.active .content-table tr { margin: 0 0 10px; padding: 12px 13px; border: 1px solid var(--border); border-radius: 12px; background: #fff; }
+      .report-panel.active .content-table td { border-bottom: none; padding: 3px 0; line-height: 1.45; }
+      .report-panel.active .content-table td:first-child { font-size: 11px; font-weight: 800; color: var(--muted); }
+      .report-panel.active .content-table td:last-child { margin-top: 5px; }
+      .report-panel.active .content-table tbody { padding: 8px 0 2px; }
+      .report-panel.active .content-table tr { width: auto; margin: 0 8px 7px; padding: 9px 11px; border-radius: 10px; }
+      .report-panel.active .content-table td { padding: 1px 0; font-size: 12px; line-height: 1.38; }
+      .report-panel.active .content-table td:first-child { margin-bottom: 2px; }
+      .report-panel.active .content-table td:nth-child(2) { font-weight: 700; }
+      .report-panel.active .content-table .tag { font-size: 10px; padding: 1px 7px; margin-top: 3px; }
+      .report-panel.active .content-table tr:has(td:nth-child(3)) {
+        display: grid;
+        grid-template-columns: 20px minmax(0, 1fr) auto;
+        align-items: start;
+        column-gap: 8px;
+      }
+      .report-panel.active .content-table tr:has(td:nth-child(3)) td { width: auto; min-width: 0; }
+      .report-panel.active .content-table tr:has(td:nth-child(3)) td:first-child {
+        grid-column: 1;
+        margin: 1px 0 0;
+      }
+      .report-panel.active .content-table tr:has(td:nth-child(3)) td:nth-child(2) {
+        grid-column: 2;
+        display: -webkit-box;
+        overflow: hidden;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+      }
+      .report-panel.active .content-table tr:has(td:nth-child(3)) td:last-child {
+        grid-column: 3;
+        justify-self: end;
+        margin-top: 1px;
+      }
+      .report-panel.active .section-body div[style*="justify-content:space-between"] {
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 8px;
+        align-items: start;
+        font-size: 11px !important;
+        line-height: 1.35;
+      }
+      .report-panel.active .section-body div[style*="justify-content:space-between"] span:first-child {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+    @media(max-width: 640px) {
+      .performance-flow {
+        grid-template-columns: 1fr !important;
+        gap: 7px !important;
+        margin: -6px 0 18px !important;
+      }
+      .flow-node,
+      .metric-card {
+        display: grid !important;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        column-gap: 10px;
+        row-gap: 2px;
+        min-height: 0;
+        padding: 10px 12px !important;
+        border-radius: 12px !important;
+      }
+      .flow-node::after { display: none !important; }
+      .flow-kicker,
+      .metric-card .mc-label {
+        grid-column: 1;
+        grid-row: 1;
+        min-width: 0;
+        margin: 0 !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 11px !important;
+      }
+      .flow-value,
+      .metric-card .mc-value {
+        grid-column: 2;
+        grid-row: 1;
+        justify-self: end;
+        margin: 0 !important;
+        white-space: nowrap;
+        font-size: 20px !important;
+        line-height: 1.15 !important;
+      }
+      .flow-label,
+      .metric-card .mc-sub {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        min-width: 0;
+        margin: 0 !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 11px !important;
+        line-height: 1.35 !important;
+      }
+      .metrics-grid {
+        grid-template-columns: 1fr !important;
+        gap: 8px !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -270,15 +468,252 @@
 
   <!-- MONTH TABS -->
   <div class="month-tabs">
-    <div class="month-tab active" onclick="switchTab('apr',event)">2026년 4월</div>
+    <div class="month-tab active" onclick="switchTab('may',event)">2026년 5월</div>
+    <div class="month-tab" onclick="switchTab('apr',event)">2026년 4월</div>
     <div class="month-tab" onclick="switchTab('mar',event)">2026년 3월</div>
     <div class="month-tab" onclick="switchTab('feb',event)">2026년 2월</div>
   </div>
 
   <!-- ══════════════════════════════════
+       5월 보고서
+  ══════════════════════════════════ -->
+  <div class="report-panel active" id="panel-may">
+
+    <!-- 요약 배너 -->
+    <div class="summary-band">
+      <div class="band-title">MONTHLY SUMMARY</div>
+      <div class="band-month">2026년 5월 마케팅 결과보고</div>
+      <div class="band-points">
+        <div class="band-point"><div class="dot"></div><p><strong>홈페이지 페이지뷰 2,811건</strong> — 4월 2,711건 대비 소폭 증가, 방문자 2,287명으로 안정적인 방문 흐름 유지</p></div>
+        <div class="band-point"><div class="dot"></div><p><strong>네이버 블로그 조회수 316건</strong> — 4월 191건 대비 +65% 성장, 블로그 채널 활용 성과 확대</p></div>
+        <div class="band-point"><div class="dot"></div><p><strong>콘텐츠 8건 발행</strong> — 홈페이지 1건 + 블로그 7건, 백내장·소아안과·안구건조증·다래끼 키워드 커버</p></div>
+      </div>
+    </div>
+
+    <div class="performance-flow">
+      <div class="flow-node">
+        <div class="flow-kicker">홈페이지</div>
+        <div class="flow-value">2,811</div>
+        <div class="flow-label">5월 페이지뷰</div>
+      </div>
+      <div class="flow-node">
+        <div class="flow-kicker">방문자</div>
+        <div class="flow-value">2,287명</div>
+        <div class="flow-label">안정적인 방문 흐름</div>
+      </div>
+      <div class="flow-node">
+        <div class="flow-kicker">블로그</div>
+        <div class="flow-value">316</div>
+        <div class="flow-label">4월 대비 +65%</div>
+      </div>
+      <div class="flow-node">
+        <div class="flow-kicker">콘텐츠</div>
+        <div class="flow-value">8건</div>
+        <div class="flow-label">홈페이지·블로그 발행</div>
+      </div>
+    </div>
+
+    <!-- 핵심 지표 -->
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="mc-label">홈페이지 페이지뷰</div>
+        <div class="mc-value">2,811</div>
+        <div class="mc-sub">4월 2,711건 대비 +3.7%↑</div>
+      </div>
+      <div class="metric-card">
+        <div class="mc-label">홈페이지 방문자</div>
+        <div class="mc-value">2,287</div>
+        <div class="mc-sub">4월 2,228명 대비 +2.6%↑</div>
+      </div>
+      <div class="metric-card">
+        <div class="mc-label">직접 방문</div>
+        <div class="mc-value">1,649</div>
+        <div class="mc-sub">유입사이트 기준 67%</div>
+      </div>
+      <div class="metric-card highlight">
+        <div class="mc-label">블로그 조회수</div>
+        <div class="mc-value">316</div>
+        <div class="mc-sub">4월 191건 대비 +65%↑</div>
+      </div>
+    </div>
+
+    <!-- 유입 채널 분석 + 블로그 조회수 성장 -->
+    <div class="two-col">
+      <div class="section-card">
+        <div class="section-header">
+          <div class="icon icon-blue">📊</div>
+          <h3>홈페이지 유입 채널 분석</h3>
+        </div>
+        <div class="section-body">
+          <div style="margin-bottom:10px;">
+            <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:4px;"><span>직접방문</span><span style="color:var(--primary);font-weight:800;">1,649 · 67%</span></div>
+            <div style="background:#f0f0f0;border-radius:4px;height:9px;"><div style="background:var(--primary);height:9px;border-radius:4px;width:67%;"></div></div>
+          </div>
+          <div style="margin-bottom:10px;">
+            <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:4px;"><span>네이버 검색</span><span style="color:var(--accent);font-weight:800;">577 · 24%</span></div>
+            <div style="background:#f0f0f0;border-radius:4px;height:9px;"><div style="background:var(--accent);height:9px;border-radius:4px;width:24%;"></div></div>
+          </div>
+          <div style="margin-bottom:10px;">
+            <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:4px;"><span>구글(Google)</span><span style="color:#ea4335;font-weight:800;">102 · 4%</span></div>
+            <div style="background:#f0f0f0;border-radius:4px;height:9px;"><div style="background:#ea4335;height:9px;border-radius:4px;width:4%;"></div></div>
+          </div>
+          <div style="margin-bottom:10px;">
+            <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:4px;"><span>네이버 플레이스</span><span style="color:#c9a96e;font-weight:800;">79 · 3%</span></div>
+            <div style="background:#f0f0f0;border-radius:4px;height:9px;"><div style="background:#c9a96e;height:9px;border-radius:4px;width:3%;"></div></div>
+          </div>
+          <div style="margin-bottom:14px;">
+            <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:4px;"><span>다음·빙·카카오·기타</span><span style="color:var(--muted);font-weight:800;">38 · 2%</span></div>
+            <div style="background:#f0f0f0;border-radius:4px;height:9px;"><div style="background:#a0aec0;height:9px;border-radius:4px;width:2%;"></div></div>
+          </div>
+          <div class="status-item" style="margin-top:4px;">
+            <div class="status-dot dot-blue"></div>
+            <p style="font-size:13px;">m.search.naver.com 465건, search.naver.com 90건 — 모바일 네이버 검색이 주요 신규 유입 채널로 작동했습니다.</p>
+          </div>
+          <div class="status-item">
+            <div class="status-dot dot-gold"></div>
+            <p style="font-size:13px;">m.booking.naver.com 10건 — 네이버 예약 유입도 4월보다 증가해 플레이스 예약 접점이 계속 작동 중입니다.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-header">
+          <div class="icon icon-gold">📈</div>
+          <h3>네이버 블로그 조회수 성장</h3>
+        </div>
+        <div class="section-body">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px;">
+            <div style="background:var(--bg);border-radius:12px;padding:16px;text-align:center;border:1px solid var(--border);">
+              <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;">4월 조회수</div>
+              <div style="font-size:30px;font-weight:800;color:var(--primary);">191</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:4px;">블로그 본격 운영 시작</div>
+            </div>
+            <div style="background:var(--accent-light);border-radius:12px;padding:16px;text-align:center;border:2px solid var(--accent);">
+              <div style="font-size:11px;font-weight:700;color:#1a5a8a;margin-bottom:6px;">5월 조회수</div>
+              <div style="font-size:30px;font-weight:800;color:#1a5a8a;">316</div>
+              <div style="font-size:12px;color:#1a5a8a;margin-top:4px;font-weight:700;">+65% ↑</div>
+            </div>
+          </div>
+          <div style="background:var(--bg);border-radius:10px;padding:14px 16px;margin-bottom:12px;">
+            <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:10px;">주요 유입 키워드</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;">
+              <span style="background:#fff;border:1.5px solid var(--accent);color:var(--blue);font-size:11px;font-weight:700;padding:4px 10px;border-radius:8px;">다래끼 안과</span>
+              <span style="background:#fff;border:1.5px solid var(--accent);color:var(--blue);font-size:11px;font-weight:700;padding:4px 10px;border-radius:8px;">근시 노안</span>
+              <span style="background:#fff;border:1.5px solid var(--border);color:var(--text);font-size:11px;font-weight:600;padding:4px 10px;border-radius:8px;">제주 눈사랑안과</span>
+              <span style="background:#fff;border:1.5px solid var(--border);color:var(--text);font-size:11px;font-weight:600;padding:4px 10px;border-radius:8px;">제주 안과 야간진료</span>
+              <span style="background:#fff;border:1.5px solid var(--border);color:var(--text);font-size:11px;font-weight:600;padding:4px 10px;border-radius:8px;">제주도 안과 다래끼</span>
+              <span style="background:#fff;border:1.5px solid var(--border);color:var(--text);font-size:11px;font-weight:600;padding:4px 10px;border-radius:8px;">제주 백내장 수술</span>
+              <span style="background:#fff;border:1.5px solid var(--border);color:var(--text);font-size:11px;font-weight:600;padding:4px 10px;border-radius:8px;">원추각막</span>
+            </div>
+          </div>
+          <div style="margin-bottom:10px;">
+            <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:4px;"><span>검색 유입</span><span style="color:var(--accent);font-weight:800;">65.67%</span></div>
+            <div style="background:#f0f0f0;border-radius:4px;height:9px;"><div style="background:var(--accent);height:9px;border-radius:4px;width:65.67%;"></div></div>
+          </div>
+          <div style="margin-bottom:10px;">
+            <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:4px;"><span>사이트 유입</span><span style="color:var(--primary);font-weight:800;">34.33%</span></div>
+            <div style="background:#f0f0f0;border-radius:4px;height:9px;"><div style="background:var(--primary);height:9px;border-radius:4px;width:34.33%;"></div></div>
+          </div>
+          <div class="status-item">
+            <div class="status-dot dot-blue"></div>
+            <p style="font-size:13px;">네이버 통합검색_모바일 42.06%, 네이버 플레이스_모바일 9.01% — 모바일 검색과 플레이스 중심으로 블로그 유입이 형성되었습니다.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 콘텐츠 발행 내역 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-blue">📝</div>
+        <h3>콘텐츠 발행 내역 <span class="count-chip">8건</span></h3>
+      </div>
+      <div class="section-body" style="padding:0;">
+        <div style="overflow-x:auto;">
+          <table class="content-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>제목</th>
+                <th>채널</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td>제주도 안과, 눈 온찜질과 냉찜질은 증상에 따라 달라져야 합니다</td>
+                <td><span class="tag tag-homepage">홈페이지</span></td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td>제주 백내장, 노안과 헷갈리기 쉬운 초기 증상 알아보기</td>
+                <td><span class="tag tag-blog">블로그</span></td>
+              </tr>
+              <tr>
+                <td>3</td>
+                <td>제주 소아안과, 아이가 눈을 자주 찡그릴 때 확인해야 할 시력 신호</td>
+                <td><span class="tag tag-blog">블로그</span></td>
+              </tr>
+              <tr>
+                <td>4</td>
+                <td>제주도 안과 눈 가려움과 충혈, 환절기 알레르기 결막염일 수 있습니다</td>
+                <td><span class="tag tag-blog">블로그</span></td>
+              </tr>
+              <tr>
+                <td>5</td>
+                <td>제주 안구건조증 인공눈물을 넣어도 눈이 뻑뻑한 이유</td>
+                <td><span class="tag tag-blog">블로그</span></td>
+              </tr>
+              <tr>
+                <td>6</td>
+                <td>제주도 안과 눈시림과 눈뻑뻑함, 안구건조증인지 확인해야 할 때</td>
+                <td><span class="tag tag-blog">블로그</span></td>
+              </tr>
+              <tr>
+                <td>7</td>
+                <td>노형안과 눈가려움, 알레르기 결막염일 때 비비면 더 심해질 수 있습니다</td>
+                <td><span class="tag tag-blog">블로그</span></td>
+              </tr>
+              <tr>
+                <td>8</td>
+                <td>제주시 안과 다래끼가 자꾸 생긴다면, 피곤하기 때문일까요</td>
+                <td><span class="tag tag-blog">블로그</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="padding:12px 20px;background:var(--bg);font-size:12px;color:var(--muted);">
+          ※ 홈페이지 1건 + 블로그 7건 — 백내장·소아안과·결막염·안구건조증·다래끼 등 계절성 검색 키워드까지 확장
+        </div>
+      </div>
+    </div>
+
+    <!-- 6월 중점방향 -->
+    <div style="background:var(--primary);border-radius:16px;padding:28px 32px;margin-bottom:28px;color:#fff;">
+      <div style="font-size:13px;color:rgba(255,255,255,0.5);font-weight:600;letter-spacing:0.5px;margin-bottom:6px;">NEXT MONTH PLAN</div>
+      <div style="font-size:20px;font-weight:800;color:var(--accent);margin-bottom:20px;">6월 중점 방향</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;">
+        <div style="display:flex;gap:10px;align-items:flex-start;">
+          <div style="width:24px;height:24px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;margin-top:1px;">1</div>
+          <p style="font-size:14px;line-height:1.6;color:rgba(255,255,255,0.85);">블로그 발행 지속 강화 — 다래끼·노안·백내장·안구건조증처럼 검색 반응이 확인된 주제 심화</p>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start;">
+          <div style="width:24px;height:24px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;margin-top:1px;">2</div>
+          <p style="font-size:14px;line-height:1.6;color:rgba(255,255,255,0.85);">모바일 검색·플레이스 유입 연계 — 네이버 검색에서 홈페이지와 예약 접점으로 이어지는 흐름 유지</p>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start;">
+          <div style="width:24px;height:24px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;margin-top:1px;">3</div>
+          <p style="font-size:14px;line-height:1.6;color:rgba(255,255,255,0.85);">여름철 안구건조·알레르기·다래끼 등 시즌성 질환 콘텐츠를 보강해 검색 유입 폭 확대</p>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /panel-may -->
+
+  <!-- ══════════════════════════════════
        4월 보고서
   ══════════════════════════════════ -->
-  <div class="report-panel active" id="panel-apr">
+  <div class="report-panel" id="panel-apr">
 
     <!-- 요약 배너 -->
     <div class="summary-band">

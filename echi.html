@@ -28,6 +28,12 @@
     .band-point { display:flex; gap:10px; align-items:flex-start; }
     .band-point .dot { width:6px; height:6px; background:var(--accent); border-radius:50%; margin-top:7px; flex-shrink:0; }
     .band-point p { font-size:14px; line-height:1.6; color:rgba(255,255,255,0.85); }
+    .performance-flow { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin:-12px 0 28px; }
+    .flow-node { position:relative; min-width:0; background:var(--card); border:1px solid var(--border); border-radius:14px; padding:16px 14px; }
+    .flow-node:not(:last-child)::after { content:"→"; position:absolute; right:-11px; top:50%; transform:translateY(-50%); width:22px; height:22px; border-radius:50%; background:var(--primary); color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; z-index:1; }
+    .flow-kicker { font-size:11px; font-weight:800; color:var(--muted); margin-bottom:6px; }
+    .flow-value { font-size:22px; font-weight:900; color:var(--primary); line-height:1.1; }
+    .flow-label { font-size:11px; color:var(--muted); margin-top:6px; line-height:1.4; }
     .section-card { background:var(--card); border-radius:14px; border:1px solid var(--border); margin-bottom:20px; overflow:hidden; }
     .section-header { padding:18px 24px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
     .section-header .icon { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px; background:#fff8e6; }
@@ -37,11 +43,161 @@
     .status-item:last-child { border-bottom:none; }
     .status-dot { width:8px; height:8px; border-radius:50%; margin-top:6px; flex-shrink:0; background:#c9a96e; }
     .status-item p { font-size:14px; line-height:1.6; }
+    .rank-chart-wrap { width:100%; overflow:hidden; background:#fff; border:1px solid var(--border); border-radius:14px; padding:10px; margin-bottom:18px; }
+    .rank-chart { display:block; width:100%; height:auto; max-height:320px; }
+    .rank-mobile-chart { display:none; width:100%; height:auto; }
+    .rank-mobile-chart text { font-family:inherit; }
+    .mini-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px; margin-bottom:28px; }
+    .metric { background:#fff; border-radius:14px; padding:22px 24px; border:1px solid var(--border); }
+    .metric.good { background:var(--accent-light); border-color:var(--accent); }
+    .metric.warn { background:#fff8e6; border-color:#f59e0b; }
+    .metric .label { font-size:12px; color:var(--muted); font-weight:600; margin-bottom:8px; }
+    .metric .value { font-size:34px; font-weight:800; color:var(--primary); line-height:1; }
+    .metric.good .value { color:#059669; }
+    .metric.warn .value { color:#d97706; }
+    .metric .sub { font-size:12px; color:var(--muted); margin-top:6px; line-height:1.5; }
+    .content-table { width:100%; border-collapse:collapse; }
+    .content-table th, .content-table td { text-align:left; padding:10px 14px; font-size:13px; border-bottom:1px solid var(--border); }
+    .content-table th { font-weight:700; color:var(--muted); font-size:11px; background:#faf8f5; }
+    .content-table tr:last-child td { border-bottom:none; }
     .site-footer { background:var(--primary); color:rgba(255,255,255,0.35); text-align:center; padding:20px; font-size:12px; margin-top:60px; }
     .empty-state { text-align:center; padding:80px 20px; color:var(--muted); }
     .empty-state .e-icon { font-size:48px; margin-bottom:16px; }
     .empty-state h3 { font-size:18px; margin-bottom:8px; color:var(--text); }
     .empty-state p { font-size:14px; line-height:1.7; }
+    @media(max-width:640px) {
+      .site-header { padding:18px 16px; flex-direction:column; align-items:flex-start; gap:12px; }
+      .logo { gap:10px; }
+      .logo-badge { width:36px; height:36px; border-radius:9px; font-size:17px; }
+      .logo-text h1 { font-size:16px; line-height:1.35; }
+      .logo-text p { font-size:11px; }
+      .header-tag { font-size:11px; padding:5px 10px; }
+      .container { padding:28px 12px; }
+      .timeline-label { margin-bottom:12px; }
+      .month-tabs { flex-wrap:nowrap; overflow-x:auto; gap:8px; margin:0 -12px 24px; padding:0 12px 6px; scrollbar-width:none; }
+      .month-tabs::-webkit-scrollbar { display:none; }
+      .month-tab { flex:0 0 auto; white-space:nowrap; padding:7px 14px; font-size:13px; }
+      .summary-band { padding:20px 18px; border-radius:14px; margin-bottom:20px; }
+      .band-month { font-size:22px; line-height:1.25; margin-bottom:12px; }
+      .band-title { font-size:11px; }
+      .band-points { grid-template-columns:1fr !important; gap:10px; }
+      .band-point p { font-size:13px; line-height:1.55; }
+      .performance-flow { grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; margin:-8px 0 20px; }
+      .flow-node { padding:13px 11px; border-radius:12px; }
+      .flow-node::after { display:none !important; }
+      .flow-kicker { font-size:10px; }
+      .flow-value { font-size:20px; }
+      .flow-label { font-size:10px; }
+      .mini-grid { grid-template-columns:repeat(2,minmax(0,1fr)) !important; gap:10px; margin-bottom:20px; }
+      .metric { padding:16px 14px; border-radius:12px; }
+      .metric .label { font-size:11px; }
+      .metric .value { font-size:24px !important; line-height:1.1; }
+      .metric .sub { font-size:11px; line-height:1.45; }
+      .section-card { border-radius:12px; margin-bottom:16px; }
+      .section-header { padding:14px 16px; align-items:flex-start; }
+      .section-header .icon { width:28px; height:28px; font-size:14px; flex-shrink:0; }
+      .section-header h3 { font-size:14px; line-height:1.4; }
+      .section-body { padding:16px 14px; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+      .content-table { min-width:520px; }
+      .content-table th,.content-table td { padding:9px 10px; font-size:12px; }
+      .status-item p { font-size:13px; line-height:1.55; }
+      .rank-chart-wrap { margin-left:0; margin-right:0; padding:8px 6px; overflow:hidden; }
+      .rank-chart-wrap:has(.rank-mobile-chart) .rank-chart { display:none !important; }
+      .rank-mobile-chart { display:block; max-height:190px; }
+      .rank-mobile-chart .m-axis { font-size:12px; fill:#8a8a8a; font-weight:800; }
+      .rank-mobile-chart .m-date { font-size:11px; fill:#777; font-weight:800; }
+      .rank-mobile-chart .m-label { font-size:13px; fill:var(--primary); font-weight:900; }
+      .rank-mobile-chart .m-line { fill:none; stroke:var(--accent); stroke-width:4; stroke-linecap:round; stroke-linejoin:round; }
+      .rank-mobile-chart .m-grid { stroke:#e8e0d6; stroke-width:1; }
+      .rank-mobile-chart .m-dot { fill:#fff; stroke:var(--accent); stroke-width:3; }
+      [style*="grid-template-columns:1fr 1fr"],
+      [style*="grid-template-columns: 1fr 1fr"],
+      [style*="grid-template-columns:repeat(3"],
+      [style*="grid-template-columns: repeat(3"],
+      [style*="grid-template-columns:repeat(auto-fit"],
+      [style*="grid-template-columns: repeat(auto-fit"] { grid-template-columns:1fr !important; }
+      [style*="font-size:36px"], [style*="font-size:34px"], [style*="font-size:32px"], [style*="font-size:28px"] { font-size:24px !important; }
+      [style*="padding:22px 24px"], [style*="padding:24px 28px"], [style*="padding:28px 32px"] { padding:16px 14px !important; }
+    }
+    @media(max-width:380px) {
+      .mini-grid { grid-template-columns:1fr !important; }
+      .content-table { min-width:480px; }
+    }
+    @media(max-width:640px) {
+      .report-panel.active .section-body { overflow-x:visible; }
+      .report-panel.active .content-table { min-width:0 !important; }
+      .report-panel.active .content-table thead { display:none; }
+      .report-panel.active .content-table,
+      .report-panel.active .content-table tbody,
+      .report-panel.active .content-table tr,
+      .report-panel.active .content-table td { display:block; width:100%; }
+      .report-panel.active .content-table tr { margin:0 0 10px; padding:12px 13px; border:1px solid var(--border); border-radius:12px; background:#fff; }
+      .report-panel.active .content-table td { border-bottom:none; padding:3px 0; line-height:1.45; }
+      .report-panel.active .content-table td:first-child { font-size:11px; font-weight:800; color:var(--muted); }
+      .report-panel.active .content-table td:nth-child(4) { font-size:18px; font-weight:900; color:var(--accent); }
+      .report-panel.active .content-table td:last-child { margin-top:5px; }
+      .report-panel.active .content-table tbody { padding:8px 0 2px; }
+      .report-panel.active .content-table tr { width:auto; margin:0 8px 7px; padding:9px 11px; border-radius:10px; }
+      .report-panel.active .content-table td { padding:1px 0; font-size:12px; line-height:1.38; }
+      .report-panel.active .content-table td:first-child { margin-bottom:2px; }
+      .report-panel.active .content-table td:nth-child(4) { font-size:16px; }
+    }
+    @media(max-width:640px) {
+      .performance-flow {
+        grid-template-columns:1fr !important;
+        gap:7px !important;
+        margin:-6px 0 18px !important;
+      }
+      .flow-node,
+      .metric {
+        display:grid !important;
+        grid-template-columns:minmax(0,1fr) auto;
+        align-items:center;
+        column-gap:10px;
+        row-gap:2px;
+        min-height:0;
+        padding:10px 12px !important;
+        border-radius:12px !important;
+      }
+      .flow-node::after { display:none !important; }
+      .flow-kicker,
+      .metric .label {
+        grid-column:1;
+        grid-row:1;
+        min-width:0;
+        margin:0 !important;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        white-space:nowrap;
+        font-size:11px !important;
+      }
+      .flow-value,
+      .metric .value {
+        grid-column:2;
+        grid-row:1;
+        justify-self:end;
+        margin:0 !important;
+        white-space:nowrap;
+        font-size:20px !important;
+        line-height:1.15 !important;
+      }
+      .flow-label,
+      .metric .sub {
+        grid-column:1 / -1;
+        grid-row:2;
+        min-width:0;
+        margin:0 !important;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        white-space:nowrap;
+        font-size:11px !important;
+        line-height:1.35 !important;
+      }
+      .mini-grid {
+        grid-template-columns:1fr !important;
+        gap:8px !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -55,13 +211,218 @@
 <main class="container">
   <p class="timeline-label">보고서 목록</p>
   <div class="month-tabs">
-    <div class="month-tab active" onclick="switchTab('apr', event)">2026년 4월</div>
+    <div class="month-tab active" onclick="switchTab('may', event)">2026년 5월</div>
+    <div class="month-tab" onclick="switchTab('apr', event)">2026년 4월</div>
     <div class="month-tab" onclick="switchTab('mar', event)">2026년 3월</div>
     <div class="month-tab" onclick="switchTab('feb', event)">2026년 2월</div>
   </div>
 
+  <!-- ═══════ 5월 보고서 ═══════ -->
+  <div class="report-panel active" id="panel-may">
+
+    <div class="summary-band">
+      <div class="band-title">MONTHLY SUMMARY</div>
+      <div class="band-month">2026년 5월 마케팅 결과보고</div>
+      <div class="band-points">
+        <div class="band-point"><div class="dot"></div><p><strong>월말 12위로 15위 이내 유지</strong> — 5/20 이후 12일 연속 15위권 안착, 대시보드 목표 기준 달성</p></div>
+        <div class="band-point"><div class="dot"></div><p><strong>최고 순위 5위 달성</strong> — 5/22 기준 5위까지 회복, 월초·중순 변동 이후 강한 반등 확인</p></div>
+        <div class="band-point"><div class="dot"></div><p><strong>블로그 리뷰 98개 증가</strong> — 274개에서 372개로 증가. 순위작업을 위한 블로그 작성 신호가 크게 누적됨</p></div>
+        <div class="band-point"><div class="dot"></div><p><strong>방문 리뷰 6개 증가</strong> — 77개에서 83개로 증가, 플레이스 신뢰도 보강 작업 병행</p></div>
+      </div>
+    </div>
+
+    <div class="performance-flow">
+      <div class="flow-node">
+        <div class="flow-kicker">월초</div>
+        <div class="flow-value">24위</div>
+        <div class="flow-label">5/1 출발</div>
+      </div>
+      <div class="flow-node">
+        <div class="flow-kicker">최저</div>
+        <div class="flow-value">56위</div>
+        <div class="flow-label">5/10 일시 하락</div>
+      </div>
+      <div class="flow-node">
+        <div class="flow-kicker">월말</div>
+        <div class="flow-value">12위</div>
+        <div class="flow-label">15위 이내 회복</div>
+      </div>
+      <div class="flow-node">
+        <div class="flow-kicker">블로그 리뷰</div>
+        <div class="flow-value">+98</div>
+        <div class="flow-label">274개 → 372개</div>
+      </div>
+    </div>
+
+    <div class="mini-grid">
+      <div class="metric good">
+        <div class="label">5월 최고 순위</div>
+        <div class="value">5위</div>
+        <div class="sub">5/22 기준</div>
+      </div>
+      <div class="metric good">
+        <div class="label">월말 순위</div>
+        <div class="value">12위</div>
+        <div class="sub">5/31 기준 · 15위 이내 유지</div>
+      </div>
+      <div class="metric warn">
+        <div class="label">최저 순위</div>
+        <div class="value">56위</div>
+        <div class="sub">5/10 일시 하락 후 회복</div>
+      </div>
+      <div class="metric good">
+        <div class="label">순위 회복폭</div>
+        <div class="value">44계단</div>
+        <div class="sub">최저 56위 → 월말 12위</div>
+      </div>
+      <div class="metric">
+        <div class="label">순위작업용 블로그</div>
+        <div class="value">+98개</div>
+        <div class="sub">274개 → 372개</div>
+      </div>
+      <div class="metric">
+        <div class="label">방문 리뷰</div>
+        <div class="value">+6개</div>
+        <div class="sub">77개 → 83개</div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon">📈</div>
+        <h3>네이버 플레이스 순위 추이</h3>
+      </div>
+      <div class="section-body">
+        <div class="rank-chart-wrap" aria-label="2026년 5월 네이버 플레이스 순위 그래프">
+          <svg class="rank-chart" viewBox="0 0 660 250" role="img" aria-label="이치과 5월 네이버 플레이스 순위 추이">
+            <rect x="0" y="0" width="660" height="250" rx="14" fill="#ffffff"/>
+            <line x1="48" y1="34" x2="620" y2="34" stroke="#e8e0d6" stroke-width="1"/>
+            <line x1="48" y1="78" x2="620" y2="78" stroke="#e8e0d6" stroke-width="1"/>
+            <line x1="48" y1="122" x2="620" y2="122" stroke="#e8e0d6" stroke-width="1"/>
+            <line x1="48" y1="166" x2="620" y2="166" stroke="#e8e0d6" stroke-width="1"/>
+            <line x1="48" y1="210" x2="620" y2="210" stroke="#e8e0d6" stroke-width="1"/>
+            <text x="18" y="38" font-size="11" fill="#888">1위</text>
+            <text x="12" y="82" font-size="11" fill="#888">15위</text>
+            <text x="12" y="126" font-size="11" fill="#888">30위</text>
+            <text x="12" y="170" font-size="11" fill="#888">45위</text>
+            <text x="12" y="214" font-size="11" fill="#888">60위</text>
+            <path d="M48 78 H620" stroke="#10b981" stroke-width="2" stroke-dasharray="5 5" opacity="0.7"/>
+            <text x="520" y="72" font-size="11" fill="#059669" font-weight="700">목표 15위 이내</text>
+            <polyline points="48.0,102.6 67.1,105.6 86.1,123.5 105.2,126.5 124.3,150.3 143.3,156.3 162.4,165.3 181.5,147.4 200.5,144.4 219.6,198.1 238.7,174.2 257.7,144.4 276.8,138.4 295.9,129.5 314.9,123.5 334.0,126.5 353.1,132.4 372.1,138.4 391.2,144.4 410.3,48.9 429.3,51.9 448.4,45.9 467.5,48.9 486.5,54.9 505.6,57.9 524.7,57.9 543.7,63.8 562.8,69.8 581.9,63.8 600.9,63.8 620.0,66.8" fill="none" stroke="#10b981" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="48.0" cy="102.6" r="5" fill="#1a1a2e"/>
+            <circle cx="219.6" cy="198.1" r="5" fill="#dc2626"/>
+            <circle cx="448.4" cy="45.9" r="6" fill="#059669"/>
+            <circle cx="620.0" cy="66.8" r="5" fill="#1a1a2e"/>
+            <text x="38" y="233" font-size="11" fill="#888">5/1</text>
+            <text x="205" y="233" font-size="11" fill="#888">5/10</text>
+            <text x="395" y="233" font-size="11" fill="#888">5/20</text>
+            <text x="432" y="28" font-size="11" fill="#059669" font-weight="800">5위</text>
+            <text x="594" y="233" font-size="11" fill="#888">5/31</text>
+          </svg>
+          <svg class="rank-mobile-chart" viewBox="0 0 340 190" role="img" aria-label="모바일용 이치과 네이버 플레이스 순위 요약 그래프">
+            <line class="m-grid" x1="42" y1="32" x2="326" y2="32" />
+            <line class="m-grid" x1="42" y1="92" x2="326" y2="92" />
+            <line class="m-grid" x1="42" y1="152" x2="326" y2="152" />
+            <text class="m-axis" x="8" y="36">1위</text>
+            <text class="m-axis" x="2" y="96">30위</text>
+            <text class="m-axis" x="2" y="156">60위</text>
+            <path d="M42 62 H326" stroke="#10b981" stroke-width="2" stroke-dasharray="5 5" opacity=".65" />
+            <text class="m-date" x="264" y="58">15위 이내</text>
+            <polyline class="m-line" points="42,78 106,142 170,92 234,38 326,55" />
+            <circle class="m-dot" cx="42" cy="78" r="5" />
+            <circle class="m-dot" cx="106" cy="142" r="5" />
+            <circle class="m-dot" cx="170" cy="92" r="5" />
+            <circle class="m-dot" cx="234" cy="38" r="5" />
+            <circle class="m-dot" cx="326" cy="55" r="5" />
+            <text class="m-label" x="42" y="68" text-anchor="middle">24위</text>
+            <text class="m-label" x="106" y="162" text-anchor="middle">56위</text>
+            <text class="m-label" x="234" y="28" text-anchor="middle">5위</text>
+            <text class="m-label" x="326" y="45" text-anchor="middle">12위</text>
+            <text class="m-date" x="42" y="184" text-anchor="middle">5/1</text>
+            <text class="m-date" x="106" y="184" text-anchor="middle">5/10</text>
+            <text class="m-date" x="234" y="184" text-anchor="middle">5/22</text>
+            <text class="m-date" x="326" y="184" text-anchor="middle">5/31</text>
+          </svg>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:18px;">
+          <div style="background:#fff8e6;border-radius:10px;padding:12px 14px;border:1px solid #f59e0b;">
+            <div style="font-size:10px;font-weight:700;color:#8a6230;margin-bottom:4px;">5/1 ~ 5/10</div>
+            <div style="font-size:22px;font-weight:800;color:#d97706;">24~56위</div>
+            <div style="font-size:11px;color:var(--muted);">월초 변동 확대</div>
+          </div>
+          <div style="background:#fff8e6;border-radius:10px;padding:12px 14px;border:1px solid #f59e0b;">
+            <div style="font-size:10px;font-weight:700;color:#8a6230;margin-bottom:4px;">5/11 ~ 5/19</div>
+            <div style="font-size:22px;font-weight:800;color:#d97706;">31~48위</div>
+            <div style="font-size:11px;color:var(--muted);">중순까지 불안정</div>
+          </div>
+          <div style="background:#d1fae5;border-radius:10px;padding:12px 14px;border:1px solid var(--accent);">
+            <div style="font-size:10px;font-weight:700;color:#065f46;margin-bottom:4px;">5/20 ~ 5/26</div>
+            <div style="font-size:22px;font-weight:800;color:#059669;">5~9위</div>
+            <div style="font-size:11px;color:var(--muted);">강한 회복 구간</div>
+          </div>
+          <div style="background:#ecfdf5;border-radius:10px;padding:12px 14px;border:1px solid #6ee7b7;">
+            <div style="font-size:10px;font-weight:700;color:#065f46;margin-bottom:4px;">5/27 ~ 5/31</div>
+            <div style="font-size:22px;font-weight:800;color:#059669;">11~13위</div>
+            <div style="font-size:11px;color:var(--muted);">15위 이내 안정</div>
+          </div>
+        </div>
+
+        <div class="status-item">
+          <div class="status-dot" style="background:#059669;"></div>
+          <p><strong>5/20 이후 15위 이내 유지</strong> — 5월 초·중순에는 변동이 컸지만, 순위작업 반영 후 월말까지 15위권 안에 안정적으로 들어왔습니다.</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot" style="background:#d97706;"></div>
+          <p><strong>월초 하락 원인 확인 및 대응 지속</strong> — 5/10 최저 56위까지 밀렸으나 이후 회복했고, 6월에는 10위권 안정화를 목표로 관리합니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon">📝</div>
+        <h3>순위작업을 위한 블로그 작성</h3>
+      </div>
+      <div class="section-body">
+        <table class="content-table">
+          <thead>
+            <tr><th>구분</th><th>5/1</th><th>5/31</th><th>증가</th><th>해석</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>블로그 리뷰 수</td><td>274개</td><td>372개</td><td><strong>+98개</strong></td><td>순위작업을 위한 블로그 작성량이 크게 누적됨</td></tr>
+            <tr><td>방문 리뷰 수</td><td>77개</td><td>83개</td><td><strong>+6개</strong></td><td>플레이스 신뢰도 보조 지표도 함께 증가</td></tr>
+          </tbody>
+        </table>
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:14px 18px;margin-top:16px;">
+          <p style="font-size:14px;line-height:1.7;color:#064e3b;">
+            5월은 블로그 리뷰 수가 <strong>98개 증가</strong>하면서 플레이스 순위 회복에 필요한 외부 신호가 크게 보강되었습니다.
+            실제로 5/20 이후 순위가 5~13위 구간으로 회복되어, 블로그 작성 작업과 순위 개선 흐름이 함께 나타났습니다.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:var(--accent-light);border:1px solid var(--accent);border-radius:14px;padding:24px 28px;margin-bottom:20px;">
+      <h3 style="font-size:15px;font-weight:700;color:#059669;margin-bottom:16px;">🦷 6월 순위 관리 방향</h3>
+      <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:10px;">
+        <div style="min-width:24px;height:24px;background:var(--accent);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;">1</div>
+        <p style="font-size:14px;line-height:1.6;padding-top:2px;"><strong>15위 이내 유지에서 10위권 안정화로 목표 상향</strong> — 월말 12위 흐름을 이어가며 10위권 고정 추진</p>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:10px;">
+        <div style="min-width:24px;height:24px;background:var(--accent);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;">2</div>
+        <p style="font-size:14px;line-height:1.6;padding-top:2px;">순위작업용 블로그 작성 지속 — 5월에 효과가 확인된 블로그 리뷰 증가 흐름 유지</p>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:12px;">
+        <div style="min-width:24px;height:24px;background:var(--accent);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;">3</div>
+        <p style="font-size:14px;line-height:1.6;padding-top:2px;">하락 구간 재발 방지 — 월초처럼 30~50위권으로 밀리는 흐름이 나오지 않도록 순위 변동을 계속 체크</p>
+      </div>
+    </div>
+
+  </div><!-- /panel-may -->
+
   <!-- ═══════ 4월 보고서 ═══════ -->
-  <div class="report-panel active" id="panel-apr">
+  <div class="report-panel" id="panel-apr">
 
     <div class="summary-band">
       <div class="band-title">MONTHLY SUMMARY</div>

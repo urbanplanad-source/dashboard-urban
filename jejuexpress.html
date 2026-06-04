@@ -28,6 +28,11 @@
     .band-point { display:flex; gap:10px; align-items:flex-start; }
     .band-point .dot { width:6px; height:6px; background:var(--accent); border-radius:50%; margin-top:7px; flex-shrink:0; }
     .band-point p { font-size:14px; line-height:1.6; color:rgba(255,255,255,0.85); }
+    .performance-flow { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin:-12px 0 28px; }
+    .flow-node { min-width:0; background:var(--card); border:1px solid var(--border); border-radius:14px; padding:16px 14px; }
+    .flow-kicker { font-size:11px; font-weight:800; color:var(--muted); margin-bottom:6px; }
+    .flow-value { font-size:22px; font-weight:900; color:var(--primary); line-height:1.1; }
+    .flow-label { font-size:11px; color:var(--muted); margin-top:6px; line-height:1.4; }
     .section-card { background:var(--card); border-radius:14px; border:1px solid var(--border); margin-bottom:20px; overflow:hidden; }
     .section-header { padding:18px 24px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
     .section-header .icon { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px; background:#fff8e6; }
@@ -42,6 +47,126 @@
     .empty-state .e-icon { font-size:48px; margin-bottom:16px; }
     .empty-state h3 { font-size:18px; margin-bottom:8px; color:var(--text); }
     .empty-state p { font-size:14px; line-height:1.7; }
+    .rank-chart-wrap { overflow:hidden; padding:4px 0 8px; margin-bottom:16px; }
+    .rank-chart { width:100%; max-width:720px; height:auto; display:block; margin:0 auto; }
+    .rank-mobile-chart { display:none; width:100%; height:auto; }
+    .rank-mobile-chart text { font-family:inherit; }
+    .rank-grid { stroke:#eadfd2; stroke-width:1; }
+    .rank-axis-text { fill:#777; font-size:12px; font-weight:700; }
+    .rank-line { fill:none; stroke:var(--accent); stroke-width:4; stroke-linecap:round; stroke-linejoin:round; }
+    .rank-marker circle { fill:#fff; stroke:var(--accent); stroke-width:3; }
+    .rank-marker text { fill:var(--primary); font-size:12px; font-weight:800; }
+    .rank-marker .rank-date { fill:#777; font-size:11px; font-weight:700; }
+    @media (max-width:560px) {
+      .container { padding:28px 12px; }
+      .section-header { padding:16px 18px; }
+      .section-body { padding:16px 12px; }
+      .rank-chart-wrap { margin-left:-4px; margin-right:-4px; }
+      .rank-axis-text { font-size:17px; }
+      .rank-line { stroke-width:6; }
+      .rank-marker circle { stroke-width:4; }
+      .rank-marker text { font-size:17px; }
+      .rank-marker .rank-date { font-size:15px; }
+    }
+    @media(max-width:640px) {
+      .site-header { padding:18px 16px; flex-direction:column; align-items:flex-start; gap:12px; }
+      .logo { gap:10px; }
+      .logo-badge { width:36px; height:36px; border-radius:9px; font-size:17px; }
+      .logo-text h1 { font-size:16px; line-height:1.35; }
+      .logo-text p { font-size:11px; }
+      .header-tag { font-size:11px; padding:5px 10px; }
+      .container { padding:28px 12px; }
+      .timeline-label { margin-bottom:12px; }
+      .month-tabs { flex-wrap:nowrap; overflow-x:auto; gap:8px; margin:0 -12px 24px; padding:0 12px 6px; scrollbar-width:none; }
+      .month-tabs::-webkit-scrollbar { display:none; }
+      .month-tab { flex:0 0 auto; white-space:nowrap; padding:7px 14px; font-size:13px; }
+      .summary-band { padding:20px 18px; border-radius:14px; margin-bottom:20px; }
+      .band-month { font-size:22px; line-height:1.25; margin-bottom:12px; }
+      .band-title { font-size:11px; }
+      .band-points { grid-template-columns:1fr !important; gap:10px; }
+      .band-point p { font-size:13px; line-height:1.55; }
+      .performance-flow { grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; margin:-8px 0 20px; }
+      .flow-node { padding:13px 11px; border-radius:12px; }
+      .flow-kicker { font-size:10px; }
+      .flow-value { font-size:20px; }
+      .flow-label { font-size:10px; }
+      .section-card { border-radius:12px; margin-bottom:16px; }
+      .section-header { padding:14px 16px; align-items:flex-start; }
+      .section-header .icon { width:28px; height:28px; font-size:14px; flex-shrink:0; }
+      .section-header h3 { font-size:14px; line-height:1.4; }
+      .section-body { padding:16px 14px; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+      .status-item p { font-size:13px; line-height:1.55; }
+      .rank-chart-wrap { margin-left:0; margin-right:0; padding:8px 6px; overflow:hidden; }
+      .rank-chart-wrap:has(.rank-mobile-chart) .rank-chart { display:none !important; }
+      .rank-mobile-chart { display:block; max-height:190px; }
+      .rank-mobile-chart .m-axis { font-size:12px; fill:#777; font-weight:800; }
+      .rank-mobile-chart .m-date { font-size:11px; fill:#777; font-weight:800; }
+      .rank-mobile-chart .m-label { font-size:13px; fill:var(--primary); font-weight:900; }
+      .rank-mobile-chart .m-line { fill:none; stroke:var(--accent); stroke-width:4; stroke-linecap:round; stroke-linejoin:round; }
+      .rank-mobile-chart .m-grid { stroke:#eadfd2; stroke-width:1; }
+      .rank-mobile-chart .m-dot { fill:#fff; stroke:var(--accent); stroke-width:3; }
+      [style*="grid-template-columns:1fr 1fr"],
+      [style*="grid-template-columns: 1fr 1fr"],
+      [style*="grid-template-columns:repeat(3"],
+      [style*="grid-template-columns: repeat(3"],
+      [style*="grid-template-columns:repeat(auto-fit"],
+      [style*="grid-template-columns: repeat(auto-fit"] { grid-template-columns:1fr !important; }
+      [style*="font-size:36px"], [style*="font-size:34px"], [style*="font-size:32px"], [style*="font-size:28px"] { font-size:24px !important; }
+      [style*="padding:22px 24px"], [style*="padding:24px 28px"], [style*="padding:28px 32px"] { padding:16px 14px !important; }
+      .report-panel.active .section-body { overflow-x:visible; }
+      .report-panel.active .rank-chart { max-height:220px; }
+      .report-panel.active .section-body > div[style*="minmax(180px"] { grid-template-columns:repeat(3,minmax(0,1fr)) !important; gap:6px !important; }
+      .report-panel.active .section-body > div[style*="minmax(180px"] > div { padding:10px 7px !important; border-radius:9px !important; }
+      .report-panel.active .section-body > div[style*="minmax(180px"] > div > div:first-child { font-size:20px !important; line-height:1.1 !important; }
+      .report-panel.active .section-body > div[style*="minmax(180px"] > div > div:last-child { font-size:10px !important; line-height:1.25 !important; }
+    }
+    @media(max-width:640px) {
+      .performance-flow {
+        grid-template-columns:1fr !important;
+        gap:7px !important;
+        margin:-6px 0 18px !important;
+      }
+      .flow-node {
+        display:grid !important;
+        grid-template-columns:minmax(0,1fr) auto;
+        align-items:center;
+        column-gap:10px;
+        row-gap:2px;
+        min-height:0;
+        padding:10px 12px !important;
+        border-radius:12px !important;
+      }
+      .flow-kicker {
+        grid-column:1;
+        grid-row:1;
+        min-width:0;
+        margin:0 !important;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        white-space:nowrap;
+        font-size:11px !important;
+      }
+      .flow-value {
+        grid-column:2;
+        grid-row:1;
+        justify-self:end;
+        margin:0 !important;
+        white-space:nowrap;
+        font-size:20px !important;
+        line-height:1.15 !important;
+      }
+      .flow-label {
+        grid-column:1 / -1;
+        grid-row:2;
+        min-width:0;
+        margin:0 !important;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        white-space:nowrap;
+        font-size:11px !important;
+        line-height:1.35 !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -55,13 +180,182 @@
 <main class="container">
   <p class="timeline-label">보고서 목록</p>
   <div class="month-tabs">
-    <div class="month-tab active" onclick="switchTab('apr', event)">2026년 4월</div>
+    <div class="month-tab active" onclick="switchTab('may', event)">2026년 5월</div>
+    <div class="month-tab" onclick="switchTab('apr', event)">2026년 4월</div>
     <div class="month-tab" onclick="switchTab('mar', event)">2026년 3월</div>
     <div class="month-tab" onclick="switchTab('feb', event)">2026년 2월</div>
   </div>
 
+  <!-- ===== 5월 패널 ===== -->
+  <div class="report-panel active" id="panel-may">
+
+    <div class="summary-band">
+      <div class="band-title">MONTHLY SUMMARY</div>
+      <div class="band-month">2026년 5월 마케팅 결과보고</div>
+      <div class="band-points">
+        <div class="band-point"><div class="dot"></div><p><strong>월초 1위 유지</strong> — 5/1~5/8까지 '제주 이사' 키워드 1위를 안정적으로 유지했습니다.</p></div>
+        <div class="band-point"><div class="dot"></div><p><strong>중순 이후 순위 변동</strong> — 5/9부터 2~4위권으로 조정되었고, 5/21에는 7위까지 일시 하락했습니다.</p></div>
+        <div class="band-point"><div class="dot"></div><p><strong>월말 3~4위권 회복</strong> — 하락 이후 순위 작업을 이어가며 5월 말 4위로 마감했습니다.</p></div>
+      </div>
+    </div>
+
+    <div class="performance-flow">
+      <div class="flow-node">
+        <div class="flow-kicker">월초</div>
+        <div class="flow-value">1위</div>
+        <div class="flow-label">5/1~5/8 유지</div>
+      </div>
+      <div class="flow-node">
+        <div class="flow-kicker">중순 변동</div>
+        <div class="flow-value">7위</div>
+        <div class="flow-label">5/21 일시 하락</div>
+      </div>
+      <div class="flow-node">
+        <div class="flow-kicker">월말</div>
+        <div class="flow-value">4위</div>
+        <div class="flow-label">5/31 기준</div>
+      </div>
+      <div class="flow-node">
+        <div class="flow-kicker">블로그 리뷰</div>
+        <div class="flow-value">+66</div>
+        <div class="flow-label">315개 → 381개</div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon">🥇</div>
+        <h3>네이버 플레이스 순위 그래프 ('제주 이사')</h3>
+      </div>
+      <div class="section-body">
+        <div class="rank-chart-wrap" aria-label="2026년 5월 제주 이사 순위 추이 그래프">
+          <svg class="rank-chart" viewBox="0 0 720 260" role="img" aria-label="5월 1일부터 31일까지 순위 추이">
+            <line class="rank-grid" x1="54" y1="34" x2="698" y2="34"></line>
+            <line class="rank-grid" x1="54" y1="64.7" x2="698" y2="64.7"></line>
+            <line class="rank-grid" x1="54" y1="95.3" x2="698" y2="95.3"></line>
+            <line class="rank-grid" x1="54" y1="126" x2="698" y2="126"></line>
+            <line class="rank-grid" x1="54" y1="156.7" x2="698" y2="156.7"></line>
+            <line class="rank-grid" x1="54" y1="187.3" x2="698" y2="187.3"></line>
+            <line class="rank-grid" x1="54" y1="218" x2="698" y2="218"></line>
+            <text class="rank-axis-text" x="18" y="38">1위</text>
+            <text class="rank-axis-text" x="18" y="69">2위</text>
+            <text class="rank-axis-text" x="18" y="99">3위</text>
+            <text class="rank-axis-text" x="18" y="130">4위</text>
+            <text class="rank-axis-text" x="18" y="161">5위</text>
+            <text class="rank-axis-text" x="18" y="191">6위</text>
+            <text class="rank-axis-text" x="18" y="222">7위</text>
+            <polyline class="rank-line" points="54.0,34.0 75.5,34.0 96.9,34.0 118.4,34.0 139.9,34.0 161.3,34.0 182.8,34.0 204.3,34.0 225.7,64.7 247.2,64.7 268.7,64.7 290.1,64.7 311.6,64.7 333.1,95.3 354.5,95.3 376.0,126.0 397.5,126.0 418.9,126.0 440.4,126.0 461.9,156.7 483.3,218.0 504.8,126.0 526.3,95.3 547.7,95.3 569.2,126.0 590.7,126.0 612.1,126.0 633.6,95.3 655.1,95.3 676.5,126.0 698.0,126.0"></polyline>
+            <g class="rank-marker">
+              <circle cx="54" cy="34" r="6"></circle>
+              <text x="45" y="22">1위</text>
+              <text class="rank-date" x="45" y="242">5/1</text>
+            </g>
+            <g class="rank-marker">
+              <circle cx="204.3" cy="34" r="6"></circle>
+              <text x="194" y="22">1위</text>
+              <text class="rank-date" x="194" y="242">5/8</text>
+            </g>
+            <g class="rank-marker">
+              <circle cx="354.5" cy="95.3" r="6"></circle>
+              <text x="344" y="84">3위</text>
+              <text class="rank-date" x="343" y="242">5/15</text>
+            </g>
+            <g class="rank-marker">
+              <circle cx="483.3" cy="218" r="6"></circle>
+              <text x="473" y="206">7위</text>
+              <text class="rank-date" x="472" y="242">5/21</text>
+            </g>
+            <g class="rank-marker">
+              <circle cx="698" cy="126" r="6"></circle>
+              <text x="674" y="115">4위</text>
+              <text class="rank-date" x="675" y="242">5/31</text>
+            </g>
+          </svg>
+          <svg class="rank-mobile-chart" viewBox="0 0 340 190" role="img" aria-label="모바일용 제주인익스프레스 네이버 플레이스 순위 요약 그래프">
+            <line class="m-grid" x1="42" y1="32" x2="326" y2="32" />
+            <line class="m-grid" x1="42" y1="92" x2="326" y2="92" />
+            <line class="m-grid" x1="42" y1="152" x2="326" y2="152" />
+            <text class="m-axis" x="8" y="36">1위</text>
+            <text class="m-axis" x="8" y="96">4위</text>
+            <text class="m-axis" x="8" y="156">7위</text>
+            <polyline class="m-line" points="42,32 104,32 166,72 232,152 326,92" />
+            <circle class="m-dot" cx="42" cy="32" r="5" />
+            <circle class="m-dot" cx="104" cy="32" r="5" />
+            <circle class="m-dot" cx="166" cy="72" r="5" />
+            <circle class="m-dot" cx="232" cy="152" r="5" />
+            <circle class="m-dot" cx="326" cy="92" r="5" />
+            <text class="m-label" x="42" y="22" text-anchor="middle">1위</text>
+            <text class="m-label" x="232" y="172" text-anchor="middle">7위</text>
+            <text class="m-label" x="326" y="82" text-anchor="middle">4위</text>
+            <text class="m-date" x="42" y="184" text-anchor="middle">5/1</text>
+            <text class="m-date" x="104" y="184" text-anchor="middle">5/8</text>
+            <text class="m-date" x="166" y="184" text-anchor="middle">5/15</text>
+            <text class="m-date" x="232" y="184" text-anchor="middle">5/21</text>
+            <text class="m-date" x="326" y="184" text-anchor="middle">5/31</text>
+          </svg>
+        </div>
+        <div class="status-item">
+          <div class="status-dot"></div>
+          <p>5월 초에는 1위를 유지했으나 중순 이후 순위가 밀렸고, 5/21 7위 하락 후 월말에는 3~4위권으로 회복했습니다.</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot"></div>
+          <p>현재는 1위 재진입을 목표로 순위 관리 작업을 계속 진행 중입니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon">📝</div>
+        <h3>순위작업을 위한 블로그작성 <span style="display:inline-block;background:var(--accent);color:#fff;font-size:11px;font-weight:800;padding:3px 9px;border-radius:10px;margin-left:8px;vertical-align:middle;">+66개</span></h3>
+      </div>
+      <div class="section-body">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:16px;">
+          <div style="background:var(--accent-light);border-radius:10px;padding:16px;text-align:center;border:1px solid var(--accent);">
+            <div style="font-size:32px;font-weight:800;color:#d97706;">315개</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px;">5/1 블로그 리뷰 수</div>
+          </div>
+          <div style="background:#fff;border-radius:10px;padding:16px;text-align:center;border:1px solid var(--border);">
+            <div style="font-size:32px;font-weight:800;color:var(--primary);">381개</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px;">5/31 블로그 리뷰 수</div>
+          </div>
+          <div style="background:var(--accent-light);border-radius:10px;padding:16px;text-align:center;border:2px solid var(--accent);">
+            <div style="font-size:32px;font-weight:800;color:#d97706;">+66개</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px;">5월 증가분</div>
+          </div>
+        </div>
+        <div class="status-item">
+          <div class="status-dot"></div>
+          <p>네이버 플레이스의 블로그 리뷰 수가 5월 한 달 동안 <strong>315개에서 381개로 66개 증가</strong>했습니다.</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot"></div>
+          <p>해당 증가는 순위작업을 위한 블로그작성 성과로 정리하며, 키워드 최신성 및 외부 콘텐츠 신호를 보강하는 자료로 활용합니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:var(--accent-light);border:1px solid var(--accent);border-radius:14px;padding:24px 28px;margin-bottom:20px;">
+      <h3 style="font-size:15px;font-weight:700;color:#d97706;margin-bottom:16px;">6월 순위 관리 방향</h3>
+      <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:10px;">
+        <div style="min-width:24px;height:24px;background:var(--accent);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;">1</div>
+        <p style="font-size:14px;line-height:1.6;padding-top:2px;">5월 말 3~4위권 회복 흐름을 유지하면서 1위 재진입을 목표로 관리합니다.</p>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:10px;">
+        <div style="min-width:24px;height:24px;background:var(--accent);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;">2</div>
+        <p style="font-size:14px;line-height:1.6;padding-top:2px;">블로그작성 증가세를 이어가며 검색 노출에 필요한 최신 콘텐츠 신호를 지속 공급합니다.</p>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:12px;">
+        <div style="min-width:24px;height:24px;background:var(--accent);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;">3</div>
+        <p style="font-size:14px;line-height:1.6;padding-top:2px;">5/21처럼 순위가 크게 밀리는 구간은 별도로 모니터링해 빠르게 대응합니다.</p>
+      </div>
+    </div>
+
+  </div><!-- /panel-may -->
+
   <!-- ===== 4월 패널 ===== -->
-  <div class="report-panel active" id="panel-apr">
+  <div class="report-panel" id="panel-apr">
 
     <div class="summary-band">
       <div class="band-title">MONTHLY SUMMARY</div>
