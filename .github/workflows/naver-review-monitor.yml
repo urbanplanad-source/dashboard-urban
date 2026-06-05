@@ -1,0 +1,33 @@
+name: Naver Place Visitor Review Monitor
+
+on:
+  workflow_dispatch:
+  schedule:
+    # GitHub Actions cron is UTC.
+    # 00:00, 04:00, 08:00 UTC = 09:00, 13:00, 17:00 KST.
+    - cron: '0 0,4,8 * * *'
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Validate monitor script
+        run: node --check scripts/naver-review-monitor.mjs
+
+      - name: Run visitor review monitor
+        run: node scripts/naver-review-monitor.mjs
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_MESSAGE_THREAD_ID: ${{ secrets.TELEGRAM_MESSAGE_THREAD_ID }}
