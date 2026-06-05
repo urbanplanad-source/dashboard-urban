@@ -15,8 +15,10 @@ const expectedPaths = [
   'apps-script/expenses_drafts_patch_v12.gs',
   'apps-script/review_monitor_patch_v13.gs',
   'scripts/naver-review-monitor.mjs',
+  'scripts/fetch-report-context.mjs',
   '.github/workflows/naver-review-monitor.yml',
   'review-monitor.config.example.json',
+  'credentials.local.example.js',
 ];
 
 const obsoleteRootFiles = [
@@ -30,6 +32,7 @@ const forbiddenTerms = [
   ['오픈', '클로'].join(''),
   ['키미', '클로'].join(''),
   ['Open', 'Clo'].join(''),
+  ['Open', 'Claw'].join(''),
   ['open', 'clo'].join(''),
   ['Claude', ' Pro'].join(''),
 ];
@@ -59,8 +62,9 @@ for (const rel of obsoleteRootFiles) {
 await parseJson('package.json');
 await parseJson('review-monitor.config.example.json');
 await checkDashboardReportFiles();
+await checkNoHardcodedCredentials();
 await checkTextFiles(root);
-await checkReviewMonitorSyntax();
+await checkScriptSyntax();
 
 if (errors.length > 0) {
   console.error('Operational check failed:');
@@ -155,6 +159,26 @@ async function checkTextFiles(dir) {
   }
 }
 
+async function checkNoHardcodedCredentials() {
+  const rel = 'index.html';
+  const file = path.join(root, rel);
+  let text = '';
+  try {
+    text = await fs.readFile(file, 'utf8');
+  } catch (error) {
+    errors.push(`${rel}: cannot read credential guard target (${error.message})`);
+    return;
+  }
+
+  const passwordLiteral = /password\s*:\s*['"]([^'"]{2,})['"]/g;
+  const suspicious = [...text.matchAll(passwordLiteral)]
+    .map((match) => match[1])
+    .filter((value) => !/^[•*\s]+$/.test(value));
+  if (suspicious.length > 0) {
+    errors.push(`${rel}: contains hard-coded credential password literal; use credentials.local.js or localStorage`);
+  }
+}
+
 function isTextFile(name) {
   if (name === '.gitignore') return true;
   return textExtensions.has(path.extname(name));
@@ -164,8 +188,9 @@ function isSourceFile(rel) {
   return ['.html', '.js', '.mjs', '.gs'].includes(path.extname(rel));
 }
 
-async function checkReviewMonitorSyntax() {
+async function checkScriptSyntax() {
   await checkNodeSyntax('scripts/naver-review-monitor.mjs');
+  await checkNodeSyntax('scripts/fetch-report-context.mjs');
 }
 
 async function checkNodeSyntax(rel) {

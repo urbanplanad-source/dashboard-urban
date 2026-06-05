@@ -58,3 +58,5 @@ Telegram is optional and not required. When review changes are detected without 
 ## Optional Local Config
 
 `review-monitor.config.example.json` shows the optional config shape. The real local config file name is `review-monitor.config.json`, and it is ignored by Git.
+
+For local-only account notes, copy `credentials.local.example.js` to `credentials.local.js`. The real `credentials.local.js` file is ignored by Git and must not be uploaded to GitHub Pages.

@@ -7,6 +7,7 @@ Codex가 이 저장소에서 항상 먼저 참고하는 작업 지시다. 이 �
 - `index.html`: 메인 정적 대시보드. 로컬 폴더에서 직접 열어 쓰는 1차 운영 파일이며, GitHub Pages도 같은 파일을 루트에서 서빙한다.
 - `btskin.html`, `belrmon.html`, `gyunghee.html`, `eyecare.html`, `igochi.html`, `echi.html`, `seoulup.html`, `jejuexpress.html`: 거래처별 월말보고서 HTML.
 - `scripts/naver-review-monitor.mjs`: 네이버플레이스 방문자 리뷰 모니터링 자동화.
+- `scripts/fetch-report-context.mjs`: 월말보고서 작성 전 Apps Script 데이터를 조회해 `.report-context/YYYY-MM/*.json` 스냅샷을 만드는 조회 전용 스크립트.
 - `scripts/ops-check.mjs`: Codex 운영 점검 스크립트. 이전 도구명, 오래된 파일명, JSON 오류, 보고서 링크 파일 존재 여부, UTC 날짜 슬라이싱, 리뷰 모니터 문법 오류를 확인한다.
 - `.github/workflows/naver-review-monitor.yml`: 리뷰 모니터 정기 실행 워크플로.
 - `apps-script/*.gs`: Google Apps Script에 수동 반영할 패치/헬퍼 코드. 배포된 라이브 코드 자체가 아니라 적용용 스니펫이다.
@@ -22,7 +23,7 @@ Codex가 이 저장소에서 항상 먼저 참고하는 작업 지시다. 이 �
 - 파일은 UTF-8 기준으로 다룬다. 한글이 깨져 보이면 먼저 출력 인코딩 문제인지 확인한다.
 - API URL, Google Sheets URL, clientId처럼 문서화된 운영 식별자는 임의로 교체하지 않는다.
 - Apps Script API, 시트 컬럼, action 이름, 응답 구조를 바꾸면 같은 작업에서 `docs/apps-script-api.md`도 갱신한다.
-- 로컬 전용 설정, 토큰, `.env`, `review-monitor.config.json`, 로그 파일, `node_modules/`는 저장소에 추가하지 않는다.
+- 로컬 전용 설정, 토큰, `.env`, `review-monitor.config.json`, `credentials.local.js`, 로그 파일, `node_modules/`는 저장소에 추가하지 않는다.
 
 ## Data And API Rules
 
@@ -52,6 +53,8 @@ Codex가 이 저장소에서 항상 먼저 참고하는 작업 지시다. 이 �
 - 새 월 보고서는 기존 최신 월 탭 위에 추가하고, 새 월을 기본 active 탭으로 둔다.
 - 기존 월 보고서 내용은 삭제하지 않는다.
 - 발행 내역은 API/Sheets `postLogs`를 기준으로 하되, 보고월의 `YYYY-MM` 필터를 적용한다.
+- 월말보고서 작성 전 `npm.cmd run report:context -- --month YYYY-MM --client CLIENT_ID` 또는 `--all`을 실행해 보고서용 컨텍스트를 먼저 생성한다.
+- 생성된 `.report-context/` 파일은 업무/발행/상담/비용/계약/리뷰 데이터를 정규화한 작업용 스냅샷이며 커밋하지 않는다.
 - 외부 콘솔 수치가 없으면 임의로 만들지 않는다. 필요한 항목은 “자료 확인 필요”로 남기거나 사용자에게 요청한다.
 
 ## Review Monitor Rules
@@ -70,6 +73,7 @@ PowerShell에서 `npm` 실행 정책 오류가 나면 `npm.cmd`를 사용한다.
 ```bash
 npm run check
 npm run check:syntax
+npm run report:context -- --month YYYY-MM --client btskin
 npm run review:monitor:check
 npm run review:monitor:dry-run
 npm run review:monitor
@@ -77,6 +81,7 @@ npm run review:monitor
 
 - `npm run check`: 저장소 운영 점검 전체 실행.
 - `npm run check:syntax`: 리뷰 모니터 스크립트 문법 검사.
+- `npm run report:context -- --month YYYY-MM --client btskin`: 월말보고서 작성용 거래처 데이터 스냅샷 생성.
 - `npm run review:monitor:check`: `check:syntax`와 동일한 호환 명령.
 - `npm run review:monitor:dry-run`: Apps Script 갱신 없이 모니터 로직 확인.
 - `npm run review:monitor`: 실제 Apps Script 데이터를 갱신할 수 있는 운영 명령.

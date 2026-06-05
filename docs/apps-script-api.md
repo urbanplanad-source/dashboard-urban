@@ -340,7 +340,7 @@ delta: `1` (증가) 또는 `-1` (감소)
 ```
 > 자동 실행하지 않는다. 월말보고서 작성을 모두 마친 뒤 대시보드의 `다음 달 초기화` 버튼으로만 실행한다.
 >
-> 대시보드 버튼은 먼저 `deleteSubJob`으로 진행중/완료 서브업무를 모두 삭제한 뒤, `monthlyReset`으로 필수 업무 카운트 초기화와 새 달 시트 구성을 처리한다. `month`는 새 운영월(`YYYY-MM`)을 전달한다.
+> 대시보드 버튼은 먼저 `note`가 `"완료"` 또는 `"완료 (...)"`로 시작하는 완료된 서브업무만 `deleteSubJob`으로 삭제한 뒤, `monthlyReset`으로 필수 업무 카운트 초기화와 새 달 시트 구성을 처리한다. 완료 체크하지 않은 서브업무는 다음 달로 이월한다. 완료 서브업무 삭제 중 `Job not found`가 나오면 이미 Sheets에서 삭제된 항목으로 간주하고 계속 진행한다. 초기화 후 `summary`를 다시 조회해 이월 대상 서브업무가 누락됐으면 `addSubJob`/`updateSubJob`으로 보강한다. `month`는 새 운영월(`YYYY-MM`)을 전달한다.
 
 ---
 
@@ -637,7 +637,97 @@ const content = data.content;
 
 ---
 
-## 7. 네이버플레이스 방문자 리뷰 모니터링 (Codex/자동화 스크립트)
+## 7. 상담내역 (월말보고서용)
+
+> Apps Script v14 패치 적용 후 지원. 대시보드 입력 방식은 유지하고, `btskin`/`belrmon` 상담내역을 Sheets `Consults` 시트에도 동기화해 월말보고서 생성 스크립트가 읽을 수 있게 한다.
+
+### Consults 시트 컬럼 구조
+
+| 컬럼 | 타입 | 설명 |
+|------|------|------|
+| consultId | string | 상담 고유 ID (`cs-...`) |
+| clientId | string | 거래처 ID |
+| date | YYYY-MM-DD | 상담일 |
+| month | YYYY-MM | 보고월 필터 |
+| channel | string | `위챗` / `라인` / `인스타` |
+| nickname | string | 상대방 닉네임 또는 이름 |
+| content | string | 상담 내용 |
+| createdAt | string | 생성 시각 |
+| status | string | `active` 또는 `deleted` |
+
+### GET — 상담내역 조회 (`consultsList`)
+
+```javascript
+const res = await fetch(API + '?action=consultsList&clientId=btskin&month=2026-05');
+const { data } = await res.json();
+const consults = data.consults;
+```
+
+응답 예시:
+```json
+{
+  "success": true,
+  "data": {
+    "consults": [
+      {
+        "consultId": "cs-lx123",
+        "id": "cs-lx123",
+        "clientId": "btskin",
+        "date": "2026-05-12",
+        "month": "2026-05",
+        "channel": "위챗",
+        "nickname": "상담고객",
+        "content": "상담 내용...",
+        "createdAt": "2026-05-12T09:30:00.000Z",
+        "status": "active"
+      }
+    ]
+  }
+}
+```
+
+### POST — 상담내역 저장 (`addConsult`)
+
+대시보드 상담 폼에서 저장할 때 localStorage 저장 후 비차단 방식으로 호출한다.
+
+```javascript
+const res = await fetch(API, {
+  method: 'POST',
+  redirect: 'follow',
+  body: JSON.stringify({
+    action: 'addConsult',
+    clientId: 'btskin',
+    consultId: 'cs-lx123',
+    date: '2026-05-12',
+    channel: '위챗',
+    nickname: '상담고객',
+    content: '상담 내용...',
+    createdAt: '2026-05-12T09:30:00.000Z'
+  })
+});
+```
+
+### POST — 상담내역 삭제 (`deleteConsult`)
+
+삭제는 행을 물리 삭제하지 않고 `status: "deleted"`로 표시한다.
+
+```javascript
+const res = await fetch(API, {
+  method: 'POST',
+  redirect: 'follow',
+  body: JSON.stringify({
+    action: 'deleteConsult',
+    clientId: 'btskin',
+    consultId: 'cs-lx123'
+  })
+});
+```
+
+> `summary` GET에도 `consults` 배열이 포함될 수 있다. 보고서 생성 스크립트는 우선 `consultsList`를 시도하고, 미배포 상태면 `summary.consults` 또는 자료 공백 표시로 처리한다.
+
+---
+
+## 8. 네이버플레이스 방문자 리뷰 모니터링 (Codex/자동화 스크립트)
 
 > Apps Script v13부터 지원. 비교 대상은 **방문자 리뷰(visitor review)만** 해당. 블로그 리뷰는 저장·비교하지 않는다.
 
@@ -793,7 +883,7 @@ const res = await fetch(API, {
 
 ---
 
-## 8. 대시보드·월말보고서 운영 규칙
+## 9. 대시보드·월말보고서 운영 규칙
 
 ### 공통 데이터 정규화
 
@@ -821,6 +911,15 @@ const res = await fetch(API, {
 ### 월말보고서 생성 규칙
 
 거래처별 보고서 HTML은 기존 파일에 월별 탭을 누적하는 방식을 기본으로 한다.
+
+보고서 작성 전 Codex는 먼저 아래 명령으로 보고월의 거래처별 컨텍스트를 생성한다.
+
+```bash
+npm.cmd run report:context -- --month YYYY-MM --client btskin
+npm.cmd run report:context -- --month YYYY-MM --all
+```
+
+생성 파일은 `.report-context/YYYY-MM/{clientId}.json`에 저장되며 커밋하지 않는다. 이 파일은 `summary&draftMode=light`, `consultsList` 조회 결과를 정규화한 보고서 작성용 스냅샷이다.
 
 1. 새 월 보고서는 기존 최신 월 탭 위에 추가하고, 새 월을 기본 `active` 탭으로 둔다.
 2. 기존 월 보고서 내용은 삭제하지 않는다.

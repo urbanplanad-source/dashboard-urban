@@ -13,6 +13,7 @@
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="credentials.local.js"></script>
   <style>
     body { font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; background: #f0f2f5; }
     ::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
@@ -111,19 +112,9 @@
   };
 
   // ═══════════════════════════════════════════════
-  //  DEFAULT CREDENTIALS (로컬 전용 — Sheets 미동기)
+  //  LOCAL CREDENTIALS (optional credentials.local.js, Sheets 미동기)
   // ═══════════════════════════════════════════════
-  const DEFAULT_CREDENTIALS = {
-    btskin: [
-      { credId:'cr-bts-001', service:'네이버 공식블로그', url:'', username:'btskincs7114', password:'jeju7114' },
-      { credId:'cr-bts-002', service:'네이버 서브블로그1', url:'', username:'btskin7114', password:'jeju7114' },
-      { credId:'cr-bts-003', service:'네이버 서브블로그2', url:'', username:'aldls2015', password:'jeju7114' },
-      { credId:'cr-bts-004', service:'인스타그램', url:'https://instagram.com/beautifulskinclinic', username:'beautifulskinclinic', password:'qwaszx-1' },
-      { credId:'cr-bts-005', service:'가비아 (도메인관리)', url:'https://www.gabia.com', username:'btskin7114', password:'jeju!7114' },
-      { credId:'cr-bts-006', service:'구글', url:'https://google.com', username:'beautifulskinclinic@gmail.com', password:'jBSC7467114' },
-      { credId:'cr-bts-007', service:'안랩 기업용 v3백신', url:'https://www.ahnlab.com/ko', username:'btskincs7114@naver.com', password:'jeju!7114' },
-    ],
-  };
+  const DEFAULT_CREDENTIALS = window.URBANPLANAD_LOCAL_CREDENTIALS || {};
 
   // ═══════════════════════════════════════════════
   //  DEFAULT DATA
@@ -177,6 +168,7 @@
     postLogs: [],
     commonTasks: [],
     contracts: [],
+    consults: [],
     consultHistories: [],  // 채널별 상담 내역 월별 백업 (다음달 초기화 시 자동 저장)
   };
 
@@ -215,6 +207,31 @@
       month: normalizeMonth(p.month || p.publishedAt),
       channel,
     };
+  };
+  const normalizeConsult = (c) => {
+    const id = c.id || c.consultId || c.consult_id;
+    return {
+      ...c,
+      id,
+      consultId: c.consultId || id,
+      clientId: c.clientId || '',
+      date: normalizeDate(c.date),
+      month: normalizeMonth(c.month || c.date),
+      channel: c.channel || '',
+      nickname: c.nickname || '',
+      content: c.content || '',
+      createdAt: c.createdAt || '',
+    };
+  };
+  const mergeConsultLists = (localList, remoteList) => {
+    const byId = new Map();
+    [...(remoteList || []), ...(localList || [])]
+      .map(normalizeConsult)
+      .filter(c => c.id && c.status !== 'deleted')
+      .forEach(c => byId.set(c.id, c));
+    return [...byId.values()].sort((a,b) =>
+      String(b.createdAt || b.date || '').localeCompare(String(a.createdAt || a.date || ''))
+    );
   };
   const fmtMonth = (m) => { const nm = normalizeMonth(m); if(!nm) return ''; const [y,mo]=nm.split('-'); return `${y}년 ${Number(mo)}월`; };
   const fmtDate  = (d) => { const nd = normalizeDate(d); if(!nd) return '—'; const p=nd.split('-'); return `${p[0].slice(2)}.${p[1]}.${p[2]}`; };
@@ -259,11 +276,12 @@
           commonTasks:  s.commonTasks  ?? [],
           credentials:      s.credentials      ?? DEFAULT_CREDENTIALS,
           contracts:        s.contracts        ?? [],
+          consults:         s.consults         ?? [],
           consultHistories: s.consultHistories ?? [],
         };
       }
     } catch(e) {}
-    return { ...DEFAULT_DATA };
+    return { ...DEFAULT_DATA, credentials: DEFAULT_CREDENTIALS };
   }
 
   function saveData(data) {
@@ -277,7 +295,7 @@
         method: 'POST', redirect: 'follow',
         body: JSON.stringify({ action: 'addLog', clientId, message })
       }).then(r => r.json()),
-      // OpenClaw가 호출: { action:"addPost", clientId, jobId, title, url, channel }
+      // 외부 호출용: { action:"addPost", clientId, jobId, title, url, channel }
       addPost: (clientId, jobId, title, url, channel) => fetch(API_URL, {
         method: 'POST', redirect: 'follow',
         body: JSON.stringify({ action: 'addPost', clientId, jobId, title, url, channel: channel||'홈페이지' })
@@ -286,7 +304,7 @@
         method: 'POST', redirect: 'follow',
         body: JSON.stringify({ action: 'updateJobCount', jobId, delta })
       }).then(r => r.json()),
-      // 공통업무 — OpenClaw 외부 호출용
+      // 공통업무 — 외부 호출용
       // kind: 'group'|'task'  parentId: 그룹 taskId (task일 때)  dueDate: 'YYYY-MM-DD'
       commonTaskAdd:    (title, kind, parentId, dueDate) => fetch(API_URL, {
         method: 'POST', redirect: 'follow',
@@ -303,6 +321,19 @@
       commonTaskUpdate: (taskId, title, dueDate) => fetch(API_URL, {
         method: 'POST', redirect: 'follow',
         body: JSON.stringify({ action: 'commonTaskUpdate', taskId, title, dueDate: dueDate||null })
+      }).then(r => r.json()),
+      consultsList: (clientId, month) => {
+        const params = new URLSearchParams({ action:'consultsList', clientId: clientId || '' });
+        if (month) params.set('month', month);
+        return fetch(API_URL + '?' + params.toString()).then(r => r.json());
+      },
+      addConsult: (clientId, consult) => fetch(API_URL, {
+        method: 'POST', redirect: 'follow',
+        body: JSON.stringify({ action:'addConsult', clientId, ...consult })
+      }).then(r => r.json()),
+      deleteConsult: (clientId, consultId) => fetch(API_URL, {
+        method: 'POST', redirect: 'follow',
+        body: JSON.stringify({ action:'deleteConsult', clientId, consultId })
       }).then(r => r.json()),
     };
   }
@@ -339,6 +370,7 @@
         isRecurring: e.isRecurring === true || e.isRecurring === 'true' || e.isRecurring === 'TRUE',
       })),
       drafts: (d.drafts || []),
+      consults: (d.consults || []).map(normalizeConsult),
       reviewTargets: (d.reviewTargets || []).map(r => ({
         ...r,
         savedVisitorReviewCount: Number(r.savedVisitorReviewCount) || 0,
@@ -370,6 +402,117 @@
     if(dl === 0) return <span style={{fontSize:11,fontWeight:700,color:'#dc2626',background:'#fef2f2',padding:'1px 6px',borderRadius:4}}>📅 {label} (오늘 마감)</span>;
     if(dl <= 3)  return <span style={{fontSize:11,fontWeight:700,color:'#d97706',background:'#fffbeb',padding:'1px 6px',borderRadius:4}}>📅 {label} (D-{dl})</span>;
     return <span style={{fontSize:11,color:'#6b7280',background:'#f3f4f6',padding:'1px 6px',borderRadius:4}}>📅 {label} (D-{dl})</span>;
+  }
+
+  const isJobDone = (job) => {
+    if (!job) return false;
+    if (job.targetCount != null) return Number(job.currentCount || 0) >= Number(job.targetCount || 0);
+    return String(job.note || '').trim().startsWith('완료');
+  };
+
+  const hasCredentialEntries = (credentials) =>
+    Object.values(credentials || {}).some(list =>
+      Array.isArray(list) && list.some(item => item?.username || item?.password || item?.url)
+    );
+
+  function TodayFocus({ data, syncStatus, onGoClient, onSync }) {
+    const clientsById = useMemo(() => {
+      const map = {};
+      (data.clients || []).forEach(client => { map[client.clientId] = client; });
+      return map;
+    }, [data.clients]);
+
+    const focusItems = useMemo(() => {
+      const jobItems = (data.monthlyJobs || [])
+        .filter(job => job.dueDate && !isJobDone(job))
+        .map(job => ({
+          id: job.jobId,
+          kind: job.kind || '업무',
+          title: job.title,
+          dueDate: job.dueDate,
+          days: daysLeft(job.dueDate),
+          clientId: job.clientId,
+          clientName: clientsById[job.clientId]?.clientName || job.clientId || '거래처',
+        }));
+
+      const taskItems = (data.commonTasks || [])
+        .filter(task => task.kind !== 'group' && task.dueDate && !task.done)
+        .map(task => ({
+          id: task.taskId,
+          kind: '공통',
+          title: task.title,
+          dueDate: task.dueDate,
+          days: daysLeft(task.dueDate),
+          clientId: null,
+          clientName: '내 사업',
+        }));
+
+      return [...jobItems, ...taskItems]
+        .filter(item => item.days !== null && item.days <= 3)
+        .sort((a,b) => a.days - b.days || String(a.dueDate).localeCompare(String(b.dueDate)))
+        .slice(0, 6);
+    }, [data.monthlyJobs, data.commonTasks, clientsById]);
+
+    const overdueCount = focusItems.filter(item => item.days < 0).length;
+    const todayCount = focusItems.filter(item => item.days === 0).length;
+    const syncText = syncStatus === 'error' ? '동기화 재확인 필요'
+                   : syncStatus === 'loading' ? '동기화 중'
+                   : syncStatus === 'ok' ? '동기화 완료'
+                   : '동기화 대기';
+    const syncColor = syncStatus === 'error' ? '#dc2626'
+                    : syncStatus === 'loading' ? '#4b5563'
+                    : syncStatus === 'ok' ? '#16a34a'
+                    : '#2563eb';
+
+    const chipStyle = (bg, color) => ({
+      display:'inline-flex',alignItems:'center',gap:5,borderRadius:999,padding:'5px 10px',
+      background:bg,color,fontSize:12,fontWeight:800,whiteSpace:'nowrap'
+    });
+
+    return (
+      <section style={{background:'#fff',border:'1px solid #e5e7eb',borderRadius:12,padding:18,marginBottom:18,boxShadow:'0 1px 2px rgba(15,23,42,0.04)'}}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:14,marginBottom:14,flexWrap:'wrap'}}>
+          <div>
+            <div style={{fontSize:18,fontWeight:900,color:'#111827',lineHeight:1.25}}>오늘의 포커스</div>
+            <div style={{fontSize:13,color:'#64748b',marginTop:3}}>{today()} 기준 운영 우선순위</div>
+          </div>
+          <div style={{display:'flex',gap:8,flexWrap:'wrap',justifyContent:'flex-end'}}>
+            <span style={chipStyle(overdueCount ? '#fef2f2' : '#f8fafc', overdueCount ? '#b91c1c' : '#64748b')}>초과 {overdueCount}건</span>
+            <span style={chipStyle(todayCount ? '#fff7ed' : '#f8fafc', todayCount ? '#c2410c' : '#64748b')}>오늘 {todayCount}건</span>
+            <button onClick={onSync} disabled={syncStatus==='loading'}
+              style={{...chipStyle(syncStatus==='error' ? '#fef2f2' : '#f0fdf4', syncColor),border:'none',cursor:syncStatus==='loading'?'default':'pointer',fontFamily:'inherit'}}>
+              {syncText}
+            </button>
+          </div>
+        </div>
+
+        {focusItems.length > 0 ? (
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))',gap:10}}>
+            {focusItems.map(item => {
+              const label = item.days < 0 ? `${Math.abs(item.days)}일 초과` : item.days === 0 ? '오늘 마감' : `D-${item.days}`;
+              const urgent = item.days <= 0;
+              return (
+                <button key={item.kind + item.id}
+                  onClick={() => item.clientId && onGoClient(item.clientId)}
+                  disabled={!item.clientId}
+                  style={{textAlign:'left',background:urgent?'#fff7ed':'#f8fafc',border:`1px solid ${urgent?'#fed7aa':'#e2e8f0'}`,borderRadius:10,padding:'11px 12px',cursor:item.clientId?'pointer':'default',fontFamily:'inherit'}}>
+                  <div style={{display:'flex',alignItems:'center',gap:7,marginBottom:5}}>
+                    <span style={{fontSize:11,fontWeight:900,color:urgent?'#c2410c':'#2563eb',background:'#fff',borderRadius:999,padding:'2px 7px'}}>{label}</span>
+                    <span style={{fontSize:11,color:'#64748b',fontWeight:700}}>{item.kind}</span>
+                  </div>
+                  <div style={{fontSize:13,fontWeight:800,color:'#111827',lineHeight:1.35,wordBreak:'keep-all'}}>{item.title}</div>
+                  <div style={{fontSize:12,color:'#64748b',marginTop:5}}>{item.clientName} · {fmtDate(item.dueDate)}</div>
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          <div style={{background:'#f8fafc',border:'1px solid #e2e8f0',borderRadius:10,padding:'16px 14px',fontSize:13,color:'#64748b',fontWeight:700}}>
+            3일 이내 마감 업무가 없습니다.
+          </div>
+        )}
+      </section>
+    );
   }
 
   // ═══════════════════════════════════════════════
@@ -1114,7 +1257,68 @@
   // ═══════════════════════════════════════════════
   //  HEADER
   // ═══════════════════════════════════════════════
-  function Header({ view, selectedClient, onBack, onHome, onRevenue, onDrafts, syncStatus, onSync }) {
+  function GlobalClientSearch({ clients, onGoClient }) {
+    const [query, setQuery] = useState('');
+    const [focused, setFocused] = useState(false);
+    const q = query.trim().toLowerCase();
+    const matches = useMemo(() => {
+      if (!q) return [];
+      return (clients || [])
+        .filter(client => [
+          client.clientName,
+          client.clientId,
+          client.specialty,
+          client.businessType,
+          client.reportFile,
+        ].filter(Boolean).join(' ').toLowerCase().includes(q))
+        .slice(0, 6);
+    }, [clients, q]);
+
+    const selectClient = (client) => {
+      if (!client) return;
+      setQuery('');
+      setFocused(false);
+      onGoClient(client.clientId);
+    };
+
+    return (
+      <div style={{position:'relative',width:260,maxWidth:'32vw'}}>
+        <input
+          aria-label="거래처 검색"
+          value={query}
+          onChange={e=>setQuery(e.target.value)}
+          onFocus={()=>setFocused(true)}
+          onBlur={()=>setTimeout(()=>setFocused(false),120)}
+          onKeyDown={e=>{
+            if(e.key==='Enter' && matches[0]) selectClient(matches[0]);
+            if(e.key==='Escape') { setQuery(''); setFocused(false); }
+          }}
+          placeholder="거래처 검색"
+          style={{width:'100%',height:34,boxSizing:'border-box',border:'1px solid rgba(255,255,255,0.16)',borderRadius:8,background:'rgba(255,255,255,0.08)',color:'#fff',padding:'0 11px',fontSize:13,fontWeight:600,outline:'none',fontFamily:'inherit'}}
+        />
+        {focused && q && (
+          <div style={{position:'absolute',right:0,top:40,width:320,maxWidth:'min(320px,80vw)',background:'#fff',border:'1px solid #e5e7eb',borderRadius:10,boxShadow:'0 14px 34px rgba(15,23,42,0.18)',overflow:'hidden',zIndex:100}}>
+            {matches.length > 0 ? matches.map(client => (
+              <button key={client.clientId}
+                onMouseDown={e=>e.preventDefault()}
+                onClick={()=>selectClient(client)}
+                style={{width:'100%',display:'flex',alignItems:'center',gap:10,textAlign:'left',padding:'10px 12px',background:'#fff',border:'none',borderBottom:'1px solid #f1f5f9',cursor:'pointer',fontFamily:'inherit'}}>
+                <span style={{width:28,height:28,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',background:'#f8fafc',fontSize:14}}>{SPEC_EMOJI[client.specialty] || '🏢'}</span>
+                <span style={{minWidth:0,flex:1}}>
+                  <span style={{display:'block',fontSize:13,fontWeight:800,color:'#111827',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{client.clientName}</span>
+                  <span style={{display:'block',fontSize:11,color:'#64748b',marginTop:1}}>{client.clientId} · {client.specialty || '기타'}</span>
+                </span>
+              </button>
+            )) : (
+              <div style={{padding:'14px 12px',fontSize:13,color:'#64748b',fontWeight:700}}>검색 결과가 없습니다.</div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  function Header({ view, selectedClient, clients, onBack, onHome, onGoClient, onRevenue, onDrafts, syncStatus, onSync }) {
     const d = new Date();
     const dateStr = `${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일`;
     const syncLabel = syncStatus === 'loading' ? '⏳ 동기화 중...'
@@ -1134,7 +1338,7 @@
     return (
       <header style={{background:'#1a1a2e',padding:'0 32px',height:60,display:'flex',alignItems:'center',justifyContent:'space-between',position:'sticky',top:0,zIndex:50}}>
         <div style={{display:'flex',alignItems:'center',gap:12}}>
-          <div style={{width:36,height:36,background:'#c9a96e',borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',fontWeight:900,fontSize:13,color:'#fff',cursor:'pointer'}} onClick={onHome}>UP</div>
+          <button style={{width:36,height:36,background:'#c9a96e',border:'none',borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',fontWeight:900,fontSize:13,color:'#fff',cursor:'pointer',fontFamily:'inherit'}} onClick={onHome}>UP</button>
           <div>
             <div style={{fontSize:15,fontWeight:700,color:'#fff',lineHeight:1.3}}>어반플랜애드</div>
             {view==='client' && selectedClient ? (
@@ -1149,6 +1353,7 @@
           </div>
         </div>
         <div style={{display:'flex',alignItems:'center',gap:10}}>
+          <GlobalClientSearch clients={clients || []} onGoClient={onGoClient} />
           <button
             onClick={onDrafts}
             style={{background: view==='drafts' ? '#6366f1' : 'rgba(99,102,241,0.12)', color: view==='drafts' ? '#fff' : '#818cf8', border:'1px solid rgba(99,102,241,0.35)', borderRadius:8, padding:'7px 14px', fontSize:12, fontWeight:700, cursor:'pointer', fontFamily:'inherit', whiteSpace:'nowrap', transition:'all 0.2s'}}>
@@ -2027,8 +2232,31 @@
     const CONSULT_CH_COLOR = { '위챗':'#16a34a', '라인':'#65a30d', '인스타':'#9333ea' };
     const CONSULT_KEY = 'consult-v1-' + client.clientId;
 
+    function readConsults(clientId) {
+      const key = 'consult-v1-' + clientId;
+      try {
+        const list = JSON.parse(safeStorage.getItem(key) || '[]');
+        return Array.isArray(list)
+          ? list.map(c => ({ ...normalizeConsult(c), clientId: c.clientId || clientId })).filter(c => c.id)
+          : [];
+      } catch {
+        return [];
+      }
+    }
+    function writeConsults(clientId, list) {
+      const normalized = (list || [])
+        .map(c => ({ ...normalizeConsult(c), clientId: c.clientId || clientId }))
+        .filter(c => c.id && c.status !== 'deleted');
+      const key = 'consult-v1-' + clientId;
+      safeStorage.setItem(key, JSON.stringify(normalized));
+      if (normalized.length > 0) {
+        safeStorage.setItem(key + '-lastgood', JSON.stringify(normalized));
+      }
+      return normalized;
+    }
+
     const [consultList,    setConsultList]    = useState(() => {
-      try { return JSON.parse(safeStorage.getItem(CONSULT_KEY) || '[]'); } catch { return []; }
+      return readConsults(client.clientId);
     });
     const [consultFilter,  setConsultFilter]  = useState('');
     const [consultExpId,   setConsultExpId]   = useState(null);
@@ -2039,21 +2267,137 @@
     });
 
     function saveConsults(list) {
-      setConsultList(list);
-      safeStorage.setItem(CONSULT_KEY, JSON.stringify(list));
+      const normalized = writeConsults(client.clientId, list);
+      setConsultList(normalized);
     }
     function addConsult() {
       if (!consultForm.nickname.trim()) { alert('닉네임을 입력하세요.'); return; }
       if (!consultForm.content.trim())  { alert('대화 내역을 입력하세요.'); return; }
-      const entry = { ...consultForm, id: 'cs-' + Date.now().toString(36), createdAt: new Date().toISOString() };
+      const id = 'cs-' + Date.now().toString(36);
+      const entry = { ...consultForm, id, consultId: id, clientId: client.clientId, createdAt: new Date().toISOString() };
       saveConsults([entry, ...consultList]);
+      fetch(API_URL, {
+        method: 'POST', redirect: 'follow',
+        body: JSON.stringify({
+          action: 'addConsult',
+          clientId: client.clientId,
+          consultId: entry.id,
+          date: entry.date,
+          channel: entry.channel,
+          nickname: entry.nickname,
+          content: entry.content,
+          createdAt: entry.createdAt,
+        })
+      })
+        .then(r => r.json())
+        .then(d => { if (!d.success) throw new Error(d.error || 'addConsult 실패'); })
+        .catch(e => console.warn('addConsult Sheets 오류:', e));
       setConsultForm({ date: today(), channel:'위챗', nickname:'', content:'' });
       setShowConsultAdd(false);
     }
     function deleteConsult(id) {
       if (!confirm('이 상담 내역을 삭제하시겠습니까?')) return;
       saveConsults(consultList.filter(c => c.id !== id));
+      fetch(API_URL, {
+        method: 'POST', redirect: 'follow',
+        body: JSON.stringify({ action:'deleteConsult', clientId: client.clientId, consultId: id })
+      })
+        .then(r => r.json())
+        .then(d => { if (!d.success) throw new Error(d.error || 'deleteConsult 실패'); })
+        .catch(e => console.warn('deleteConsult Sheets 오류:', e));
     }
+
+    useEffect(() => {
+      if (!CONSULT_CLIENTS.includes(client.clientId)) {
+        setConsultList([]);
+        return;
+      }
+      let cancelled = false;
+      const currentRaw = safeStorage.getItem(CONSULT_KEY);
+      const localList = readConsults(client.clientId);
+      const fallbackList = localList.length
+        ? localList
+        : currentRaw === null ? (() => {
+            try {
+              const raw = safeStorage.getItem(CONSULT_KEY + '-lastgood');
+              const parsed = raw ? JSON.parse(raw) : [];
+              return Array.isArray(parsed)
+                ? parsed.map(c => ({ ...normalizeConsult(c), clientId: c.clientId || client.clientId })).filter(c => c.id)
+                : [];
+            } catch {
+              return [];
+            }
+          })() : [];
+
+      setConsultList(fallbackList);
+      if (fallbackList.length && !localList.length) {
+        writeConsults(client.clientId, fallbackList);
+      }
+
+      const params = new URLSearchParams({ action:'consultsList', clientId: client.clientId, month: nowMonth() });
+
+      fetch(API_URL + '?' + params.toString())
+        .then(r => r.json())
+        .then(d => {
+          const remote = d.data?.consults || d.consults || [];
+          if (!d.success || !Array.isArray(remote) || cancelled) return;
+          const normalizedRemote = remote
+            .map(c => ({ ...normalizeConsult(c), clientId: c.clientId || client.clientId }))
+            .filter(c => c.id && c.status !== 'deleted');
+          const remoteIds = new Set(normalizedRemote.map(c => c.id));
+          const currentLocal = readConsults(client.clientId);
+          const baseLocal = currentLocal.length ? currentLocal : fallbackList;
+
+          if (!normalizedRemote.length) {
+            baseLocal
+              .filter(c => c.id)
+              .forEach(c => {
+                fetch(API_URL, {
+                  method: 'POST', redirect: 'follow',
+                  body: JSON.stringify({
+                    action: 'addConsult',
+                    clientId: client.clientId,
+                    consultId: c.id,
+                    date: c.date,
+                    channel: c.channel,
+                    nickname: c.nickname,
+                    content: c.content,
+                    createdAt: c.createdAt,
+                  })
+                }).catch(e => console.warn('consult backfill Sheets 오류:', e));
+              });
+            return;
+          }
+
+          setConsultList(() => {
+            const merged = writeConsults(client.clientId, mergeConsultLists(baseLocal, normalizedRemote));
+
+            // Apps Script 패치 적용 후 처음 열었을 때 기존 localStorage 상담도 Sheets에 보강 저장한다.
+            merged
+              .filter(c => c.id && !remoteIds.has(c.id))
+              .forEach(c => {
+                fetch(API_URL, {
+                  method: 'POST', redirect: 'follow',
+                  body: JSON.stringify({
+                    action: 'addConsult',
+                    clientId: client.clientId,
+                    consultId: c.id,
+                    date: c.date,
+                    channel: c.channel,
+                    nickname: c.nickname,
+                    content: c.content,
+                    createdAt: c.createdAt,
+                  })
+                }).catch(e => console.warn('consult backfill Sheets 오류:', e));
+              });
+
+            return merged;
+          });
+        })
+        .catch(() => {});
+
+      return () => { cancelled = true; };
+    }, [client.clientId]);
 
     // 발행 글 인라인 편집 상태
     const [editingPost,    setEditingPost]    = useState(null);
@@ -2425,7 +2769,9 @@
                         {/* 개별 기록 (펼쳤을 때만) */}
                         {isOpen && h.records && h.records.length > 0 && (
                           <div style={{display:'flex',flexDirection:'column',gap:6,marginTop:4}}>
-                            <div style={{fontSize:11,fontWeight:700,color:'#9ca3af',letterSpacing:'0.5px',marginBottom:2}}>개별 기록</div>
+                            <div style={{fontSize:11,fontWeight:700,color:'#9ca3af',letterSpacing:'0.5px',marginBottom:2}}>
+                              {h.summaryOnly ? '요약 메모' : '개별 기록'}
+                            </div>
                             {h.records.map((r,i)=>{
                               const col = HIST_COLORS[r.channel]||'#6b7280';
                               return (
@@ -3368,6 +3714,7 @@
     const [selId,      setSelId]      = useState(null);
     const [modal,      setModal]      = useState({ open:false });
     const [syncStatus, setSyncStatus] = useState('idle');
+    const [adminOpen,  setAdminOpen]  = useState(false);
 
     // ── 계약 upsert ──
     function upsertContract(clientId, fields) {
@@ -3428,6 +3775,9 @@
 
               // 글 보관함: Sheets 우선, 비어있으면 로컬 유지
               drafts:      safeArr(sheetsData.drafts, prev.drafts),
+
+              // 상담내역: Sheets 우선, 비어있으면 로컬 유지
+              consults:    safeArr(sheetsData.consults, prev.consults),
 
               // 방문자 리뷰 모니터링: Sheets 우선, 비어있으면 로컬 유지
               reviewTargets: safeArr(sheetsData.reviewTargets, prev.reviewTargets),
@@ -3520,7 +3870,7 @@
 
     // ── 수동 월별 초기화 함수 (설정 탭 버튼에서 호출) ──
     async function handleMonthlyReset() {
-      if (!confirm('⚠️ 이달 업무를 다음 달 기준으로 초기화합니다.\n\n서브업무(완료·진행중 모두) 전체가 삭제되고 카운트가 리셋됩니다.\n노형아름다운피부과·벨르몬성형외과 채널별 상담 내역은 통계로 백업 후 초기화됩니다.\n계속하시겠습니까?')) return;
+      if (!confirm('⚠️ 이달 업무를 다음 달 기준으로 초기화합니다.\n\n완료된 서브업무만 삭제되고, 완료 체크하지 않은 서브업무는 다음 달로 이월됩니다.\n노형아름다운피부과·벨르몬성형외과 채널별 상담 내역은 통계로 백업 후 초기화됩니다.\n계속하시겠습니까?')) return;
       if (!confirm('정말 초기화하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) return;
 
       // ── 1) 채널별 상담 내역 백업 (btskin / belrmon) ──
@@ -3556,13 +3906,49 @@
 
       // ── 2) Sheets 초기화 먼저 완료 확인 ──
       // 월초에 전월 보고서를 마친 뒤 누르는 전제이므로, 새 운영월은 현재 월(nowMonth)이다.
+      const isCompletedSubJob = (job) => String(job.note || '').trim().startsWith('완료');
       const allSubs = (data.monthlyJobs || []).filter(j => j.kind === '서브');
-      const serverSubs = allSubs.filter(j => !j.syncPending);
+      const carryoverSubs = allSubs.filter(j => !isCompletedSubJob(j));
+      const completedServerSubs = allSubs.filter(j => !j.syncPending && isCompletedSubJob(j));
+      const deleteCompletedSubJob = async (job) => {
+        try {
+          return await postJson({ action: 'deleteSubJob', jobId: job.jobId });
+        } catch (e) {
+          if (String(e.message || e).includes('Job not found:')) {
+            console.warn('monthlyReset: 이미 Sheets에 없는 완료 서브업무로 간주:', job.jobId);
+            return { success: true, alreadyDeleted: true, jobId: job.jobId };
+          }
+          throw e;
+        }
+      };
 
       setSyncStatus('loading');
       try {
-        await Promise.all(serverSubs.map(j => postJson({ action: 'deleteSubJob', jobId: j.jobId })));
+        await Promise.all(completedServerSubs.map(deleteCompletedSubJob));
         await postJson({ action: 'monthlyReset', month: nowMonth() });
+
+        // live monthlyReset 내부 구현이 서브업무를 건드리더라도, 미완료 서브업무는 다시 보강한다.
+        const afterReset = await fetchFromSheets();
+        const afterIds = new Set((afterReset.monthlyJobs || []).map(j => j.jobId));
+        const missingCarryovers = carryoverSubs.filter(j => !j.syncPending && !afterIds.has(j.jobId));
+
+        await Promise.all(missingCarryovers.map(async (job) => {
+          const added = await postJson({
+            action: 'addSubJob',
+            clientId: job.clientId,
+            title: job.title,
+            dueDate: job.dueDate || null,
+          });
+          if ((job.note || job.dueDate) && added.jobId) {
+            await postJson({
+              action: 'updateSubJob',
+              jobId: added.jobId,
+              title: job.title,
+              note: job.note || '',
+              dueDate: job.dueDate || null,
+            });
+          }
+        }));
       } catch (e) {
         console.error('monthlyReset 오류:', e);
         setSyncStatus('error');
@@ -3575,18 +3961,47 @@
         safeStorage.setItem('consult-v1-' + cid, '[]');
       });
 
-      // ── 4) 상태 업데이트 (서브업무 제거 + 백업 저장) ──
+      const mergeConsultHistories = (existing, additions) => {
+        const next = [...(existing || [])];
+        (additions || []).forEach(add => {
+          const idx = next.findIndex(h => h.clientId === add.clientId && h.month === add.month);
+          if (idx < 0) {
+            next.push(add);
+            return;
+          }
+
+          const prevItem = next[idx];
+          const prevRecords = prevItem.records || [];
+          const addRecords = add.records || [];
+          const shouldReplaceSummarySeed = prevItem.summaryOnly && addRecords.length > 0;
+          const baseRecords = shouldReplaceSummarySeed ? [] : prevRecords;
+          const prevIds = new Set(prevRecords.map(r => r.id));
+          next[idx] = {
+            ...prevItem,
+            ...add,
+            records: [
+              ...baseRecords,
+              ...addRecords.filter(r => shouldReplaceSummarySeed || !prevIds.has(r.id)),
+            ],
+            summaryOnly: add.summaryOnly || false,
+            savedAt: add.savedAt || prevItem.savedAt,
+          };
+        });
+        return next;
+      };
+
+      // ── 4) 상태 업데이트 (완료된 서브업무만 제거 + 백업 저장) ──
       mutate(prev => ({
         ...prev,
         monthlyJobs: prev.monthlyJobs
-          .filter(j => j.kind !== '서브')
+          .filter(j => j.kind !== '서브' || !isCompletedSubJob(j))
           .map(j => ({
             ...j,
             currentCount: j.targetCount != null ? 0 : j.currentCount,
             note:         j.note === '완료' ? '' : j.note,
           })),
         postLogs:         [],
-        consultHistories: [...(prev.consultHistories || []), ...newHistories],
+        consultHistories: mergeConsultHistories(prev.consultHistories || [], newHistories),
       }));
 
       const backupMsg = newHistories.length > 0
@@ -3596,23 +4011,198 @@
       alert('초기화 완료!' + backupMsg);
     }
 
-    // ── 일회성 마이그레이션: 상담 백업 월 라벨 수정 ──
-    // 2026-05로 잘못 저장된 btskin/belrmon 백업을 2026-04로 교정
+    // ── 과거 월 라벨 교정 마이그레이션 비활성화 ──
+    // 2026-04/2026-05 상담 요약은 아래 consult_summary_seed_v1에서 명시 관리한다.
     useEffect(() => {
       const MIG_KEY = 'consult_month_fix_v1';
       if (safeStorage.getItem(MIG_KEY)) return;
+      safeStorage.setItem(MIG_KEY, '1');
+    }, []);
+
+    // ── 일회성 마이그레이션: 스크린샷 기반 월별 상담 요약 백업 보강 ──
+    useEffect(() => {
+      const MIG_KEY = 'consult_summary_seed_v1';
+      if (safeStorage.getItem(MIG_KEY)) return;
+
+      const seeds = [
+        {
+          month: '2026-05',
+          clientId: 'belrmon',
+          clientName: '벨르몬성형외과',
+          summaryOnly: true,
+          summary: { total: 17, byChannel: { '라인': 10, '인스타': 7 } },
+          records: [
+            {
+              id: 'sum-belrmon-2026-05-line',
+              channel: '라인',
+              nickname: '5월 라인 상담 요약',
+              date: '2026-05-31',
+              content: '라인 상담 10건(59%). 예약 가능 시간, 가격표 요청, 일본어 상담 등 외국인 상담 응대가 확인됨.',
+            },
+            {
+              id: 'sum-belrmon-2026-05-insta',
+              channel: '인스타',
+              nickname: '5월 인스타 상담 요약',
+              date: '2026-05-31',
+              content: '인스타 상담 7건(41%). 위챗 친구 202→254명, 라인 친구 63→81명으로 상담 채널 친구가 합산 +70명 증가.',
+            },
+          ],
+        },
+        {
+          month: '2026-04',
+          clientId: 'belrmon',
+          clientName: '벨르몬성형외과',
+          summaryOnly: true,
+          summary: { total: 20, byChannel: { '라인': 13, '인스타': 7 } },
+          records: [
+            {
+              id: 'sum-belrmon-2026-04-line',
+              channel: '라인',
+              nickname: '4월 라인 상담 요약',
+              date: '2026-04-30',
+              content: 'LINE 비즈니스 상담 13건. 예약확정 2건 포함.',
+            },
+            {
+              id: 'sum-belrmon-2026-04-insta',
+              channel: '인스타',
+              nickname: '4월 인스타 상담 요약',
+              date: '2026-04-30',
+              content: '인스타그램 DM 상담 7건. 라인 연결 전환 1건 포함.',
+            },
+          ],
+        },
+        {
+          month: '2026-05',
+          clientId: 'btskin',
+          clientName: '노형아름다운피부과',
+          summaryOnly: true,
+          summary: { total: 44, byChannel: { '위챗': 30, '라인': 11, '인스타': 3 } },
+          records: [
+            {
+              id: 'sum-btskin-2026-05-wechat',
+              channel: '위챗',
+              nickname: '5월 위챗 상담 요약',
+              date: '2026-05-31',
+              content: '위챗 상담 30건. 5월 다채널 상담 중 가장 큰 비중.',
+            },
+            {
+              id: 'sum-btskin-2026-05-line',
+              channel: '라인',
+              nickname: '5월 라인 상담 요약',
+              date: '2026-05-31',
+              content: '라인 상담 11건. 위챗 다음으로 많은 상담 채널.',
+            },
+            {
+              id: 'sum-btskin-2026-05-insta',
+              channel: '인스타',
+              nickname: '5월 인스타 상담 요약',
+              date: '2026-05-31',
+              content: '인스타 상담 3건. 위챗·라인과 함께 다채널 문의 흐름에 포함.',
+            },
+          ],
+        },
+        {
+          month: '2026-04',
+          clientId: 'btskin',
+          clientName: '노형아름다운피부과',
+          summaryOnly: true,
+          summary: { total: 31, byChannel: { '위챗': 28, '라인': 3 } },
+          records: [
+            {
+              id: 'sum-btskin-2026-04-wechat',
+              channel: '위챗',
+              nickname: '4월 위챗 상담 요약',
+              date: '2026-04-30',
+              content: '위챗 상담 28건. 외국인 채널 상담의 중심 채널로 확인됨.',
+            },
+            {
+              id: 'sum-btskin-2026-04-line',
+              channel: '라인',
+              nickname: '4월 라인 상담 요약',
+              date: '2026-04-30',
+              content: '라인 상담 3건. 위챗 중심 상담 흐름을 보조하는 채널로 집계됨.',
+            },
+          ],
+        },
+      ].map(item => ({ ...item, savedAt: new Date().toISOString() }));
+
       mutate(prev => {
         const histories = prev.consultHistories || [];
-        if (!histories.some(h => h.month === '2026-05' && ['btskin','belrmon'].includes(h.clientId))) return prev;
-        return {
-          ...prev,
-          consultHistories: histories.map(h =>
-            (h.month === '2026-05' && ['btskin','belrmon'].includes(h.clientId))
-              ? { ...h, month: '2026-04' }
-              : h
-          )
-        };
+        const next = [...histories];
+
+        seeds.forEach(seed => {
+          const idx = next.findIndex(h => h.clientId === seed.clientId && h.month === seed.month);
+          if (idx < 0) {
+            next.push(seed);
+            return;
+          }
+
+          const existing = next[idx];
+          const existingRecords = existing.records || [];
+          const existingRecordIds = new Set(existingRecords.map(r => r.id));
+          const hasExistingRecords = existingRecords.length > 0;
+          next[idx] = {
+            ...existing,
+            ...seed,
+            records: [
+              ...existingRecords,
+              ...seed.records.filter(r => !existingRecordIds.has(r.id)),
+            ],
+            summaryOnly: hasExistingRecords ? Boolean(existing.summaryOnly) : seed.summaryOnly,
+            savedAt: existing.savedAt || seed.savedAt,
+          };
+        });
+
+        return { ...prev, consultHistories: next };
       });
+
+      safeStorage.setItem(MIG_KEY, '1');
+    }, []);
+
+    // ── 일회성 마이그레이션: 노형아름다운피부과 4월/5월 상담 요약 월 교정 ──
+    useEffect(() => {
+      const MIG_KEY = 'consult_btskin_month_swap_fix_v1';
+      if (safeStorage.getItem(MIG_KEY)) return;
+
+      const corrections = {
+        '2026-05': {
+          summaryOnly: true,
+          summary: { total: 44, byChannel: { '위챗': 30, '라인': 11, '인스타': 3 } },
+          records: [
+            { id:'sum-btskin-2026-05-wechat', channel:'위챗', nickname:'5월 위챗 상담 요약', date:'2026-05-31', content:'위챗 상담 30건. 5월 다채널 상담 중 가장 큰 비중.' },
+            { id:'sum-btskin-2026-05-line', channel:'라인', nickname:'5월 라인 상담 요약', date:'2026-05-31', content:'라인 상담 11건. 위챗 다음으로 많은 상담 채널.' },
+            { id:'sum-btskin-2026-05-insta', channel:'인스타', nickname:'5월 인스타 상담 요약', date:'2026-05-31', content:'인스타 상담 3건. 위챗·라인과 함께 다채널 문의 흐름에 포함.' },
+          ],
+        },
+        '2026-04': {
+          summaryOnly: true,
+          summary: { total: 31, byChannel: { '위챗': 28, '라인': 3 } },
+          records: [
+            { id:'sum-btskin-2026-04-wechat', channel:'위챗', nickname:'4월 위챗 상담 요약', date:'2026-04-30', content:'위챗 상담 28건. 외국인 채널 상담의 중심 채널로 확인됨.' },
+            { id:'sum-btskin-2026-04-line', channel:'라인', nickname:'4월 라인 상담 요약', date:'2026-04-30', content:'라인 상담 3건. 위챗 중심 상담 흐름을 보조하는 채널로 집계됨.' },
+          ],
+        },
+      };
+
+      mutate(prev => {
+        const histories = prev.consultHistories || [];
+        const next = histories.filter(h =>
+          !(h.clientId === 'btskin' && ['2026-04', '2026-05'].includes(h.month))
+        );
+
+        Object.entries(corrections).forEach(([month, correction]) => {
+          next.push({
+            month,
+            clientId: 'btskin',
+            clientName: '노형아름다운피부과',
+            savedAt: new Date().toISOString(),
+            ...correction,
+          });
+        });
+
+        return { ...prev, consultHistories: next };
+      });
+
       safeStorage.setItem(MIG_KEY, '1');
     }, []);
 
@@ -3863,6 +4453,24 @@
     }, [data.clients, data.monthlyJobs]);
 
     const selectedClient = selId ? data.clients.find(c=>c.clientId===selId) : null;
+    const goClient = useCallback((id) => {
+      setSelId(id);
+      setView('client');
+    }, []);
+
+    function saveDashboardBackup() {
+      if (hasCredentialEntries(data.credentials)) {
+        const ok = confirm('백업 파일에 계정/비밀번호 메모가 포함됩니다.\n외부 공유용이 아니라 로컬 보관용으로만 사용하세요.\n계속 저장하시겠습니까?');
+        if (!ok) return;
+      }
+      const json = JSON.stringify(data, null, 2);
+      const blob = new Blob([json], { type:'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `dashboard_backup_${nowMonth()}.json`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    }
 
     const cardGrid = (clients) => (
       <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(320px,1fr))',gap:16}}>
@@ -3882,8 +4490,10 @@
         <Header
           view={view}
           selectedClient={selectedClient}
+          clients={data.clients || []}
           onBack={()=>setView('main')}
           onHome={()=>setView('main')}
+          onGoClient={goClient}
           onDrafts={()=>setView(v => v==='drafts' ? 'main' : 'drafts')}
           onRevenue={()=>setView(v => v==='revenue' ? 'main' : 'revenue')}
           syncStatus={syncStatus}
@@ -3892,6 +4502,13 @@
 
         {view==='main' && (
           <div style={{maxWidth:1200,margin:'0 auto',padding:'24px 24px'}}>
+
+            <TodayFocus
+              data={data}
+              syncStatus={syncStatus}
+              onGoClient={goClient}
+              onSync={handleSync}
+            />
 
             {/* 내 사업 공통업무 + 업무 캘린더 */}
             <div className="main-top-grid">
@@ -3982,56 +4599,60 @@
 
         {/* 관리 버튼 */}
         <div style={{position:'fixed',bottom:20,right:20,display:'flex',flexDirection:'column',gap:8,alignItems:'flex-end'}}>
-          {view==='main' && (
-            <>
+          {adminOpen && (
+            <div style={{background:'#fff',border:'1px solid #e5e7eb',borderRadius:12,boxShadow:'0 16px 36px rgba(15,23,42,0.18)',padding:10,display:'flex',flexDirection:'column',gap:7,minWidth:176}}>
+              {view==='main' && (
+                <>
+                  <button
+                    style={{background:'#7c3aed',color:'#fff',border:'none',borderRadius:8,padding:'8px 12px',fontSize:12,fontWeight:800,cursor:'pointer',fontFamily:'inherit',textAlign:'left'}}
+                    onClick={()=>{ setAdminOpen(false); handleMonthlyReset(); }}>
+                    📅 다음 달 초기화
+                  </button>
+                  <button
+                    style={{background:'#f8fafc',color:'#334155',border:'1px solid #e2e8f0',borderRadius:8,padding:'8px 12px',fontSize:12,fontWeight:800,cursor:'pointer',fontFamily:'inherit',textAlign:'left'}}
+                    onClick={()=>{ if(confirm('⚠️ 로컬 데이터를 기본값으로 초기화합니다. 계속하시겠습니까?') && confirm('정말 초기화하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) { safeStorage.removeItem(STORAGE_KEY); setData({...DEFAULT_DATA, credentials: DEFAULT_CREDENTIALS}); setAdminOpen(false); } }}>
+                    ↺ 데이터 초기화
+                  </button>
+                </>
+              )}
               <button
-                style={{background:'#7c3aed',color:'#fff',border:'none',borderRadius:20,padding:'6px 14px',fontSize:11,cursor:'pointer',fontFamily:'inherit'}}
-                onClick={handleMonthlyReset}>
-                📅 다음 달 초기화
+                style={{background:'#f8fafc',color:'#334155',border:'1px solid #e2e8f0',borderRadius:8,padding:'8px 12px',fontSize:12,fontWeight:800,cursor:'pointer',fontFamily:'inherit',textAlign:'left'}}
+                onClick={()=>{ saveDashboardBackup(); setAdminOpen(false); }}>
+                ⬇ 백업 저장
               </button>
               <button
-                style={{background:'rgba(26,26,46,0.85)',color:'rgba(255,255,255,0.6)',border:'none',borderRadius:20,padding:'6px 14px',fontSize:11,cursor:'pointer',fontFamily:'inherit'}}
-                onClick={()=>{ if(confirm('⚠️ 로컬 데이터를 기본값으로 초기화합니다. 계속하시겠습니까?') && confirm('정말 초기화하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) { safeStorage.removeItem(STORAGE_KEY); setData({...DEFAULT_DATA}); } }}>
-                ↺ 데이터 초기화
+                style={{background:'#f8fafc',color:'#334155',border:'1px solid #e2e8f0',borderRadius:8,padding:'8px 12px',fontSize:12,fontWeight:800,cursor:'pointer',fontFamily:'inherit',textAlign:'left'}}
+                onClick={()=>{
+                  // 이전 달 백업 목록 표시
+                  const backups = [];
+                  for(let i=0;i<safeStorage.length;i++){
+                    const k=safeStorage.key(i);
+                    if(k && k.startsWith('urbanplanad_backup_')) backups.push(k);
+                  }
+                  backups.sort().reverse();
+                  if(backups.length===0){ alert('저장된 자동 백업이 없습니다.\n동기화가 한 번 이상 완료된 후 자동 백업이 생성됩니다.'); return; }
+                  const list = backups.map((k,i)=>`${i+1}. ${k.replace('urbanplanad_backup_','')}`).join('\n');
+                  const choice = prompt(`복원할 백업을 선택하세요 (번호 입력):\n\n${list}`);
+                  const idx = parseInt(choice)-1;
+                  if(isNaN(idx)||idx<0||idx>=backups.length){ alert('취소되었습니다.'); return; }
+                  if(!confirm(`[${backups[idx].replace('urbanplanad_backup_','')}] 백업으로 복원합니까?\n현재 데이터가 덮어씌워집니다.`)) return;
+                  const raw=safeStorage.getItem(backups[idx]);
+                  if(!raw){ alert('백업 데이터를 읽을 수 없습니다.'); return; }
+                  safeStorage.setItem(STORAGE_KEY, raw);
+                  setData(JSON.parse(raw));
+                  setAdminOpen(false);
+                  alert('✅ 복원 완료! 페이지를 새로고침합니다.');
+                  location.reload();
+                }}>
+                ↩ 백업 복원
               </button>
-            </>
+            </div>
           )}
           <button
-            style={{background:'#c9a96e',color:'#fff',border:'none',borderRadius:20,padding:'6px 14px',fontSize:11,cursor:'pointer',fontFamily:'inherit'}}
-            onClick={()=>{
-              const json=JSON.stringify(window.dashboardData,null,2);
-              const blob=new Blob([json],{type:'application/json'});
-              const a=document.createElement('a');
-              a.href=URL.createObjectURL(blob);
-              a.download=`dashboard_backup_${nowMonth()}.json`;
-              a.click();
-            }}>
-            ⬇ 백업 저장
-          </button>
-          <button
-            style={{background:'#0f766e',color:'#fff',border:'none',borderRadius:20,padding:'6px 14px',fontSize:11,cursor:'pointer',fontFamily:'inherit'}}
-            onClick={()=>{
-              // 이전 달 백업 목록 표시
-              const backups = [];
-              for(let i=0;i<safeStorage.length;i++){
-                const k=safeStorage.key(i);
-                if(k && k.startsWith('urbanplanad_backup_')) backups.push(k);
-              }
-              backups.sort().reverse();
-              if(backups.length===0){ alert('저장된 자동 백업이 없습니다.\n동기화가 한 번 이상 완료된 후 자동 백업이 생성됩니다.'); return; }
-              const list = backups.map((k,i)=>`${i+1}. ${k.replace('urbanplanad_backup_','')}`).join('\n');
-              const choice = prompt(`복원할 백업을 선택하세요 (번호 입력):\n\n${list}`);
-              const idx = parseInt(choice)-1;
-              if(isNaN(idx)||idx<0||idx>=backups.length){ alert('취소되었습니다.'); return; }
-              if(!confirm(`[${backups[idx].replace('urbanplanad_backup_','')}] 백업으로 복원합니까?\n현재 데이터가 덮어씌워집니다.`)) return;
-              const raw=safeStorage.getItem(backups[idx]);
-              if(!raw){ alert('백업 데이터를 읽을 수 없습니다.'); return; }
-              safeStorage.setItem(STORAGE_KEY, raw);
-              setData(JSON.parse(raw));
-              alert('✅ 복원 완료! 페이지를 새로고침합니다.');
-              location.reload();
-            }}>
-            ↩ 백업 복원
+            aria-expanded={adminOpen}
+            style={{background:'#1a1a2e',color:'#fff',border:'1px solid rgba(255,255,255,0.15)',borderRadius:20,padding:'7px 14px',fontSize:12,fontWeight:800,cursor:'pointer',fontFamily:'inherit',boxShadow:'0 8px 20px rgba(15,23,42,0.22)'}}
+            onClick={()=>setAdminOpen(v=>!v)}>
+            ⚙ 관리
           </button>
         </div>
       </div>
