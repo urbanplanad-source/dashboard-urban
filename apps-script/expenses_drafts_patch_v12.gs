@@ -503,8 +503,28 @@ function getDraftsList() {
   return data.slice(1).map(function(row) {
     var obj = {};
     headers.forEach(function(h, i) { obj[h] = row[i] !== undefined ? row[i] : ''; });
+    obj.createdAt = formatDraftDate_(obj.createdAt);
     return obj;
   });
+}
+
+/**
+ * formatDraftDate_ — Drafts.createdAt을 KST YYYY-MM-DD 문자열로 고정한다.
+ * Sheets가 날짜 셀을 Date 객체나 UTC ISO 문자열로 돌려줘도 외부 도구에는 날짜만 노출한다.
+ */
+function formatDraftDate_(value) {
+  if (!value) return '';
+  if (Object.prototype.toString.call(value) === '[object Date]' && !isNaN(value.getTime())) {
+    return Utilities.formatDate(value, 'Asia/Seoul', 'yyyy-MM-dd');
+  }
+  var text = String(value).trim();
+  var match = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (match) return match[1] + '-' + match[2] + '-' + match[3];
+  var parsed = new Date(text);
+  if (!isNaN(parsed.getTime())) {
+    return Utilities.formatDate(parsed, 'Asia/Seoul', 'yyyy-MM-dd');
+  }
+  return text;
 }
 
 /**
@@ -527,7 +547,7 @@ function getDraftsListLight() {
       channel: row[2] || '',
       title: row[3] || '',
       memo: right[i][0] || '',
-      createdAt: right[i][1] || '',
+      createdAt: formatDraftDate_(right[i][1]),
       status: right[i][2] || '',
       preview: '',
       contentLength: null
@@ -560,7 +580,7 @@ function getDraftDetail(draftId) {
           title: row[3] || '',
           content: content,
           memo: row[5] || '',
-          createdAt: row[6] || '',
+          createdAt: formatDraftDate_(row[6]),
           status: row[7] || '',
           preview: String(content).slice(0, 120),
           contentLength: String(content).length

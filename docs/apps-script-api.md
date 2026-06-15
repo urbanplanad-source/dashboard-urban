@@ -497,7 +497,34 @@ Codex가 작성한 글을 대시보드 **글 보관함** 탭에 저장한다.
 | content | string | 본문 전체 (줄바꿈 포함) |
 | memo | string | 키워드, 시술명 등 참고사항 (선택) |
 | createdAt | YYYY-MM-DD | 저장일 (KST 자동) |
-| status | string | 항상 `draft` |
+| status | string | 파이프라인 상태. `addDraft` 시 항상 `draft`로 시작 |
+
+`createdAt`은 Apps Script 내부에서 Date 객체나 ISO 문자열로 읽히더라도 API 응답에서는 항상 KST 기준 `YYYY-MM-DD` 문자열로 정규화한다.
+
+### status 파이프라인 표준 어휘
+
+글 보관함은 콘텐츠 파이프라인 허브로 동작하며, status는 아래 5개 값만 사용한다.
+
+| status | 라벨 | 의미 | 갱신 주체 |
+|--------|------|------|----------|
+| `draft` | 초안 | 막 저장된 초안 (`addDraft` 기본값) | Apps Script |
+| `review` | 검토중 | 의료광고/품질 검토 대기 | growth-team push 스크립트(기본값), 대시보드 UI |
+| `approved` | 승인 | 검토 통과, 게시 가능 | 대시보드 UI (사람 승인) |
+| `staged` | 임시저장됨 | naver-writer가 네이버 블로그 임시저장 완료 | naver-writer write-back (자동) |
+| `published` | 발행완료 | 실제 발행 확인됨 | 대시보드 UI (수동 확인) |
+
+status 변경은 기존 `updateDraft` 액션으로 처리한다 (별도 액션 불필요):
+
+```javascript
+{ "action": "updateDraft", "draftId": "dr-xxxx", "status": "approved" }
+```
+
+연동 주체별 규칙:
+
+- `hospital-marketing-growth-team/scripts/push-dashboard-draft.mjs`: addDraft 후 기본적으로 `review`로 승격. `--status`, `--update --draft-id` 옵션 지원.
+- `naver-writer`: 실제 네이버 임시저장은 `approved` 상태 초안만 허용한다. 임시저장 성공 시 `staged`로 자동 갱신 (`DASHBOARD_WRITEBACK=false`로 비활성화 가능). 실패해도 임시저장 자체는 실패 처리하지 않는다.
+- 대시보드 UI: 글 보관함 상단 파이프라인 바와 카드별 상태 선택으로 변경. 상태 저장 실패 시 화면 값을 이전 상태로 되돌린다.
+- `approved` → 사람 검토 없이 자동으로 만들지 않는다 (운영 원칙).
 
 ---
 
