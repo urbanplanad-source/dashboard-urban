@@ -583,6 +583,45 @@
     return String(job.note || '').trim().startsWith('완료');
   };
 
+  const isWaitingJob = (job) =>
+    /대기|미수령|보류|홀드|확인\s*필요|자료\s*확인|응답\s*대기|수령\s*대기/.test(String(job?.note || ''));
+
+  const dueSortBucket = (job) => {
+    const dl = daysLeft(job?.dueDate);
+    if (dl === null) return 4;
+    if (dl < 0) return 0;
+    if (dl === 0) return 1;
+    if (dl <= 3) return 2;
+    return 3;
+  };
+
+  const sortJobsForFocus = (jobs) => (jobs || [])
+    .map((job, index) => ({ job, index }))
+    .sort((a, b) => {
+      const aDone = isJobDone(a.job);
+      const bDone = isJobDone(b.job);
+      if (aDone !== bDone) return aDone ? 1 : -1;
+
+      const aBucket = dueSortBucket(a.job);
+      const bBucket = dueSortBucket(b.job);
+      if (aBucket !== bBucket) return aBucket - bBucket;
+
+      if (!aDone && aBucket > 2) {
+        const aWaiting = isWaitingJob(a.job);
+        const bWaiting = isWaitingJob(b.job);
+        if (aWaiting !== bWaiting) return aWaiting ? 1 : -1;
+      }
+
+      const aDays = daysLeft(a.job?.dueDate);
+      const bDays = daysLeft(b.job?.dueDate);
+      if (aDays !== bDays) {
+        return (aDays ?? Number.POSITIVE_INFINITY) - (bDays ?? Number.POSITIVE_INFINITY);
+      }
+
+      return a.index - b.index;
+    })
+    .map(({ job }) => job);
+
   const hasCredentialEntries = (credentials) =>
     Object.values(credentials || {}).some(list =>
       Array.isArray(list) && list.some(item => item?.username || item?.password || item?.url)
@@ -695,6 +734,7 @@
     const jobs      = (data.monthlyJobs || []).filter(j => j.clientId === clientId);
     const essential = jobs.filter(j => j.kind === '필수');
     const sub       = jobs.filter(j => j.kind === '서브' || j.kind === '순위');
+    const sortedSub = sortJobsForFocus(sub);
 
     const [showAddSub,   setShowAddSub]   = useState(false);
     const [newSubTitle,  setNewSubTitle]  = useState('');
@@ -705,9 +745,7 @@
     const [newEssCount,  setNewEssCount]  = useState('');
     const [newEssUnit,   setNewEssUnit]   = useState('건');
 
-    const essentialDone = essential.filter(j =>
-      j.targetCount != null ? j.currentCount >= j.targetCount : j.note === '완료'
-    ).length;
+    const essentialDone = essential.filter(isJobDone).length;
 
     function updateCount(jobId, delta) {
       const job = jobs.find(j => j.jobId === jobId);
@@ -828,7 +866,7 @@
       const isSub    = job.kind === '서브' || job.kind === '순위';
       // 블로그 업무: 카운트는 없지만 글 제목 기록 가능
       const isBlog   = !isCount && job.title.includes('블로그');
-      const isDone   = isCount ? job.currentCount >= job.targetCount : job.note === '완료';
+      const isDone   = isJobDone(job);
       const pct      = isCount ? Math.min(100, Math.round(((job.currentCount||0) / job.targetCount) * 100)) : 0;
       // 발행 기록은 카운트 업무 + 블로그 업무 모두 표시
       const jobLogs  = (isCount || isBlog)
@@ -1005,7 +1043,7 @@
               {job.dueDate && !isDone && (
                 <div style={{fontSize:11,marginTop:2}}><DueBadge dueDate={job.dueDate} /></div>
               )}
-              {!isCount && job.note && job.note !== '완료' && (
+              {!isCount && job.note && !isDone && (
                 <div style={{fontSize:11,color:'var(--text-2)',marginTop:2}}>{job.note}</div>
               )}
             </div>
@@ -1075,7 +1113,7 @@
                   </>
                 )}
                 <button
-                  onClick={()=>updateNote(job.jobId, job.note==='완료' ? '' : '완료')}
+                  onClick={()=>updateNote(job.jobId, isDone ? '' : '완료')}
                   style={{fontSize:11,fontWeight:700,padding:'3px 10px',borderRadius:20,border:'none',cursor:'pointer',fontFamily:'inherit',
                     background: isDone ? 'var(--green-bg)':'var(--blue-bg)',
                     color:      isDone ? 'var(--green)':'var(--blue)'
@@ -1291,7 +1329,7 @@
               {sub.some(j=>j.kind==='순위') && sub.some(j=>j.kind==='서브') ? '○ 서브 / 순위 업무' : sub.some(j=>j.kind==='순위') ? '○ 순위 업무' : '○ 서브 업무'}
             </div>
             )}
-            {sub.map(j => <JobRow key={j.jobId} job={j} />)}
+            {sortedSub.map(j => <JobRow key={j.jobId} job={j} />)}
             {/* 서브업무 추가 UI */}
             {!showAddSub ? (
               <button
@@ -2134,7 +2172,7 @@
     const rankJobs   = allJobs.filter(j => j.kind==='순위');
     const subJobs    = allJobs.filter(j => j.kind==='서브');
 
-    const isDone = j => j.targetCount!=null ? j.currentCount>=j.targetCount : j.note==='완료';
+    const isDone = isJobDone;
 
     const essentialDone = essential.filter(isDone).length;
     const allDone = essential.length > 0 && essentialDone === essential.length;
@@ -2145,7 +2183,7 @@
     const noCountEssential = essential.filter(j => j.targetCount == null);
 
     // 서브/순위 진행중 업무 (완료 제외)
-    const nonEssentialActive = [...subJobs, ...rankJobs].filter(j => !isDone(j));
+    const nonEssentialActive = sortJobsForFocus([...subJobs, ...rankJobs].filter(j => !isDone(j)));
     const MAX_SUB = 4;
     const visibleSub = nonEssentialActive.slice(0, MAX_SUB);
     const hasMoreSub = nonEssentialActive.length > MAX_SUB;
@@ -2200,7 +2238,7 @@
         {noCountEssential.length > 0 && (
           <div style={{padding:'0 20px',paddingBottom: visibleSub.length > 0 ? 6 : 10,borderTop: countJobs.length>0 ? '1px solid #f9fafb':'none',paddingTop: countJobs.length>0 ? 8 : 0}}>
             {noCountEssential.map(j => {
-              const done = j.note === '완료';
+              const done = isDone(j);
               return (
                 <div key={j.jobId} style={{display:'flex',alignItems:'center',gap:6,padding:'3px 0'}}>
                   <div style={{width:5,height:5,borderRadius:'50%',flexShrink:0,background:'#ef4444'}} />
@@ -2208,7 +2246,7 @@
                     textDecoration: done ? 'line-through':'none'}}>
                     {j.title}
                   </span>
-                  {j.note && j.note !== '완료' && (
+                  {j.note && !done && (
                     <span style={{fontSize:10,color:'var(--text-2)',flexShrink:0,maxWidth:80,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{j.note}</span>
                   )}
                   {done && <span style={{fontSize:10,color:'var(--green)',flexShrink:0}}>✓</span>}
@@ -2229,7 +2267,7 @@
                 <span style={{fontSize:12,color:'var(--text)',flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
                   {j.title}
                 </span>
-                {j.note && j.note !== '완료' && (
+                {j.note && !isDone(j) && (
                   <span style={{fontSize:10,color:'var(--text-3)',flexShrink:0}}>{j.note}</span>
                 )}
                 {j.dueDate && <DueBadge dueDate={j.dueDate} />}
@@ -2247,7 +2285,7 @@
         {(() => {
           const completedJobs = [
             ...countJobs.filter(j => j.currentCount >= j.targetCount),
-            ...noCountEssential.filter(j => j.note === '완료'),
+            ...noCountEssential.filter(isDone),
             ...[...subJobs, ...rankJobs].filter(j => isDone(j)),
           ];
           if (completedJobs.length === 0) return null;
