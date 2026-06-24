@@ -3583,16 +3583,28 @@
     const [revData,     setRevData]    = useState(()=>loadRevData());
     const [selMonth,    setSelMonth]   = useState(nowMonth);
     const [activeTab,   setActiveTab]  = useState('profit');
+    const [profitMode,  setProfitMode] = useState('direct');
     const [editingCid,  setEditingCid] = useState(null);
     const [editCForm,   setEditCForm]  = useState({});
     const [showAddExp,  setShowAddExp] = useState(false);
     const [editingEid,  setEditingEid] = useState(null);
+    const [expenseTypeFilter, setExpenseTypeFilter] = useState(null);
+    const [expenseScopeFilter, setExpenseScopeFilter] = useState('all');
+    const [expenseCategoryFilter, setExpenseCategoryFilter] = useState('all');
+    const [expenseSortMode, setExpenseSortMode] = useState('date-desc');
+    const [expandedProfitClientId, setExpandedProfitClientId] = useState(null);
+    const [recurringReviewAck, setRecurringReviewAck] = useState(false);
     const blankExp = { date:today(), category:'인건비', description:'', amount:'', type:'고정비', clientId:'', payMethod:'카드', isRecurring:false, memo:'' };
     const [expForm, setExpForm] = useState(blankExp);
+    const recurringReviewKey = `rev-recurring-review-${selMonth}`;
 
     // localStorage 저장
     useEffect(()=>{ saveRevData(revData); }, [revData]);
     const mutRev = fn => setRevData(prev=>fn(prev));
+
+    useEffect(()=>{
+      setRecurringReviewAck(safeStorage.getItem(recurringReviewKey)==='done');
+    }, [recurringReviewKey]);
 
     // Sheets에서 비용 데이터 동기화 (마운트 시)
     useEffect(()=>{
@@ -3604,33 +3616,167 @@
     }, []);
 
     const cr = revData.clientRevenue || [];
-    const selExpenses = (revData.expenses||[]).filter(e=>e.date&&e.date.startsWith(selMonth));
+    const allExpenses = revData.expenses || [];
+    const selExpenses = allExpenses
+      .filter(e=>e.date&&e.date.startsWith(selMonth))
+      .sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')) || String(b.expenseId||'').localeCompare(String(a.expenseId||'')));
+    const prevM = (()=>{ const [y,m]=selMonth.split('-').map(Number); const d=new Date(y, m-1, 1); d.setMonth(d.getMonth()-1); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; })();
+    const prevExpenses = allExpenses.filter(e=>e.date&&e.date.startsWith(prevM));
+    const scopeLabels = { all:'전체', client:'거래처 직접비', own:'자체 지출', recurring:'반복비' };
+    const sortExpenseList = (list) => [...list].sort((a,b)=>{
+      if (expenseSortMode==='amount-desc') {
+        return Number(b.amount||0)-Number(a.amount||0) || String(b.date||'').localeCompare(String(a.date||'')) || String(b.expenseId||'').localeCompare(String(a.expenseId||''));
+      }
+      if (expenseSortMode==='recurring-first') {
+        return Number(!!b.isRecurring)-Number(!!a.isRecurring) || String(b.date||'').localeCompare(String(a.date||'')) || String(b.expenseId||'').localeCompare(String(a.expenseId||''));
+      }
+      return String(b.date||'').localeCompare(String(a.date||'')) || String(b.expenseId||'').localeCompare(String(a.expenseId||''));
+    });
+    const visibleExpenses = sortExpenseList(selExpenses.filter(e=>{
+      if (expenseTypeFilter && e.type!==expenseTypeFilter) return false;
+      if (expenseScopeFilter==='client' && !e.clientId) return false;
+      if (expenseScopeFilter==='own' && e.clientId) return false;
+      if (expenseScopeFilter==='recurring' && !e.isRecurring) return false;
+      if (expenseCategoryFilter!=='all' && e.category!==expenseCategoryFilter) return false;
+      return true;
+    }));
+    const hasExpenseFilter = !!expenseTypeFilter || expenseScopeFilter!=='all' || expenseCategoryFilter!=='all';
+    const expenseFilterLabel = [
+      expenseTypeFilter,
+      expenseScopeFilter!=='all' ? scopeLabels[expenseScopeFilter] : '',
+      expenseCategoryFilter!=='all' ? expenseCategoryFilter : '',
+    ].filter(Boolean).join(' · ');
+    const visibleTotalCosts = visibleExpenses.reduce((s,e)=>s+Number(e.amount||0),0);
+    const visibleFixedCosts = visibleExpenses.filter(e=>e.type==='고정비').reduce((s,e)=>s+Number(e.amount||0),0);
+    const visibleVarCosts   = visibleExpenses.filter(e=>e.type==='변동비').reduce((s,e)=>s+Number(e.amount||0),0);
+    const unassignedExpenses = selExpenses.filter(e=>!e.clientId);
+    const unassignedCosts = unassignedExpenses.reduce((s,e)=>s+Number(e.amount||0),0);
+    const sharedCosts = unassignedCosts;
 
-    // 거래처별 수익 계산 — 귀속비용은 비용기록에서 자동 집계
-    const clientRows = clients.map(c=>{
+    function getProfitRisk(margin) {
+      if (margin < 0) return { label:'심각', color:'var(--red)', bg:'var(--red-bg)' };
+      if (margin < 20) return { label:'위험', color:'var(--red)', bg:'var(--red-bg)' };
+      if (margin < 30) return { label:'주의', color:'var(--amber)', bg:'var(--amber-bg)' };
+      return { label:'양호', color:'var(--green)', bg:'var(--green-bg)' };
+    }
+
+    const monthPostLogs = (data.postLogs || []).filter(p =>
+      p.month===selMonth || String(p.publishedAt||'').startsWith(selMonth) || String(p.date||'').startsWith(selMonth)
+    );
+    const getClientWorkload = (clientId) => {
+      const jobs = (data.monthlyJobs || []).filter(j=>j.clientId===clientId);
+      const monthPosts = monthPostLogs.filter(p=>p.clientId===clientId).length;
+      const doneJobs = jobs.filter(isJobDone);
+      const activeJobs = jobs.filter(j=>!isJobDone(j));
+      const waitingJobs = jobs.filter(isWaitingJob);
+      const countProgress = jobs
+        .filter(j=>j.targetCount != null)
+        .reduce((s,j)=>s+Math.min(Number(j.currentCount||0), Number(j.targetCount||0)), 0);
+      const score = monthPosts + countProgress + doneJobs.length*0.7 + activeJobs.length*0.4;
+      return {
+        postCount: monthPosts,
+        doneJobCount: doneJobs.length,
+        activeJobCount: activeJobs.length,
+        waitingJobCount: waitingJobs.length,
+        workloadScore: score,
+      };
+    };
+
+    // 거래처별 수익 계산 — 직접비는 비용기록에서 자동 집계, 공통비는 매출 비례로 비교 배부
+    const rawClientRows = clients.map(c=>{
       const rv = cr.find(r=>r.clientId===c.clientId)||{monthlyFee:0,additionalRevenue:{},contractStart:'',memo:''};
       const base  = Number(rv.monthlyFee)||0;
       const extra = Number((rv.additionalRevenue||{})[selMonth])||0;
       const totalRev = base+extra;
-      // 비용 기록에서 이 거래처에 귀속된 비용 자동 합산
-      const allocCost = selExpenses.filter(e=>e.clientId===c.clientId).reduce((s,e)=>s+Number(e.amount||0),0);
-      const profit = totalRev-allocCost;
-      const margin = totalRev>0 ? profit/totalRev*100 : 0;
-      return {...c, monthlyFee:base, additionalRevenue:extra, totalRevenue:totalRev, allocatedCosts:allocCost, profit, margin, contractStart:rv.contractStart||'', memo:rv.memo||''};
+      const directExpenses = selExpenses.filter(e=>e.clientId===c.clientId);
+      const directCosts = directExpenses.reduce((s,e)=>s+Number(e.amount||0),0);
+      const workload = getClientWorkload(c.clientId);
+      return {...c, ...workload, monthlyFee:base, additionalRevenue:extra, totalRevenue:totalRev, directCosts, directExpenseCount:directExpenses.length, allocatedCosts:directCosts, contractStart:rv.contractStart||'', memo:rv.memo||''};
     });
 
-    const totalRevenue = clientRows.reduce((s,r)=>s+r.totalRevenue, 0);
+    const totalRevenue = rawClientRows.reduce((s,r)=>s+r.totalRevenue, 0);
+    const clientRows = rawClientRows.map(row=>{
+      const sharedCostAllocation = totalRevenue>0 ? sharedCosts * (row.totalRevenue/totalRevenue) : 0;
+      const contributionProfit = row.totalRevenue-row.directCosts;
+      const contributionMargin = row.totalRevenue>0 ? contributionProfit/row.totalRevenue*100 : 0;
+      const estimatedProfit = contributionProfit-sharedCostAllocation;
+      const estimatedMargin = row.totalRevenue>0 ? estimatedProfit/row.totalRevenue*100 : 0;
+      const displayProfit = profitMode==='shared' ? estimatedProfit : contributionProfit;
+      const displayMargin = profitMode==='shared' ? estimatedMargin : contributionMargin;
+      const profitPerWork = row.workloadScore>0 ? displayProfit/row.workloadScore : null;
+      return {
+        ...row,
+        sharedCostAllocation,
+        contributionProfit,
+        contributionMargin,
+        estimatedProfit,
+        estimatedMargin,
+        displayProfit,
+        displayMargin,
+        profit: displayProfit,
+        margin: displayMargin,
+        profitPerWork,
+        risk: getProfitRisk(displayMargin),
+      };
+    });
+
     const totalCosts   = selExpenses.reduce((s,e)=>s+Number(e.amount||0), 0);
     const netProfit    = totalRevenue-totalCosts;
     const profitMargin = totalRevenue>0 ? netProfit/totalRevenue*100 : 0;
     const fixedCosts   = selExpenses.filter(e=>e.type==='고정비').reduce((s,e)=>s+Number(e.amount||0),0);
     const varCosts     = selExpenses.filter(e=>e.type==='변동비').reduce((s,e)=>s+Number(e.amount||0),0);
+    const riskClientCount = clientRows.filter(r=>r.risk.label==='위험'||r.risk.label==='심각').length;
+    const avgDisplayMargin = clientRows.length ? clientRows.reduce((s,r)=>s+r.displayMargin,0)/clientRows.length : 0;
+    const totalDirectCosts = clientRows.reduce((s,r)=>s+r.directCosts,0);
+    const displayCostTotal = profitMode==='shared' ? totalDirectCosts + (totalRevenue>0 ? sharedCosts : 0) : totalDirectCosts;
+    const displayProfitTotal = clientRows.reduce((s,r)=>s+r.displayProfit,0);
+    const displayMarginTotal = totalRevenue>0 ? displayProfitTotal/totalRevenue*100 : 0;
+    const summaryRisk = getProfitRisk(displayMarginTotal);
 
     // 전월 비교
-    const prevM = (()=>{ const d=new Date(); d.setDate(1); d.setMonth(d.getMonth()-1); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; })();
     const prevRevenue = clients.reduce((s,c)=>{ const rv=cr.find(r=>r.clientId===c.clientId)||{monthlyFee:0,additionalRevenue:{}}; return s+(Number(rv.monthlyFee)||0)+(Number((rv.additionalRevenue||{})[prevM])||0); },0);
-    const prevCosts   = (revData.expenses||[]).filter(e=>e.date&&e.date.startsWith(prevM)).reduce((s,e)=>s+Number(e.amount||0),0);
+    const prevCosts   = prevExpenses.reduce((s,e)=>s+Number(e.amount||0),0);
     const profitDiff  = netProfit-(prevRevenue-prevCosts);
+    const prevUnassignedCosts = prevExpenses.filter(e=>!e.clientId).reduce((s,e)=>s+Number(e.amount||0),0);
+    const recurringExpenses = selExpenses.filter(e=>e.isRecurring);
+    const prevRecurringExpenses = prevExpenses.filter(e=>e.isRecurring);
+    const recurringSig = e => [e.category||'', String(e.description||'').trim().toLowerCase(), e.clientId||'', e.payMethod||''].join('|');
+    const prevRecurringMap = new Map(prevRecurringExpenses.map(e=>[recurringSig(e), e]));
+    const newRecurringExpenses = recurringExpenses.filter(e=>!prevRecurringMap.has(recurringSig(e)));
+    const changedRecurringExpenses = recurringExpenses.filter(e=>{
+      const prev = prevRecurringMap.get(recurringSig(e));
+      return prev && Number(prev.amount||0)!==Number(e.amount||0);
+    });
+    const topClientExpenses = row => [...selExpenses.filter(e=>e.clientId===row.clientId)]
+      .sort((a,b)=>Number(b.amount||0)-Number(a.amount||0) || String(b.date||'').localeCompare(String(a.date||'')))
+      .slice(0,3);
+    const getPrevClientStats = (clientId) => {
+      const rv = cr.find(r=>r.clientId===clientId)||{monthlyFee:0,additionalRevenue:{}};
+      const revenue = (Number(rv.monthlyFee)||0)+(Number((rv.additionalRevenue||{})[prevM])||0);
+      const directCosts = prevExpenses.filter(e=>e.clientId===clientId).reduce((s,e)=>s+Number(e.amount||0),0);
+      const sharedCostAllocation = prevRevenue>0 ? prevUnassignedCosts*(revenue/prevRevenue) : 0;
+      const contributionProfit = revenue-directCosts;
+      const estimatedProfit = contributionProfit-sharedCostAllocation;
+      const profit = profitMode==='shared' ? estimatedProfit : contributionProfit;
+      const margin = revenue>0 ? profit/revenue*100 : 0;
+      return { revenue, directCosts, sharedCostAllocation, profit, margin };
+    };
+    const diagnoseClient = (row) => {
+      const prev = getPrevClientStats(row.clientId);
+      const directRatio = row.totalRevenue>0 ? row.directCosts/row.totalRevenue*100 : 0;
+      const sharedRatio = row.totalRevenue>0 ? row.sharedCostAllocation/row.totalRevenue*100 : 0;
+      const messages = [];
+      if (row.risk.label==='심각') messages.push('표시 이익이 적자라 비용 또는 계약금 재검토가 필요합니다.');
+      else if (row.risk.label==='위험') messages.push('표시 이익률이 20% 미만입니다.');
+      else if (row.risk.label==='주의') messages.push('목표 마진 30%까지 여유가 크지 않습니다.');
+      if (row.totalRevenue<=0) messages.push('매출이 입력되지 않아 수익성이 낮게 보입니다.');
+      if (directRatio>=35) messages.push(`직접비가 매출의 ${directRatio.toFixed(0)}%로 높습니다.`);
+      if (profitMode==='shared' && sharedRatio>=10) messages.push(`공통비 배부 영향이 매출의 ${sharedRatio.toFixed(0)}%입니다.`);
+      if (prev.revenue>0 && row.displayMargin < prev.margin-5) messages.push(`전월보다 마진이 ${(prev.margin-row.displayMargin).toFixed(1)}%p 하락했습니다.`);
+      if (row.profitPerWork!=null && row.profitPerWork<80000) messages.push('업무량 대비 남는 이익이 낮습니다.');
+      if (messages.length===0) messages.push('직접비와 업무량 기준으로 큰 경고는 없습니다.');
+      return messages.slice(0,4);
+    };
 
     // 6개월 추이
     const now6 = Array.from({length:6},(_,i)=>{
@@ -3643,6 +3789,23 @@
 
     // 상위 5 비용
     const top5 = [...selExpenses].sort((a,b)=>Number(b.amount)-Number(a.amount)).slice(0,5);
+    const highRiskRows = clientRows.filter(r=>r.risk.label==='위험'||r.risk.label==='심각').sort((a,b)=>a.displayMargin-b.displayMargin);
+    const lowWorkProfitRows = clientRows
+      .filter(r=>r.profitPerWork!=null && r.profitPerWork<80000)
+      .sort((a,b)=>a.profitPerWork-b.profitPerWork);
+    const profitAlerts = [
+      profitDiff<0 ? { tone:'red', title:'순이익 하락', text:`전월보다 ${fmtMoney(Math.abs(profitDiff))} 낮습니다.` } : null,
+      highRiskRows.length>0 ? { tone:'red', title:`위험 거래처 ${highRiskRows.length}곳`, text:highRiskRows.slice(0,2).map(r=>r.clientName).join(', ') } : null,
+      prevUnassignedCosts>0 && unassignedCosts>prevUnassignedCosts*1.3 ? { tone:'amber', title:'자체 지출 증가', text:`전월 자체 지출 대비 ${((unassignedCosts-prevUnassignedCosts)/prevUnassignedCosts*100).toFixed(0)}% 증가` } : null,
+      top5[0] && totalCosts>0 && Number(top5[0].amount||0)>totalCosts*0.35 ? { tone:'amber', title:'비용 집중', text:`${top5[0].description} 항목이 총비용의 ${(Number(top5[0].amount||0)/totalCosts*100).toFixed(0)}%입니다.` } : null,
+      !recurringReviewAck && (newRecurringExpenses.length>0 || changedRecurringExpenses.length>0) ? { tone:'blue', title:'반복비 검수 필요', text:`신규 ${newRecurringExpenses.length}건 · 금액 변경 ${changedRecurringExpenses.length}건` } : null,
+      lowWorkProfitRows.length>0 ? { tone:'amber', title:'업무량 대비 낮은 수익', text:lowWorkProfitRows.slice(0,2).map(r=>r.clientName).join(', ') } : null,
+    ].filter(Boolean).slice(0,4);
+    const recurringReviewText = recurringReviewAck
+      ? '검수 완료'
+      : newRecurringExpenses.length || changedRecurringExpenses.length
+        ? `신규 ${newRecurringExpenses.length}건 · 금액 변경 ${changedRecurringExpenses.length}건`
+        : '변동 없음';
 
     // 월 선택지 (최근 12개월)
     const monthOptions = Array.from({length:12},(_,i)=>{
@@ -3664,6 +3827,17 @@
         return {...prev, clientRevenue: idx>=0 ? prev.clientRevenue.map((r,i)=>i===idx?updated:r) : [...prev.clientRevenue,updated]};
       });
       setEditingCid(null);
+    }
+    function clearExpenseFilters() {
+      setExpenseTypeFilter(null);
+      setExpenseScopeFilter('all');
+      setExpenseCategoryFilter('all');
+      setExpenseSortMode('date-desc');
+    }
+    function setRecurringReviewDone(done) {
+      if (done) safeStorage.setItem(recurringReviewKey, 'done');
+      else safeStorage.removeItem(recurringReviewKey);
+      setRecurringReviewAck(done);
     }
 
     // ── 비용 CRUD (로컬 + Sheets 동기화) ──
@@ -3687,6 +3861,10 @@
       }).catch(e=>console.warn('updateExpense Sheets 오류:', e));
       setEditingEid(null); setExpForm(blankExp);
     }
+    function cancelEditExp() {
+      setEditingEid(null);
+      setExpForm(blankExp);
+    }
     function deleteExp(eid) {
       if(!confirm('이 비용 항목을 삭제하시겠습니까?')) return;
       mutRev(prev=>({...prev, expenses:prev.expenses.filter(e=>e.expenseId!==eid)}));
@@ -3697,6 +3875,8 @@
     }
 
     const iS = {padding:'5px 8px',border:'1px solid #dcdad4',borderRadius:6,fontSize:12,fontFamily:'inherit',outline:'none',background:'var(--surface)'};
+    const profitGridCols = '1.3fr 74px 100px 110px 100px 110px 110px 1fr 92px';
+    const expGridCols = '100px 120px 1fr 120px 76px 130px 88px 58px 1fr 96px';
     const diffColor = profitDiff>=0?'var(--green)':'var(--red)';
 
     return (
@@ -3733,19 +3913,56 @@
           ))}
         </div>
 
+        {profitAlerts.length>0&&(
+          <div style={{display:'grid',gridTemplateColumns:`repeat(${Math.min(4,profitAlerts.length)},1fr)`,gap:10,marginBottom:18}}>
+            {profitAlerts.map((a,i)=>{
+              const palette = a.tone==='red'
+                ? {bg:'var(--red-bg)', color:'var(--red)', border:'rgba(239,68,68,.25)'}
+                : a.tone==='blue'
+                  ? {bg:'var(--blue-bg)', color:'var(--blue)', border:'rgba(59,130,246,.25)'}
+                  : {bg:'var(--amber-bg)', color:'var(--amber)', border:'rgba(245,158,11,.28)'};
+              return (
+                <div key={i} style={{background:palette.bg,border:`1px solid ${palette.border}`,borderRadius:9,padding:'10px 12px',display:'flex',alignItems:'flex-start',gap:8}}>
+                  <Icon name="alert" size={14} style={{color:palette.color,marginTop:1,flexShrink:0}}/>
+                  <div style={{minWidth:0}}>
+                    <div style={{fontSize:11,fontWeight:800,color:palette.color,marginBottom:3}}>{a.title}</div>
+                    <div style={{fontSize:10.5,color:'var(--text-2)',lineHeight:'15px',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{a.text}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
         {/* 보조 지표 바 */}
         <div style={{display:'flex',gap:10,marginBottom:22}}>
           {[
-            {label:'고정비 총액', value:fmtMoney(fixedCosts), color:'var(--blue)'},
-            {label:'변동비 총액', value:fmtMoney(varCosts),   color:'var(--amber)'},
+            {label:'고정비 총액', value:fmtMoney(fixedCosts), color:'var(--blue)', filterType:'고정비'},
+            {label:'변동비 총액', value:fmtMoney(varCosts),   color:'var(--amber)', filterType:'변동비'},
             {label:'활성 거래처', value:`${clients.length}곳`, color:'var(--text)'},
-            {label:'비용 항목',   value:`${selExpenses.length}건`, color:'var(--text)'},
-          ].map((s,i)=>(
-            <div key={i} style={{background:'var(--surface)',borderRadius:9,border:'1px solid var(--border)',padding:'10px 16px',display:'flex',alignItems:'center',gap:10,flex:1}}>
+            {label:'비용 항목',   value:`${selExpenses.length}건`, color:'var(--text)', clearFilter:true},
+          ].map((s,i)=>{
+            const activeFilter = s.filterType && expenseTypeFilter===s.filterType;
+            const clickable = s.filterType || s.clearFilter;
+            return (
+            <div key={i}
+              onClick={()=>{
+                if (s.filterType) {
+                  setExpenseTypeFilter(prev=>prev===s.filterType?null:s.filterType);
+                  setExpenseScopeFilter('all');
+                  setExpenseCategoryFilter('all');
+                  setActiveTab('expenses');
+                } else if (s.clearFilter) {
+                  clearExpenseFilters();
+                  setActiveTab('expenses');
+                }
+              }}
+              title={s.filterType ? `${s.label}만 보기` : s.clearFilter ? '비용 기록 전체 보기' : undefined}
+              style={{background:activeFilter?'#f8fbff':'var(--surface)',borderRadius:9,border:activeFilter?`1px solid ${s.color}`:'1px solid var(--border)',padding:'10px 16px',display:'flex',alignItems:'center',gap:10,flex:1,cursor:clickable?'pointer':'default',boxShadow:activeFilter?'0 0 0 2px rgba(59,130,246,.08)':'none'}}>
               <span style={{fontSize:11,color:'var(--text-3)'}}>{s.label}</span>
               <span style={{fontSize:13,fontWeight:800,color:s.color,marginLeft:'auto'}}>{s.value}</span>
             </div>
-          ))}
+          )})}
         </div>
 
         {/* 중단: 차트 2개 */}
@@ -3796,34 +4013,69 @@
               </button>
             ))}
             {activeTab==='expenses'&&(
-              <button onClick={()=>{setExpForm({...blankExp,date:today()});setShowAddExp(true);setEditingEid(null);}}
-                style={{marginLeft:'auto',marginRight:14,background:'var(--navy)',color:'#fff',border:'none',borderRadius:7,padding:'6px 14px',fontSize:11,fontWeight:700,cursor:'pointer',fontFamily:'inherit'}}>
-                + 비용 추가
-              </button>
+              <>
+                {hasExpenseFilter&&(
+                  <button onClick={clearExpenseFilters}
+                    style={{marginLeft:'auto',background:'var(--surface-2)',color:'var(--text-2)',border:'1px solid var(--border)',borderRadius:7,padding:'5px 10px',fontSize:11,fontWeight:700,cursor:'pointer',fontFamily:'inherit'}}>
+                    {expenseFilterLabel} 보기 ×
+                  </button>
+                )}
+                <button onClick={()=>{setExpForm({...blankExp,date:today()});setShowAddExp(true);setEditingEid(null);}}
+                  style={{marginLeft:hasExpenseFilter?8:'auto',marginRight:14,background:'var(--navy)',color:'#fff',border:'none',borderRadius:7,padding:'6px 14px',fontSize:11,fontWeight:700,cursor:'pointer',fontFamily:'inherit'}}>
+                  + 비용 추가
+                </button>
+              </>
             )}
           </div>
 
           {/* 탭 A: 거래처별 수익성 */}
           {activeTab==='profit'&&(
             <div>
-              <div style={{display:'grid',gridTemplateColumns:'1.3fr 74px 100px 110px 100px 110px 110px 1fr 72px',gap:0,background:'var(--surface-2)',borderBottom:'1px solid var(--border-2)',padding:'8px 20px'}}>
-                {['거래처','진료과','계약 시작일','월 기본계약금','당월 추가매출','거래처별 총매출','귀속비용','이익률',''].map((h,i)=>(
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:12,padding:'10px 20px',background:'var(--surface)',borderBottom:'1px solid var(--border-2)'}}>
+                <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
+                  {[
+                    {label:'위험 거래처', value:`${riskClientCount}곳`, color:riskClientCount>0?'var(--red)':'var(--green)'},
+                    {label:'자체 지출', value:fmtMoney(sharedCosts), color:'var(--amber)'},
+                    {label:'공통비 배부', value:'매출 비례', color:'var(--text)'},
+                    {label:'평균 표시 마진', value:`${avgDisplayMargin.toFixed(1)}%`, color:avgDisplayMargin>=30?'var(--green)':avgDisplayMargin>=20?'var(--amber)':'var(--red)'},
+                  ].map((item,i)=>(
+                    <span key={i} style={{display:'inline-flex',alignItems:'center',gap:5,fontSize:10.5,color:'var(--text-3)',background:'var(--surface-2)',border:'1px solid var(--border)',borderRadius:7,padding:'4px 8px'}}>
+                      {item.label}
+                      <strong style={{color:item.color,fontSize:11}}>{item.value}</strong>
+                    </span>
+                  ))}
+                </div>
+                <div className="seg" style={{flexShrink:0}}>
+                  <button className={profitMode==='direct'?'active':''} onClick={()=>setProfitMode('direct')}>직접비 기준</button>
+                  <button className={profitMode==='shared'?'active':''} onClick={()=>setProfitMode('shared')}>공통비 포함</button>
+                </div>
+              </div>
+              <div style={{display:'grid',gridTemplateColumns:profitGridCols,gap:0,background:'var(--surface-2)',borderBottom:'1px solid var(--border-2)',padding:'8px 20px'}}>
+                {['거래처','진료과','계약 시작일','월 기본계약금','당월 추가매출','거래처별 총매출','직접비','이익률',''].map((h,i)=>(
                   <span key={i} style={{fontSize:10,fontWeight:700,color:'var(--text-3)'}}>{h}</span>
                 ))}
               </div>
               {clientRows.map((row,idx)=>{
-                const mc=row.margin>=30?'var(--green)':row.margin>=20?'var(--amber)':'var(--red)';
+                const mc=row.risk.color;
+                const causes = diagnoseClient(row);
+                const cTopExpenses = topClientExpenses(row);
+                const prevStats = getPrevClientStats(row.clientId);
+                const marginDelta = prevStats.revenue>0 ? row.displayMargin-prevStats.margin : null;
+                const isExpanded = expandedProfitClientId===row.clientId;
                 return (
                   <div key={row.clientId} style={{borderBottom:idx<clientRows.length-1?'1px solid #f3f4f6':'none'}}>
                     {editingCid===row.clientId?(
-                      <div style={{padding:'10px 20px',background:'#fffbeb',display:'grid',gridTemplateColumns:'1.3fr 74px 100px 110px 100px 110px 110px 1fr 72px',gap:6,alignItems:'center'}}>
+                      <div style={{padding:'10px 20px',background:'#fffbeb',display:'grid',gridTemplateColumns:profitGridCols,gap:6,alignItems:'center'}}>
                         <div style={{fontSize:13,fontWeight:700,color:'var(--ink)'}}>{row.clientName}</div>
                         <SpecBadge specialty={row.specialty}/>
                         <input type="date"   value={editCForm.contractStart}     onChange={e=>setEditCForm(f=>({...f,contractStart:e.target.value}))}     style={{...iS,width:'100%'}}/>
                         <input type="number" value={editCForm.monthlyFee}         onChange={e=>setEditCForm(f=>({...f,monthlyFee:e.target.value}))}         style={{...iS,width:'100%'}} placeholder="0"/>
                         <input type="number" value={editCForm.additionalRevenue}  onChange={e=>setEditCForm(f=>({...f,additionalRevenue:e.target.value}))}  style={{...iS,width:'100%'}} placeholder="0"/>
                         <span style={{fontSize:11,fontWeight:700,color:'var(--blue)'}}>{fmtMoney(Number(editCForm.monthlyFee||0)+Number(editCForm.additionalRevenue||0))}</span>
-                        <span style={{fontSize:11,color:'var(--amber)',fontWeight:600}}>{fmtMoney(row.allocatedCosts)}<span style={{fontSize:9,color:'var(--text-3)',marginLeft:3}}>자동</span></span>
+                        <span style={{fontSize:11,color:'var(--amber)',fontWeight:600}}>
+                          {fmtMoney(row.directCosts)}
+                          <span style={{fontSize:9,color:'var(--text-3)',marginLeft:3}}>자동</span>
+                        </span>
                         <input type="text"   value={editCForm.memo}               onChange={e=>setEditCForm(f=>({...f,memo:e.target.value}))}               style={{...iS,width:'100%'}} placeholder="메모"/>
                         <div style={{display:'flex',gap:4}}>
                           <button onClick={()=>saveEditClient(row.clientId)} style={{background:'var(--navy)',color:'#fff',border:'none',borderRadius:5,padding:'4px 9px',fontSize:10,fontWeight:700,cursor:'pointer',fontFamily:'inherit'}}>저장</button>
@@ -3832,7 +4084,7 @@
                       </div>
                     ):(
                       <div onClick={()=>startEditClient(row)}
-                        style={{padding:'11px 20px',display:'grid',gridTemplateColumns:'1.3fr 74px 100px 110px 100px 110px 110px 1fr 72px',gap:8,alignItems:'center',cursor:'pointer',transition:'background 0.12s'}}
+                        style={{padding:'11px 20px',display:'grid',gridTemplateColumns:profitGridCols,gap:8,alignItems:'center',cursor:'pointer',transition:'background 0.12s'}}
                         onMouseOver={e=>e.currentTarget.style.background='#f9fafb'}
                         onMouseOut={e=>e.currentTarget.style.background=''}>
                         <div>
@@ -3844,28 +4096,118 @@
                         <span style={{fontSize:12,fontWeight:700,color:row.monthlyFee?'#374151':'#d1d5db'}}>{row.monthlyFee?fmtMoney(row.monthlyFee):'미입력'}</span>
                         <span style={{fontSize:12,color:row.additionalRevenue>0?'#1d4ed8':'#9ca3af'}}>{row.additionalRevenue>0?'+'+fmtMoney(row.additionalRevenue):'—'}</span>
                         <span style={{fontSize:12,fontWeight:700,color:'var(--blue)'}}>{fmtMoney(row.totalRevenue)}</span>
-                        <span style={{fontSize:11,color:row.allocatedCosts>0?'#b45309':'#9ca3af'}}>{row.allocatedCosts>0?fmtMoney(row.allocatedCosts):'—'}</span>
-                        <div style={{display:'flex',alignItems:'center',gap:6}}>
-                          <div style={{flex:1,background:'var(--border-2)',borderRadius:99,height:5,overflow:'hidden'}}>
-                            <div style={{width:`${Math.min(100,Math.max(0,row.margin))}%`,height:'100%',background:mc,borderRadius:99}}/>
-                          </div>
-                          <span style={{fontSize:10,fontWeight:800,color:mc,minWidth:32,textAlign:'right'}}>{row.margin.toFixed(0)}%</span>
+                        <div style={{fontSize:11,lineHeight:'15px'}}>
+                          <div style={{color:row.directCosts>0?'#b45309':'#9ca3af',fontWeight:row.directCosts>0?700:500}}>{row.directCosts>0?fmtMoney(row.directCosts):'—'}</div>
+                          {profitMode==='shared'&&row.sharedCostAllocation>0&&(
+                            <div style={{fontSize:9.5,color:'var(--text-3)'}}>공통비 +{fmtMoney(row.sharedCostAllocation)}</div>
+                          )}
                         </div>
-                        <span style={{fontSize:11,color:'#c9a96e',fontWeight:600}}>편집 ✎</span>
+                        <div style={{display:'flex',flexDirection:'column',gap:4}}>
+                          <div style={{display:'flex',alignItems:'center',gap:6}}>
+                            <span style={{fontSize:10.5,fontWeight:800,color:mc,minWidth:62}}>{fmtMoney(row.displayProfit)}</span>
+                            <span style={{fontSize:9.5,fontWeight:800,color:row.risk.color,background:row.risk.bg,borderRadius:5,padding:'1px 6px',whiteSpace:'nowrap'}}>{row.risk.label}</span>
+                          </div>
+                          <div style={{display:'flex',alignItems:'center',gap:6}}>
+                            <div style={{flex:1,background:'var(--border-2)',borderRadius:99,height:5,overflow:'hidden'}}>
+                              <div style={{width:`${Math.min(100,Math.max(0,row.displayMargin))}%`,height:'100%',background:mc,borderRadius:99}}/>
+                            </div>
+                            <span style={{fontSize:10,fontWeight:800,color:mc,minWidth:38,textAlign:'right'}}>{row.displayMargin.toFixed(0)}%</span>
+                          </div>
+                        </div>
+                        <div style={{display:'flex',gap:4,justifyContent:'flex-end'}}>
+                          <button
+                            onClick={ev=>{ev.stopPropagation();setExpandedProfitClientId(prev=>prev===row.clientId?null:row.clientId);}}
+                            style={{background:isExpanded?'var(--navy)':'var(--surface-2)',color:isExpanded?'#fff':'var(--text-2)',border:'1px solid var(--border)',borderRadius:5,padding:'4px 7px',fontSize:10,fontWeight:800,cursor:'pointer',fontFamily:'inherit'}}>
+                            {isExpanded?'닫기':'분석'}
+                          </button>
+                          <button
+                            onClick={ev=>{ev.stopPropagation();startEditClient(row);}}
+                            style={{background:'none',color:'#c9a96e',border:'none',padding:'4px 0',fontSize:11,fontWeight:700,cursor:'pointer',fontFamily:'inherit'}}>
+                            편집
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                    {editingCid!==row.clientId&&isExpanded&&(
+                      <div style={{padding:'13px 20px 16px',background:'#fffaf0',borderTop:'1px solid #fef3c7'}}>
+                        <div style={{display:'grid',gridTemplateColumns:'1.15fr 1fr 1fr',gap:14}}>
+                          <div>
+                            <div style={{fontSize:10,fontWeight:800,color:'var(--text-3)',marginBottom:7}}>원인 요약</div>
+                            <div style={{display:'flex',flexDirection:'column',gap:5}}>
+                              {causes.map((msg,i)=>(
+                                <span key={i} style={{fontSize:11,color:'var(--text)',lineHeight:'16px',background:'#fff',border:'1px solid #fdecc8',borderRadius:7,padding:'5px 7px'}}>{msg}</span>
+                              ))}
+                            </div>
+                          </div>
+                          <div>
+                            <div style={{fontSize:10,fontWeight:800,color:'var(--text-3)',marginBottom:7}}>직접비 TOP 3</div>
+                            {cTopExpenses.length>0?(
+                              <div style={{display:'flex',flexDirection:'column',gap:5}}>
+                                {cTopExpenses.map(e=>(
+                                  <div key={e.expenseId} style={{display:'flex',justifyContent:'space-between',gap:8,fontSize:11,lineHeight:'16px'}}>
+                                    <span style={{color:'var(--text)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{e.description||e.category}</span>
+                                    <strong style={{color:'var(--amber)',flexShrink:0}}>{fmtMoney(e.amount)}</strong>
+                                  </div>
+                                ))}
+                              </div>
+                            ):(
+                              <div style={{fontSize:11,color:'var(--text-3)'}}>거래처 직접비 없음</div>
+                            )}
+                          </div>
+                          <div>
+                            <div style={{fontSize:10,fontWeight:800,color:'var(--text-3)',marginBottom:7}}>업무량 대비 수익</div>
+                            <div style={{fontSize:11,color:'var(--text)',lineHeight:'18px'}}>
+                              발행 {row.postCount}건 · 완료 {row.doneJobCount}건 · 진행 {row.activeJobCount}건
+                            </div>
+                            <div style={{fontSize:11,color:'var(--text-2)',lineHeight:'18px'}}>
+                              업무 점수 {row.workloadScore.toFixed(1)} · 점수당 이익 {row.profitPerWork!=null?fmtMoney(Math.round(row.profitPerWork)):'자료 없음'}
+                            </div>
+                            <div style={{fontSize:11,color:marginDelta==null?'var(--text-3)':marginDelta>=0?'var(--green)':'var(--red)',lineHeight:'18px',fontWeight:700}}>
+                              전월 마진 {prevStats.revenue>0?`${prevStats.margin.toFixed(1)}%`:'자료 없음'}
+                              {marginDelta!=null&&` · ${marginDelta>=0?'+':''}${marginDelta.toFixed(1)}%p`}
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     )}
                   </div>
                 );
               })}
+              {unassignedExpenses.length>0&&(
+                <div style={{borderBottom:'1px solid #f3f4f6'}}>
+                  <div style={{padding:'11px 20px',display:'grid',gridTemplateColumns:profitGridCols,gap:8,alignItems:'center',background:'#fffaf0'}}>
+                    <div>
+                      <div style={{fontSize:13,fontWeight:800,color:'var(--ink)'}}>자체 지출</div>
+                      <div style={{fontSize:10,color:'var(--text-3)',marginTop:1}}>거래처 미지정 비용 {unassignedExpenses.length}건</div>
+                    </div>
+                    <span style={{fontSize:10,fontWeight:800,color:'var(--amber)',background:'var(--amber-bg)',borderRadius:5,padding:'3px 7px',textAlign:'center'}}>운영</span>
+                    <span style={{fontSize:11,color:'var(--text-2)'}}>—</span>
+                    <span style={{fontSize:12,color:'#d1d5db'}}>—</span>
+                    <span style={{fontSize:12,color:'#d1d5db'}}>—</span>
+                    <span style={{fontSize:12,color:'#d1d5db'}}>—</span>
+                    <span style={{fontSize:11,color:'#b45309',fontWeight:800}}>{fmtMoney(unassignedCosts)}</span>
+                    <span style={{fontSize:11,color:'var(--text-2)',fontWeight:700}}>{profitMode==='shared'?'매출 비례 배부됨':'별도 운영비'}</span>
+                    <span/>
+                  </div>
+                </div>
+              )}
               {/* 합계 행 */}
-              <div style={{background:'var(--surface-2)',borderTop:'2px solid #e8e7e3',padding:'10px 20px',display:'grid',gridTemplateColumns:'1.3fr 74px 100px 110px 100px 110px 110px 1fr 72px',gap:8,alignItems:'center'}}>
+              <div style={{background:'var(--surface-2)',borderTop:'2px solid #e8e7e3',padding:'10px 20px',display:'grid',gridTemplateColumns:profitGridCols,gap:8,alignItems:'center'}}>
                 <span style={{fontSize:12,fontWeight:800,color:'var(--ink)'}}>합계</span>
                 <span/><span/>
                 <span style={{fontSize:12,fontWeight:700}}>{fmtMoney(clientRows.reduce((s,r)=>s+r.monthlyFee,0))}</span>
                 <span style={{fontSize:12,fontWeight:700,color:'var(--blue)'}}>{fmtMoney(clientRows.reduce((s,r)=>s+r.additionalRevenue,0))}</span>
                 <span style={{fontSize:13,fontWeight:800,color:'var(--blue)'}}>{fmtMoney(totalRevenue)}</span>
-                <span style={{fontSize:12,fontWeight:700,color:'var(--amber)'}}>{fmtMoney(clientRows.reduce((s,r)=>s+r.allocatedCosts,0))}</span>
-                <span style={{fontSize:12,fontWeight:700,color:'var(--purple)'}}>{profitMargin.toFixed(1)}%</span>
+                <div style={{fontSize:11,lineHeight:'15px',fontWeight:700,color:'var(--amber)'}}>
+                  {fmtMoney(displayCostTotal)}
+                  {profitMode==='shared'&&sharedCosts>0&&(
+                    <div style={{fontSize:9.5,color:'var(--text-3)',fontWeight:500}}>직접 {fmtMoney(totalDirectCosts)} · 공통 {fmtMoney(sharedCosts)}</div>
+                  )}
+                </div>
+                <div style={{display:'flex',alignItems:'center',gap:6}}>
+                  <span style={{fontSize:12,fontWeight:800,color:summaryRisk.color}}>{displayMarginTotal.toFixed(1)}%</span>
+                  <span style={{fontSize:9.5,fontWeight:800,color:summaryRisk.color,background:summaryRisk.bg,borderRadius:5,padding:'1px 6px'}}>{summaryRisk.label}</span>
+                </div>
                 <span/>
               </div>
             </div>
@@ -3874,10 +4216,10 @@
           {/* 탭 B: 비용 기록 */}
           {activeTab==='expenses'&&(
             <div>
-              {/* 비용 추가/수정 인라인 폼 */}
-              {(showAddExp||editingEid)&&(
+              {/* 비용 추가 인라인 폼 */}
+              {showAddExp&&(
                 <div style={{background:'#fffbeb',borderBottom:'1px solid #fef3c7',padding:'14px 20px'}}>
-                  <div style={{fontSize:12,fontWeight:700,color:'var(--text)',marginBottom:10}}>{editingEid?'비용 수정':'새 비용 추가'}</div>
+                  <div style={{fontSize:12,fontWeight:700,color:'var(--text)',marginBottom:10}}>새 비용 추가</div>
                   {/* 1행: 날짜 / 카테고리 / 세부내용 / 금액 / 구분 */}
                   <div style={{display:'grid',gridTemplateColumns:'120px 150px 1fr 130px 80px',gap:7,marginBottom:7}}>
                     <div>
@@ -3932,51 +4274,138 @@
                       <input type="text" value={expForm.memo} onChange={e=>setExpForm(f=>({...f,memo:e.target.value}))} style={{...iS,width:'100%'}} placeholder="메모 (선택)"/>
                     </div>
                     <div style={{display:'flex',gap:6,paddingBottom:1}}>
-                      <button onClick={editingEid?saveEditExp:addExpense} style={{background:'var(--navy)',color:'#fff',border:'none',borderRadius:7,padding:'8px 18px',fontSize:12,fontWeight:700,cursor:'pointer',fontFamily:'inherit',whiteSpace:'nowrap'}}>{editingEid?'수정 완료':'추가'}</button>
-                      <button onClick={()=>{setShowAddExp(false);setEditingEid(null);setExpForm(blankExp);}} style={{background:'var(--border-2)',color:'var(--text-2)',border:'none',borderRadius:7,padding:'8px 12px',fontSize:12,cursor:'pointer',fontFamily:'inherit'}}>취소</button>
+                      <button onClick={addExpense} style={{background:'var(--navy)',color:'#fff',border:'none',borderRadius:7,padding:'8px 18px',fontSize:12,fontWeight:700,cursor:'pointer',fontFamily:'inherit',whiteSpace:'nowrap'}}>추가</button>
+                      <button onClick={()=>{setShowAddExp(false);setExpForm(blankExp);}} style={{background:'var(--border-2)',color:'var(--text-2)',border:'none',borderRadius:7,padding:'8px 12px',fontSize:12,cursor:'pointer',fontFamily:'inherit'}}>취소</button>
                     </div>
                   </div>
                 </div>
               )}
+              {recurringExpenses.length>0&&(
+                <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,padding:'11px 20px',background:recurringReviewAck?'#f0fdf4':'#fffaf0',borderBottom:'1px solid var(--border-2)'}}>
+                  <div style={{display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}>
+                    <span style={{fontSize:12,fontWeight:800,color:'var(--ink)'}}>반복비 검수</span>
+                    <span style={{fontSize:10.5,color:'var(--text-3)',background:'#fff',border:'1px solid var(--border)',borderRadius:7,padding:'4px 8px'}}>이번 달 {recurringExpenses.length}건</span>
+                    <span style={{fontSize:10.5,color:recurringReviewAck?'var(--green)':(newRecurringExpenses.length||changedRecurringExpenses.length)?'var(--amber)':'var(--text-2)',fontWeight:800,background:'#fff',border:'1px solid var(--border)',borderRadius:7,padding:'4px 8px'}}>{recurringReviewText}</span>
+                    {!recurringReviewAck && (newRecurringExpenses.length>0 || changedRecurringExpenses.length>0) && (
+                      <span style={{fontSize:10.5,color:'var(--text-3)'}}>
+                        {[
+                          ...newRecurringExpenses.slice(0,1).map(e=>`신규: ${e.description||e.category}`),
+                          ...changedRecurringExpenses.slice(0,1).map(e=>`변경: ${e.description||e.category}`),
+                        ].join(' · ')}
+                      </span>
+                    )}
+                  </div>
+                  <button onClick={()=>setRecurringReviewDone(!recurringReviewAck)}
+                    style={{background:recurringReviewAck?'var(--surface)':'var(--navy)',color:recurringReviewAck?'var(--text-2)':'#fff',border:'1px solid var(--border)',borderRadius:7,padding:'6px 11px',fontSize:11,fontWeight:800,cursor:'pointer',fontFamily:'inherit',whiteSpace:'nowrap'}}>
+                    {recurringReviewAck?'검수 취소':'검수 완료'}
+                  </button>
+                </div>
+              )}
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:10,padding:'10px 20px',background:'var(--surface)',borderBottom:'1px solid var(--border-2)',flexWrap:'wrap'}}>
+                <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+                  {[
+                    {key:'all',label:'전체'},
+                    {key:'client',label:'거래처 직접비'},
+                    {key:'own',label:'자체 지출'},
+                    {key:'recurring',label:'반복비'},
+                  ].map(item=>(
+                    <button key={item.key} onClick={()=>setExpenseScopeFilter(item.key)}
+                      style={{background:expenseScopeFilter===item.key?'var(--navy)':'var(--surface-2)',color:expenseScopeFilter===item.key?'#fff':'var(--text-2)',border:'1px solid var(--border)',borderRadius:7,padding:'5px 9px',fontSize:11,fontWeight:800,cursor:'pointer',fontFamily:'inherit'}}>
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+                <div style={{display:'flex',alignItems:'center',gap:8,marginLeft:'auto',flexWrap:'wrap'}}>
+                  <select value={expenseCategoryFilter} onChange={e=>setExpenseCategoryFilter(e.target.value)}
+                    style={{...iS,padding:'6px 9px',fontWeight:700,color:'var(--text-2)'}}>
+                    <option value="all">전체 항목</option>
+                    {EXPENSE_CATS.map(c=><option key={c} value={c}>{c}</option>)}
+                  </select>
+                  <div className="seg">
+                    <button className={expenseSortMode==='date-desc'?'active':''} onClick={()=>setExpenseSortMode('date-desc')}>최신순</button>
+                    <button className={expenseSortMode==='amount-desc'?'active':''} onClick={()=>setExpenseSortMode('amount-desc')}>금액순</button>
+                    <button className={expenseSortMode==='recurring-first'?'active':''} onClick={()=>setExpenseSortMode('recurring-first')}>반복비 먼저</button>
+                  </div>
+                  {hasExpenseFilter&&(
+                    <button onClick={clearExpenseFilters}
+                      style={{background:'var(--surface)',color:'var(--text-3)',border:'1px solid var(--border)',borderRadius:7,padding:'5px 9px',fontSize:11,fontWeight:700,cursor:'pointer',fontFamily:'inherit'}}>
+                      초기화
+                    </button>
+                  )}
+                </div>
+              </div>
               {/* 테이블 헤더 */}
-              <div style={{display:'grid',gridTemplateColumns:'100px 120px 1fr 120px 68px 130px 88px 58px 1fr 70px',gap:0,background:'var(--surface-2)',borderBottom:'1px solid var(--border-2)',padding:'8px 20px'}}>
+              <div style={{display:'grid',gridTemplateColumns:expGridCols,gap:0,background:'var(--surface-2)',borderBottom:'1px solid var(--border-2)',padding:'8px 20px'}}>
                 {['지출일','비용 항목','세부 내용','금액','구분','관련 거래처','결제수단','정기','메모',''].map((h,i)=>(
                   <span key={i} style={{fontSize:10,fontWeight:700,color:'var(--text-3)'}}>{h}</span>
                 ))}
               </div>
-              {selExpenses.length===0&&(
+              {visibleExpenses.length===0&&(
                 <div style={{padding:'36px',textAlign:'center',color:'var(--text-3)',fontSize:12}}>
-                  {selMonth.replace('-','년 ')}월 비용 내역이 없습니다.<br/>상단 [+ 비용 추가] 버튼으로 기록을 시작하세요.
+                  {selMonth.replace('-','년 ')}월 {hasExpenseFilter?`${expenseFilterLabel} `:''}비용 내역이 없습니다.<br/>상단 [+ 비용 추가] 버튼으로 기록을 시작하세요.
                 </div>
               )}
-              {selExpenses.map((e,idx)=>(
+              {visibleExpenses.map((e,idx)=>{
+                const isEditing = editingEid===e.expenseId;
+                return (
                 <div key={e.expenseId}
-                  style={{borderBottom:idx<selExpenses.length-1?'1px solid #f3f4f6':'none',display:'grid',gridTemplateColumns:'100px 120px 1fr 120px 68px 130px 88px 58px 1fr 70px',gap:8,alignItems:'center',padding:'10px 20px',transition:'background 0.12s'}}
-                  onMouseOver={ev=>ev.currentTarget.style.background='#f9fafb'}
-                  onMouseOut={ev=>ev.currentTarget.style.background=''}>
-                  <span style={{fontSize:11,color:'var(--text-2)'}}>{e.date?fmtDate(e.date):'—'}</span>
-                  <div style={{display:'flex',alignItems:'center',gap:5}}>
-                    <span style={{width:7,height:7,borderRadius:1,background:CAT_COLORS[e.category]||'#d1d5db',display:'inline-block',flexShrink:0}}/>
-                    <span style={{fontSize:11,fontWeight:600,color:'var(--text)'}}>{e.category}</span>
-                  </div>
-                  <span style={{fontSize:12,color:'var(--text)'}}>{e.description}</span>
-                  <span style={{fontSize:12,fontWeight:700,color:'var(--ink)'}}>{fmtMoney(e.amount)}</span>
-                  <span style={{fontSize:10,fontWeight:700,padding:'2px 6px',borderRadius:4,background:e.type==='고정비'?'var(--blue-bg)':'var(--amber-bg)',color:e.type==='고정비'?'var(--blue)':'var(--amber)',whiteSpace:'nowrap'}}>{e.type}</span>
-                  <span style={{fontSize:11,color:'var(--text-2)'}}>{e.clientId?(clients.find(c=>c.clientId===e.clientId)||{clientName:'—'}).clientName:'—'}</span>
-                  <span style={{fontSize:11,color:'var(--text-2)'}}>{e.payMethod}</span>
-                  <span style={{fontSize:10,color:e.isRecurring?'var(--purple)':'#d1d5db',fontWeight:e.isRecurring?700:400}}>{e.isRecurring?<Icon name="refresh" size={11} />:'—'}</span>
-                  <span style={{fontSize:11,color:'var(--text-3)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{e.memo||'—'}</span>
-                  <div style={{display:'flex',gap:3}}>
-                    <button onClick={()=>startEditExp(e)} className="btn-icon" style={{fontSize:13}}>✎</button>
-                    <button onClick={()=>deleteExp(e.expenseId)} className="btn-icon" style={{fontSize:13,color:'#ef4444'}}>✕</button>
-                  </div>
+                  style={{borderBottom:idx<visibleExpenses.length-1?'1px solid #f3f4f6':'none',display:'grid',gridTemplateColumns:expGridCols,gap:8,alignItems:'center',padding:'10px 20px',transition:'background 0.12s',background:isEditing?'#fffbeb':undefined}}
+                  onMouseOver={ev=>{ if(!isEditing) ev.currentTarget.style.background='#f9fafb'; }}
+                  onMouseOut={ev=>{ if(!isEditing) ev.currentTarget.style.background=''; }}>
+                  {isEditing?(
+                    <>
+                      <input type="date" value={expForm.date} onChange={ev=>setExpForm(f=>({...f,date:ev.target.value}))} style={{...iS,width:'100%'}}/>
+                      <select value={expForm.category} onChange={ev=>setExpForm(f=>({...f,category:ev.target.value}))} style={{...iS,width:'100%'}}>
+                        {EXPENSE_CATS.map(c=><option key={c}>{c}</option>)}
+                      </select>
+                      <input type="text" value={expForm.description} onChange={ev=>setExpForm(f=>({...f,description:ev.target.value}))} style={{...iS,width:'100%'}} placeholder="세부 내용"/>
+                      <input type="number" value={expForm.amount} onChange={ev=>setExpForm(f=>({...f,amount:ev.target.value}))} style={{...iS,width:'100%'}} placeholder="0"/>
+                      <select value={expForm.type} onChange={ev=>setExpForm(f=>({...f,type:ev.target.value}))} style={{...iS,width:'100%'}}>
+                        <option>고정비</option><option>변동비</option>
+                      </select>
+                      <select value={expForm.clientId} onChange={ev=>setExpForm(f=>({...f,clientId:ev.target.value}))} style={{...iS,width:'100%'}}>
+                        <option value="">거래처 없음</option>
+                        {clients.map(c=><option key={c.clientId} value={c.clientId}>{c.clientName}</option>)}
+                      </select>
+                      <select value={expForm.payMethod} onChange={ev=>setExpForm(f=>({...f,payMethod:ev.target.value}))} style={{...iS,width:'100%'}}>
+                        {PAY_METHODS.map(m=><option key={m}>{m}</option>)}
+                      </select>
+                      <label style={{display:'flex',alignItems:'center',justifyContent:'center'}}>
+                        <input type="checkbox" checked={expForm.isRecurring} onChange={ev=>setExpForm(f=>({...f,isRecurring:ev.target.checked}))} style={{width:14,height:14}}/>
+                      </label>
+                      <input type="text" value={expForm.memo} onChange={ev=>setExpForm(f=>({...f,memo:ev.target.value}))} style={{...iS,width:'100%'}} placeholder="메모"/>
+                      <div style={{display:'flex',gap:4,justifyContent:'flex-end'}}>
+                        <button onClick={saveEditExp} style={{background:'var(--navy)',color:'#fff',border:'none',borderRadius:5,padding:'5px 8px',fontSize:10,fontWeight:700,cursor:'pointer',fontFamily:'inherit'}}>저장</button>
+                        <button onClick={cancelEditExp} style={{background:'var(--border-2)',color:'var(--text-2)',border:'none',borderRadius:5,padding:'5px 7px',fontSize:10,cursor:'pointer',fontFamily:'inherit'}}>취소</button>
+                      </div>
+                    </>
+                  ):(
+                    <>
+                      <span style={{fontSize:11,color:'var(--text-2)'}}>{e.date?fmtDate(e.date):'—'}</span>
+                      <div style={{display:'flex',alignItems:'center',gap:5}}>
+                        <span style={{width:7,height:7,borderRadius:1,background:CAT_COLORS[e.category]||'#d1d5db',display:'inline-block',flexShrink:0}}/>
+                        <span style={{fontSize:11,fontWeight:600,color:'var(--text)'}}>{e.category}</span>
+                      </div>
+                      <span style={{fontSize:12,color:'var(--text)'}}>{e.description}</span>
+                      <span style={{fontSize:12,fontWeight:700,color:'var(--ink)'}}>{fmtMoney(e.amount)}</span>
+                      <span style={{fontSize:10,fontWeight:700,padding:'2px 6px',borderRadius:4,background:e.type==='고정비'?'var(--blue-bg)':'var(--amber-bg)',color:e.type==='고정비'?'var(--blue)':'var(--amber)',whiteSpace:'nowrap'}}>{e.type}</span>
+                      <span style={{fontSize:11,color:'var(--text-2)'}}>{e.clientId?(clients.find(c=>c.clientId===e.clientId)||{clientName:'—'}).clientName:'—'}</span>
+                      <span style={{fontSize:11,color:'var(--text-2)'}}>{e.payMethod}</span>
+                      <span style={{fontSize:10,color:e.isRecurring?'var(--purple)':'#d1d5db',fontWeight:e.isRecurring?700:400}}>{e.isRecurring?<Icon name="refresh" size={11} />:'—'}</span>
+                      <span style={{fontSize:11,color:'var(--text-3)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{e.memo||'—'}</span>
+                      <div style={{display:'flex',gap:3,justifyContent:'flex-end'}}>
+                        <button onClick={()=>startEditExp(e)} className="btn-icon" style={{fontSize:13}}>✎</button>
+                        <button onClick={()=>deleteExp(e.expenseId)} className="btn-icon" style={{fontSize:13,color:'#ef4444'}}>✕</button>
+                      </div>
+                    </>
+                  )}
                 </div>
-              ))}
-              {selExpenses.length>0&&(
+              )})}
+              {visibleExpenses.length>0&&(
                 <div style={{background:'var(--surface-2)',borderTop:'2px solid #e8e7e3',padding:'9px 20px',display:'flex',justifyContent:'flex-end',gap:24,alignItems:'center'}}>
-                  <span style={{fontSize:11,color:'var(--text-3)'}}>고정비 <strong style={{color:'var(--blue)'}}>{fmtMoney(fixedCosts)}</strong></span>
-                  <span style={{fontSize:11,color:'var(--text-3)'}}>변동비 <strong style={{color:'var(--amber)'}}>{fmtMoney(varCosts)}</strong></span>
-                  <span style={{fontSize:12,fontWeight:800,color:'var(--text)'}}>총비용 {fmtMoney(totalCosts)}</span>
+                  <span style={{fontSize:11,color:'var(--text-3)'}}>고정비 <strong style={{color:'var(--blue)'}}>{fmtMoney(visibleFixedCosts)}</strong></span>
+                  <span style={{fontSize:11,color:'var(--text-3)'}}>변동비 <strong style={{color:'var(--amber)'}}>{fmtMoney(visibleVarCosts)}</strong></span>
+                  <span style={{fontSize:12,fontWeight:800,color:'var(--text)'}}>{hasExpenseFilter?'표시 비용':'총비용'} {fmtMoney(visibleTotalCosts)}</span>
                 </div>
               )}
             </div>
@@ -4312,6 +4741,54 @@
         return result;
       };
 
+      const targetExpenseMonth = nowMonth();
+      const sourceExpenseMonth = prevMonth();
+      const copyExpenseDateToMonth = (date, targetMonth) => {
+        const [, , rawDay] = String(date || '').split('-');
+        const [yy, mm] = targetMonth.split('-').map(Number);
+        const lastDay = new Date(yy, mm, 0).getDate();
+        const day = Math.min(Math.max(Number(rawDay) || 1, 1), lastDay);
+        return `${targetMonth}-${pad2(day)}`;
+      };
+      const fixedExpenseKey = (e) => [
+        e.category || '',
+        e.description || '',
+        String(Number(e.amount) || 0),
+        e.clientId || '',
+        e.payMethod || '',
+        e.memo || '',
+      ].join('|');
+      const copyFixedExpensesToMonth = async (expenses, targetMonth) => {
+        const sourceFixed = (expenses || [])
+          .filter(e => e.date && e.date.startsWith(sourceExpenseMonth))
+          .filter(e => e.type === '고정비');
+        const targetKeys = new Set(
+          (expenses || [])
+            .filter(e => e.date && e.date.startsWith(targetMonth))
+            .filter(e => e.type === '고정비')
+            .map(fixedExpenseKey)
+        );
+        const copied = [];
+        for (const src of sourceFixed) {
+          if (targetKeys.has(fixedExpenseKey(src))) continue;
+          const newExpense = {
+            date: copyExpenseDateToMonth(src.date, targetMonth),
+            category: src.category || '기타비용',
+            description: src.description || '',
+            amount: Number(src.amount) || 0,
+            type: '고정비',
+            clientId: src.clientId || '',
+            payMethod: src.payMethod || '카드',
+            isRecurring: src.isRecurring === true || src.isRecurring === 'true' || src.isRecurring === 'TRUE',
+            memo: src.memo || '',
+          };
+          const result = await postJson({ action:'addExpense', ...newExpense });
+          copied.push({ expenseId:result.expenseId || `exp-copy-${Date.now().toString(36)}-${copied.length}`, ...newExpense });
+          targetKeys.add(fixedExpenseKey(newExpense));
+        }
+        return copied;
+      };
+
       // ── 2) Sheets 초기화 먼저 완료 확인 ──
       // 월초에 전월 보고서를 마친 뒤 누르는 전제이므로, 새 운영월은 현재 월(nowMonth)이다.
       const isCompletedSubJob = (job) => String(job.note || '').trim().startsWith('완료');
@@ -4331,12 +4808,26 @@
       };
 
       setSyncStatus('loading');
+      let afterReset = null;
+      let copiedFixedExpenses = [];
+      let fixedCopyError = null;
       try {
         await Promise.all(completedServerSubs.map(deleteCompletedSubJob));
-        await postJson({ action: 'monthlyReset', month: nowMonth() });
+        await postJson({ action: 'monthlyReset', month: targetExpenseMonth });
 
         // live monthlyReset 내부 구현이 서브업무를 건드리더라도, 미완료 서브업무는 다시 보강한다.
-        const afterReset = await fetchFromSheets();
+        afterReset = await fetchFromSheets();
+        try {
+          const expensePool = (afterReset.expenses && afterReset.expenses.length)
+            ? afterReset.expenses
+            : (data.expenses || []);
+          copiedFixedExpenses = await copyFixedExpensesToMonth(expensePool, targetExpenseMonth);
+          if (copiedFixedExpenses.length > 0) afterReset = await fetchFromSheets();
+        } catch (e) {
+          fixedCopyError = e;
+          console.error('fixedExpenseCopy 오류:', e);
+        }
+
         const afterIds = new Set((afterReset.monthlyJobs || []).map(j => j.jobId));
         const missingCarryovers = carryoverSubs.filter(j => !j.syncPending && !afterIds.has(j.jobId));
 
@@ -4408,6 +4899,9 @@
             currentCount: j.targetCount != null ? 0 : j.currentCount,
             note:         j.note === '완료' ? '' : j.note,
           })),
+        expenses: (afterReset && afterReset.expenses && afterReset.expenses.length)
+          ? afterReset.expenses
+          : (copiedFixedExpenses.length > 0 ? [...(prev.expenses || []), ...copiedFixedExpenses] : prev.expenses),
         postLogs:         [],
         consultHistories: mergeConsultHistories(prev.consultHistories || [], newHistories),
       }));
@@ -4415,8 +4909,13 @@
       const backupMsg = newHistories.length > 0
         ? `\n\n📊 상담 내역 백업 완료:\n` + newHistories.map(h => `  • ${h.clientName}: ${h.summary.total}건`).join('\n')
         : '';
+      const fixedCopyMsg = fixedCopyError
+        ? `\n\n고정비 자동 복사에 실패했습니다. 손익 관리 > 비용 기록에서 ${targetExpenseMonth.replace('-','년 ')}월 고정비를 확인해 주세요.\n오류: ${fixedCopyError.message || fixedCopyError}`
+        : copiedFixedExpenses.length > 0
+          ? `\n\n고정비 ${copiedFixedExpenses.length}건을 ${targetExpenseMonth.replace('-','년 ')}월로 복사했습니다.`
+          : '';
       setSyncStatus('ok');
-      alert('초기화 완료!' + backupMsg);
+      alert('초기화 완료!' + backupMsg + fixedCopyMsg);
     }
 
     // ── 과거 월 라벨 교정 마이그레이션 비활성화 ──
