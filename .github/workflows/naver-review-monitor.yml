@@ -2,10 +2,6 @@ name: Naver Place Visitor Review Monitor
 
 on:
   workflow_dispatch:
-  schedule:
-    # GitHub Actions cron is UTC.
-    # 00:00, 04:00, 08:00 UTC = 09:00, 13:00, 17:00 KST.
-    - cron: '0 0,4,8 * * *'
 
 jobs:
   monitor:
