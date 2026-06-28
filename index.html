@@ -211,6 +211,36 @@
   const SPEC_COLOR = { '피부과':'#db2777','성형외과':'#7c3aed','안과':'#2563eb','치과':'#0e9f6e','한의원':'#3f8530','이사/운송':'#d97706','이사':'#d97706','기타':'#5d5f6b' };
   const SPEC_BG    = { '피부과':'#fce9f1','성형외과':'#f0ebfd','안과':'#e9f0fd','치과':'#e4f5ee','한의원':'#e6f4e2','이사/운송':'#fcf3e4','이사':'#fcf3e4','기타':'#f1f0ed' };
 
+  const CLIENT_BRIEF_FIELDS = [
+    { key:'brandSummary', label:'한 줄 포지션', rows:2, placeholder:'예: 지역 기반 피부/통증/미용 진료에서 어떤 이미지로 기억되어야 하는지' },
+    { key:'clinicFeatures', label:'병원 특징 / 강점', rows:5, placeholder:'위치, 진료 철학, 장비, 공간, 예약/상담 방식, 지역 내 차별점' },
+    { key:'doctorStyle', label:'원장님 스타일', rows:4, placeholder:'상담 톤, 설명 방식, 선호 표현, 피하고 싶은 이미지, 환자 응대 특징' },
+    { key:'targetPatients', label:'핵심 타깃 / 환자 상황', rows:4, placeholder:'연령대, 지역, 고민, 검색 의도, 방문 전 불안 요소' },
+    { key:'representativeTreatments', label:'대표 시술 / 주력 서비스', rows:5, placeholder:'주력 시술명, 추천 대상, 강점, 함께 묶을 수 있는 시술' },
+    { key:'procedureNotes', label:'시술별 설명 포인트', rows:5, placeholder:'각 시술의 원리, 상담 시 강조점, 사후관리, 주의사항, 자주 묻는 질문' },
+    { key:'pricingMemo', label:'가격 / 이벤트 운영 메모', rows:4, placeholder:'가격표 해석 기준, 이벤트 기간, 패키지 구성, 외부 공개 시 주의할 점' },
+    { key:'writingGuidelines', label:'글 작성 지침', rows:6, placeholder:'제목 구조, 본문 흐름, 도입부 톤, CTA, 이미지 캡션, 채널별 차이' },
+    { key:'toneAndManner', label:'톤앤매너', rows:4, placeholder:'차분함, 전문성, 친근함, 고급감 등. 금지되는 말투도 함께 기록' },
+    { key:'requiredPhrases', label:'반드시 포함할 표현 / 고정 문구', rows:4, placeholder:'진료명, 병원명 표기, 주소/예약 문구, 상담 안내, 고정 CTA' },
+    { key:'forbiddenPhrases', label:'금지 / 주의 표현', rows:4, placeholder:'과장 표현, 보장 표현, 경쟁 병원 비교, 사용 금지 키워드' },
+    { key:'medicalAdCautions', label:'의료광고 / 심의 주의사항', rows:5, placeholder:'전후사진, 가격 노출, 치료효과 표현, 후기 활용, 심의 필요 여부' },
+    { key:'contentAngles', label:'콘텐츠 아이디어 / 소재', rows:5, placeholder:'계절 이슈, 증상별 주제, 자주 묻는 질문, 지역 키워드, 캠페인 방향' },
+    { key:'keywords', label:'핵심 키워드', rows:3, placeholder:'대표 키워드, 지역 키워드, 롱테일 키워드, 피해야 할 키워드' },
+    { key:'faq', label:'자주 묻는 질문 / 답변 기준', rows:5, placeholder:'환자 질문과 답변 톤. 답변 불가/확인 필요 항목도 기록' },
+    { key:'localContext', label:'지역 / 경쟁 / 운영 맥락', rows:4, placeholder:'상권, 인근 지역, 경쟁 구도, 주요 유입 채널, 운영 이슈' },
+    { key:'referenceLinks', label:'참고 링크 / 자료 위치', rows:3, placeholder:'홈페이지, 플레이스, 가격표 파일, 내부 문서, 이미지 폴더 링크' },
+    { key:'internalNotes', label:'내부 메모', rows:4, placeholder:'콘텐츠 작성자가 알아야 하는 기타 맥락. 계정/비밀번호는 입력하지 않음' },
+  ];
+
+  const CLIENT_BRIEF_PRICE_FIELDS = [
+    { key:'category', label:'분류', placeholder:'피부 / 통증 / 치과' },
+    { key:'name', label:'시술명', placeholder:'예: 리프팅, 임플란트' },
+    { key:'regularPrice', label:'정상가', placeholder:'예: 300,000원' },
+    { key:'eventPrice', label:'이벤트가', placeholder:'예: 199,000원' },
+    { key:'sessionInfo', label:'구성', placeholder:'횟수, 부위, 소요시간' },
+    { key:'notes', label:'비고', placeholder:'노출 주의, 상담 후 확정 등' },
+  ];
+
   // ═══════════════════════════════════════════════
   //  ICONS (inline SVG — 이모지 대체)
   // ═══════════════════════════════════════════════
@@ -342,6 +372,7 @@
     contracts: [],
     consults: [],
     consultHistories: [],  // 채널별 상담 내역 월별 백업 (다음달 초기화 시 자동 저장)
+    clientBriefs: {},
   };
 
   // ═══════════════════════════════════════════════
@@ -395,6 +426,73 @@
       createdAt: c.createdAt || '',
     };
   };
+  const blankClientBrief = (clientId='') => ({
+    clientId,
+    brandSummary: '',
+    clinicFeatures: '',
+    doctorStyle: '',
+    targetPatients: '',
+    representativeTreatments: '',
+    procedureNotes: '',
+    pricingMemo: '',
+    writingGuidelines: '',
+    toneAndManner: '',
+    requiredPhrases: '',
+    forbiddenPhrases: '',
+    medicalAdCautions: '',
+    contentAngles: '',
+    keywords: '',
+    faq: '',
+    localContext: '',
+    referenceLinks: '',
+    internalNotes: '',
+    procedurePrices: [],
+    updatedAt: '',
+  });
+  const normalizeProcedurePrices = (value) => {
+    if (!value) return [];
+    if (Array.isArray(value)) {
+      return value.map(row => ({
+        category: String(row?.category || ''),
+        name: String(row?.name || row?.procedureName || ''),
+        regularPrice: String(row?.regularPrice || ''),
+        eventPrice: String(row?.eventPrice || ''),
+        sessionInfo: String(row?.sessionInfo || row?.duration || ''),
+        notes: String(row?.notes || row?.memo || ''),
+      })).filter(row => Object.values(row).some(v => String(v || '').trim()));
+    }
+    if (typeof value === 'string') {
+      try { return normalizeProcedurePrices(JSON.parse(value)); } catch(e) { return []; }
+    }
+    return [];
+  };
+  const normalizeClientBrief = (brief={}, fallbackClientId='') => {
+    const base = blankClientBrief(fallbackClientId || brief.clientId || '');
+    const next = { ...base, ...brief, clientId: brief.clientId || fallbackClientId || '' };
+    CLIENT_BRIEF_FIELDS.forEach(field => { next[field.key] = String(next[field.key] || ''); });
+    next.procedurePrices = normalizeProcedurePrices(next.procedurePrices || next.procedurePricesJson);
+    next.updatedAt = normalizeDate(next.updatedAt) || String(next.updatedAt || '');
+    delete next.procedurePricesJson;
+    return next;
+  };
+  const normalizeClientBriefMap = (input) => {
+    const result = {};
+    if (Array.isArray(input)) {
+      input.forEach(item => {
+        const cid = item?.clientId;
+        if (cid) result[cid] = normalizeClientBrief(item, cid);
+      });
+      return result;
+    }
+    Object.entries(input || {}).forEach(([cid, item]) => {
+      result[cid] = normalizeClientBrief(item || {}, cid);
+    });
+    return result;
+  };
+  const mergeClientBriefMaps = (primary, fallback) => ({
+    ...normalizeClientBriefMap(fallback),
+    ...normalizeClientBriefMap(primary),
+  });
   const mergeConsultLists = (localList, remoteList) => {
     const byId = new Map();
     [...(remoteList || []), ...(localList || [])]
@@ -450,6 +548,7 @@
           contracts:        s.contracts        ?? [],
           consults:         s.consults         ?? [],
           consultHistories: s.consultHistories ?? [],
+          clientBriefs:     normalizeClientBriefMap(s.clientBriefs),
         };
       }
     } catch(e) {}
@@ -507,6 +606,19 @@
         method: 'POST', redirect: 'follow',
         body: JSON.stringify({ action:'deleteConsult', clientId, consultId })
       }).then(r => r.json()),
+      clientBriefs: () => fetch(API_URL + '?action=clientBriefs').then(r => r.json()),
+      getClientBrief: (clientId) => fetch(API_URL + '?action=clientBrief&clientId=' + encodeURIComponent(clientId)).then(r => r.json()),
+      upsertClientBrief: (clientId, fields) => {
+        const brief = normalizeClientBrief({ ...(fields || {}), clientId }, clientId);
+        return fetch(API_URL, {
+          method: 'POST', redirect: 'follow',
+          body: JSON.stringify({
+            action:'upsertClientBrief',
+            ...brief,
+            procedurePricesJson: JSON.stringify(brief.procedurePrices || [])
+          })
+        }).then(r => r.json());
+      },
     };
   }
 
@@ -543,6 +655,7 @@
       })),
       drafts: (d.drafts || []),
       consults: (d.consults || []).map(normalizeConsult),
+      clientBriefs: normalizeClientBriefMap(d.clientBriefs || d.clientKnowledge || []),
       reviewTargets: (d.reviewTargets || []).map(r => ({
         ...r,
         savedVisitorReviewCount: Number(r.savedVisitorReviewCount) || 0,
@@ -2376,10 +2489,326 @@
     );
   }
 
+  function hasClientBriefContent(brief) {
+    const b = normalizeClientBrief(brief || {});
+    return CLIENT_BRIEF_FIELDS.some(field => String(b[field.key] || '').trim())
+      || (b.procedurePrices || []).length > 0;
+  }
+
+  function formatClientBriefContext(client, brief, data) {
+    const b = normalizeClientBrief(brief || {}, client.clientId);
+    const jobs = sortJobsForFocus((data.monthlyJobs || [])
+      .filter(j => j.clientId === client.clientId && !isJobDone(j)))
+      .slice(0, 12);
+    const posts = [...(data.postLogs || [])]
+      .filter(p => p.clientId === client.clientId)
+      .sort((a,b) => String(b.publishedAt || '').localeCompare(String(a.publishedAt || '')))
+      .slice(0, 8);
+
+    const lines = [
+      '# 거래처 콘텐츠 작성 컨텍스트',
+      '',
+      `거래처: ${client.clientName}`,
+      `clientId: ${client.clientId}`,
+      `진료과/분야: ${client.specialty || ''}`,
+      `담당자: ${client.mainContact || ''}`,
+      `브리프 업데이트: ${b.updatedAt || '미입력'}`,
+      '',
+      '## 콘텐츠 브리프',
+    ];
+
+    CLIENT_BRIEF_FIELDS.forEach(field => {
+      lines.push('', `### ${field.label}`);
+      lines.push(String(b[field.key] || '').trim() || '미입력');
+    });
+
+    lines.push('', '## 시술 / 가격표');
+    if ((b.procedurePrices || []).length) {
+      b.procedurePrices.forEach((row, index) => {
+        lines.push([
+          `${index + 1}.`,
+          row.category ? `[${row.category}]` : '',
+          row.name || '시술명 미입력',
+          row.regularPrice ? `정상가: ${row.regularPrice}` : '',
+          row.eventPrice ? `이벤트가: ${row.eventPrice}` : '',
+          row.sessionInfo ? `구성: ${row.sessionInfo}` : '',
+          row.notes ? `비고: ${row.notes}` : '',
+        ].filter(Boolean).join(' '));
+      });
+    } else {
+      lines.push('미입력');
+    }
+
+    lines.push('', '## 현재 진행중 업무');
+    if (jobs.length) {
+      jobs.forEach(j => {
+        lines.push(`- ${j.title}${j.dueDate ? ` / 마감 ${j.dueDate}` : ''}${j.note ? ` / 메모 ${j.note}` : ''}`);
+      });
+    } else {
+      lines.push('- 진행중 업무 없음');
+    }
+
+    lines.push('', '## 최근 발행 글');
+    if (posts.length) {
+      posts.forEach(p => {
+        lines.push(`- ${p.publishedAt || ''} ${p.channel || ''} ${p.title || ''}`.trim());
+      });
+    } else {
+      lines.push('- 최근 발행 기록 없음');
+    }
+
+    lines.push(
+      '',
+      '## 작성 전 확인',
+      '- 위 브리프를 우선 기준으로 삼고, 확인되지 않은 수치나 효과는 만들지 않는다.',
+      '- 의료/시술 콘텐츠는 개인별 차이와 상담 필요성을 자연스럽게 반영한다.',
+      '- 작성 후 대시보드 글 보관함에는 addDraft 구조로 저장한다.'
+    );
+
+    return lines.join('\n');
+  }
+
+  function ClientBriefSection({ client, data, brief, onSave }) {
+    const briefSignature = JSON.stringify(brief || {});
+    const [editing, setEditing] = useState(false);
+    const [form, setForm] = useState(() => normalizeClientBrief(brief || {}, client.clientId));
+    const [copied, setCopied] = useState(false);
+    const [saveState, setSaveState] = useState('idle');
+
+    useEffect(() => {
+      setForm(normalizeClientBrief(brief || {}, client.clientId));
+      setEditing(false);
+      setSaveState('idle');
+    }, [client.clientId, briefSignature]);
+
+    const currentBrief = normalizeClientBrief(editing ? form : (brief || {}), client.clientId);
+    const hasContent = hasClientBriefContent(currentBrief);
+    const compact = (value, fallback='미입력') => String(value || '').trim() || fallback;
+    const iS = { fontFamily:'inherit', fontSize:12.5, border:'1px solid var(--border)', borderRadius:7, padding:'7px 9px', outline:'none', background:'var(--surface)', boxSizing:'border-box' };
+    const labelS = { fontSize:11, fontWeight:800, color:'var(--text-2)', marginBottom:5 };
+
+    function updateField(key, value) {
+      setForm(prev => ({ ...prev, [key]: value }));
+    }
+
+    function updatePrice(index, key, value) {
+      setForm(prev => ({
+        ...prev,
+        procedurePrices: (prev.procedurePrices || []).map((row, i) => i === index ? { ...row, [key]: value } : row)
+      }));
+    }
+
+    function addPriceRow() {
+      setForm(prev => ({
+        ...prev,
+        procedurePrices: [...(prev.procedurePrices || []), { category:'', name:'', regularPrice:'', eventPrice:'', sessionInfo:'', notes:'' }]
+      }));
+    }
+
+    function deletePriceRow(index) {
+      setForm(prev => ({
+        ...prev,
+        procedurePrices: (prev.procedurePrices || []).filter((_, i) => i !== index)
+      }));
+    }
+
+    function saveBrief() {
+      const clean = normalizeClientBrief(form, client.clientId);
+      setSaveState('saving');
+      Promise.resolve(onSave(client.clientId, clean))
+        .then(() => {
+          setForm(clean);
+          setEditing(false);
+          setSaveState('saved');
+          setTimeout(() => setSaveState('idle'), 2500);
+        })
+        .catch(e => {
+          console.warn('upsertClientBrief 오류:', e);
+          setForm(clean);
+          setEditing(false);
+          setSaveState('local');
+        });
+    }
+
+    function copyContext() {
+      const text = formatClientBriefContext(client, currentBrief, data);
+      navigator.clipboard.writeText(text).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }).catch(() => {
+        const el = document.createElement('textarea');
+        el.value = text;
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      });
+    }
+
+    const statusText = saveState === 'saving'
+      ? '저장중'
+      : saveState === 'saved'
+        ? 'Sheets 저장됨'
+        : saveState === 'local'
+          ? '로컬 저장됨 / Sheets 패치 확인 필요'
+          : (currentBrief.updatedAt ? `업데이트 ${fmtDate(currentBrief.updatedAt)}` : '브리프 미입력');
+
+    return (
+      <div style={{background:'var(--surface)',borderRadius:12,border:'1px solid var(--border)',padding:'18px 20px',marginBottom:20}}>
+        <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',gap:12,marginBottom:14,flexWrap:'wrap'}}>
+          <div>
+            <div className="section-title" style={{margin:0}}><Icon name="clipboard" size={12} /> 콘텐츠 브리프 / 작성 지침</div>
+            <div style={{fontSize:11.5,color:'var(--text-3)',marginTop:4}}>
+              병원 특징, 원장님 스타일, 대표 시술, 가격표, 의료광고 주의사항을 거래처별로 관리합니다.
+            </div>
+          </div>
+          <div style={{display:'flex',alignItems:'center',gap:7,flexWrap:'wrap',justifyContent:'flex-end'}}>
+            <span style={{fontSize:11,color:saveState==='local'?'var(--amber)':'var(--text-3)',fontWeight:700}}>{statusText}</span>
+            <button onClick={copyContext}
+              style={{display:'inline-flex',alignItems:'center',gap:5,background:'var(--blue-bg)',color:'var(--blue)',border:'1px solid #bfdbfe',borderRadius:8,padding:'7px 11px',fontSize:12,fontWeight:800,cursor:'pointer',fontFamily:'inherit'}}>
+              <Icon name="copy" size={12} /> {copied ? '복사됨' : '작성 컨텍스트 복사'}
+            </button>
+            {editing ? (
+              <>
+                <button onClick={saveBrief}
+                  style={{display:'inline-flex',alignItems:'center',gap:5,background:'var(--navy)',color:'#fff',border:'none',borderRadius:8,padding:'7px 12px',fontSize:12,fontWeight:800,cursor:'pointer',fontFamily:'inherit'}}>
+                  <Icon name="check" size={12} /> 저장
+                </button>
+                <button onClick={()=>{ setForm(normalizeClientBrief(brief || {}, client.clientId)); setEditing(false); setSaveState('idle'); }}
+                  style={{display:'inline-flex',alignItems:'center',gap:5,background:'var(--surface-2)',color:'var(--text-2)',border:'1px solid var(--border)',borderRadius:8,padding:'7px 11px',fontSize:12,fontWeight:700,cursor:'pointer',fontFamily:'inherit'}}>
+                  <Icon name="x" size={12} /> 취소
+                </button>
+              </>
+            ) : (
+              <button onClick={()=>setEditing(true)}
+                style={{display:'inline-flex',alignItems:'center',gap:5,background:'var(--surface-2)',color:'var(--text-2)',border:'1px solid var(--border)',borderRadius:8,padding:'7px 11px',fontSize:12,fontWeight:700,cursor:'pointer',fontFamily:'inherit'}}>
+                <Icon name="pencil" size={12} /> 수정
+              </button>
+            )}
+          </div>
+        </div>
+
+        {!editing && (
+          <>
+            {!hasContent && (
+              <div style={{fontSize:12,color:'var(--text-3)',background:'var(--surface-2)',border:'1px dashed var(--border)',borderRadius:9,padding:'12px 14px',marginBottom:14}}>
+                아직 브리프가 없습니다. 수정 버튼을 눌러 병원 특징, 시술 가격, 작성 지침을 입력하세요.
+              </div>
+            )}
+            {hasContent && (
+            <>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(180px,1fr))',gap:10,marginBottom:14}}>
+              {[
+                ['포지션', currentBrief.brandSummary],
+                ['원장님 스타일', currentBrief.doctorStyle],
+                ['대표 시술', currentBrief.representativeTreatments],
+              ].map(([label, value]) => (
+                <div key={label} style={{border:'1px solid var(--border-2)',borderRadius:9,padding:'10px 11px',background:'var(--surface-2)',minHeight:74}}>
+                  <div style={{fontSize:10.5,fontWeight:800,color:'var(--text-3)',marginBottom:5}}>{label}</div>
+                  <div style={{fontSize:12.5,lineHeight:1.55,color:'var(--text)',whiteSpace:'pre-wrap'}}>{compact(value)}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(240px,1fr))',gap:12}}>
+              {CLIENT_BRIEF_FIELDS.filter(field => !['brandSummary','doctorStyle','representativeTreatments'].includes(field.key)).map(field => (
+                <div key={field.key} style={{borderTop:'1px solid var(--border-2)',paddingTop:9}}>
+                  <div style={{fontSize:10.5,fontWeight:800,color:'var(--text-3)',marginBottom:4}}>{field.label}</div>
+                  <div style={{fontSize:12.5,lineHeight:1.65,color:'var(--text)',whiteSpace:'pre-wrap'}}>{compact(currentBrief[field.key])}</div>
+                </div>
+              ))}
+            </div>
+            {(currentBrief.procedurePrices || []).length > 0 && (
+              <div style={{marginTop:14,borderTop:'1px solid var(--border-2)',paddingTop:12}}>
+                <div style={{fontSize:11,fontWeight:800,color:'var(--text-2)',marginBottom:7}}>시술 / 가격표</div>
+                <div style={{overflowX:'auto'}}>
+                <div style={{minWidth:720,display:'flex',flexDirection:'column',gap:6}}>
+                  {currentBrief.procedurePrices.map((row, i) => (
+                    <div key={i} style={{display:'grid',gridTemplateColumns:'120px 1fr 110px 110px 140px',gap:8,alignItems:'center',fontSize:11.5,borderBottom:'1px solid var(--border-2)',paddingBottom:6}}>
+                      <span style={{color:'var(--text-3)',fontWeight:700}}>{row.category || '분류 없음'}</span>
+                      <span style={{fontWeight:800,color:'var(--text)'}}>{row.name || '시술명 미입력'}</span>
+                      <span>{row.regularPrice || '-'}</span>
+                      <span style={{color:'var(--blue)',fontWeight:800}}>{row.eventPrice || '-'}</span>
+                      <span style={{color:'var(--text-2)'}}>{row.sessionInfo || row.notes || '-'}</span>
+                    </div>
+                  ))}
+                </div>
+                </div>
+              </div>
+            )}
+            </>
+            )}
+          </>
+        )}
+
+        {editing && (
+          <div>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(260px,1fr))',gap:12}}>
+              {CLIENT_BRIEF_FIELDS.map(field => (
+                <label key={field.key} style={{display:'flex',flexDirection:'column'}}>
+                  <span style={labelS}>{field.label}</span>
+                  <textarea
+                    value={form[field.key] || ''}
+                    rows={field.rows}
+                    placeholder={field.placeholder}
+                    onChange={e=>updateField(field.key, e.target.value)}
+                    style={{...iS,width:'100%',resize:'vertical',lineHeight:1.55}}
+                  />
+                </label>
+              ))}
+            </div>
+
+            <div style={{marginTop:16,borderTop:'1px solid var(--border-2)',paddingTop:14}}>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:10,marginBottom:9}}>
+                <div>
+                  <div style={{fontSize:12,fontWeight:900,color:'var(--text)'}}>시술 / 가격표</div>
+                  <div style={{fontSize:11,color:'var(--text-3)',marginTop:2}}>가격은 공개 가능 여부와 이벤트 조건까지 함께 기록하세요.</div>
+                </div>
+                <button onClick={addPriceRow}
+                  style={{display:'inline-flex',alignItems:'center',gap:5,background:'var(--surface-2)',border:'1px solid var(--border)',borderRadius:7,padding:'6px 10px',fontSize:11.5,fontWeight:800,color:'var(--text)',cursor:'pointer',fontFamily:'inherit'}}>
+                  <Icon name="plus" size={11} /> 행 추가
+                </button>
+              </div>
+              <div style={{overflowX:'auto'}}>
+                <div style={{minWidth:900,display:'flex',flexDirection:'column',gap:7}}>
+                  {(form.procedurePrices || []).map((row, index) => (
+                    <div key={index} style={{display:'grid',gridTemplateColumns:'110px 150px 115px 115px 155px 1fr 32px',gap:7,alignItems:'start'}}>
+                      {CLIENT_BRIEF_PRICE_FIELDS.map(field => (
+                        <label key={field.key} style={{display:'flex',flexDirection:'column'}}>
+                          <span style={{fontSize:10,fontWeight:800,color:'var(--text-3)',marginBottom:3}}>{field.label}</span>
+                          <input
+                            value={row[field.key] || ''}
+                            placeholder={field.placeholder}
+                            onChange={e=>updatePrice(index, field.key, e.target.value)}
+                            style={{...iS,width:'100%',fontSize:11.5,padding:'6px 7px'}}
+                          />
+                        </label>
+                      ))}
+                      <button onClick={()=>deletePriceRow(index)} title="행 삭제"
+                        style={{marginTop:19,background:'transparent',border:'none',color:'#cbd5e1',cursor:'pointer',padding:4}}>
+                        <Icon name="trash" size={13} />
+                      </button>
+                    </div>
+                  ))}
+                  {(form.procedurePrices || []).length === 0 && (
+                    <div style={{fontSize:12,color:'var(--text-3)',border:'1px dashed var(--border)',borderRadius:8,padding:'10px 12px',background:'var(--surface-2)'}}>
+                      등록된 가격표 행이 없습니다. 행 추가로 대표 시술과 가격 정보를 입력하세요.
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   // ═══════════════════════════════════════════════
   //  CLIENT DETAIL VIEW
   // ═══════════════════════════════════════════════
-  function ClientDetailView({ client, data, mutate, onOpenModal, autoLog, onAddCredential, onDeleteCredential, onDeletePost, onUpdateClient, onDeleteClient }) {
+  function ClientDetailView({ client, data, mutate, onOpenModal, autoLog, onAddCredential, onDeleteCredential, onDeletePost, onUpdateClient, onDeleteClient, onSaveClientBrief }) {
     const cDelivs = (data.deliverables||[]).filter(d=>d.clientId===client.clientId);
     const cLogs   = (data.logs||[]).filter(l=>l.clientId===client.clientId).sort((a,b)=>b.createdAt>a.createdAt?1:-1);
 
@@ -2669,6 +3098,13 @@
           </div>
           )}
         </div>
+
+        <ClientBriefSection
+          client={client}
+          data={data}
+          brief={(data.clientBriefs || {})[client.clientId]}
+          onSave={onSaveClientBrief}
+        />
 
         {/* 계정 / 비밀번호 메모 */}
         <CredentialsSection
@@ -4616,6 +5052,9 @@
               // 상담내역: Sheets 우선, 비어있으면 로컬 유지
               consults:    safeArr(sheetsData.consults, prev.consults),
 
+              // 콘텐츠 브리프: clientId별 병합. Sheets에 없는 로컬 브리프도 보존
+              clientBriefs: mergeClientBriefMaps(sheetsData.clientBriefs, prev.clientBriefs),
+
               // 방문자 리뷰 모니터링: Sheets 우선, 비어있으면 로컬 유지
               reviewTargets: safeArr(sheetsData.reviewTargets, prev.reviewTargets),
 
@@ -5304,6 +5743,36 @@
       }));
     }
 
+    function saveClientBrief(clientId, fields) {
+      const normalized = normalizeClientBrief({
+        ...fields,
+        clientId,
+        updatedAt: today(),
+      }, clientId);
+      mutate(d => ({
+        ...d,
+        clientBriefs: {
+          ...(d.clientBriefs || {}),
+          [clientId]: normalized,
+        },
+        clients: (d.clients || []).map(c => c.clientId === clientId ? { ...c, lastUpdated: today() } : c),
+      }));
+      return fetch(API_URL, {
+        method: 'POST',
+        redirect: 'follow',
+        body: JSON.stringify({
+          action: 'upsertClientBrief',
+          ...normalized,
+          procedurePricesJson: JSON.stringify(normalized.procedurePrices || [])
+        })
+      })
+        .then(r => r.json())
+        .then(result => {
+          if (!result.success) throw new Error(result.error || 'upsertClientBrief 실패');
+          return result;
+        });
+    }
+
     // ── 거래처 CRUD ──
     function addClient(fields) {
       const clientId = 'cl-' + uid();
@@ -5341,6 +5810,7 @@
         monthlyJobs: d.monthlyJobs.filter(j => j.clientId !== clientId),
         logs:        d.logs.filter(l => l.clientId !== clientId),
         postLogs:    (d.postLogs||[]).filter(p => p.clientId !== clientId),
+        clientBriefs: Object.fromEntries(Object.entries(d.clientBriefs || {}).filter(([cid]) => cid !== clientId)),
       }));
       setView('main');
       // Sheets에서도 삭제
@@ -5521,6 +5991,7 @@
             onDeletePost={deletePost}
             onUpdateClient={updateClient}
             onDeleteClient={handleDeleteClient}
+            onSaveClientBrief={saveClientBrief}
           />
         )}
 

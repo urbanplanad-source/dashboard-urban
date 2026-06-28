@@ -1,5 +1,5 @@
 # 어반플랜애드 대시보드 Apps Script API Reference
-> 최종 업데이트: 2026-06-01 / Apps Script 버전 12.1 (v13 리뷰모니터링 포함) / 글 보관함 경량 조회 규칙 반영
+> 최종 업데이트: 2026-06-28 / Apps Script 버전 15 (거래처 콘텐츠 브리프 포함) / 글 보관함 경량 조회 규칙 반영
 
 이 문서는 Apps Script API, Google Sheets 구조, 대시보드 운영 규칙의 상세 계약이다.
 Codex의 항상 읽는 작업 지시는 저장소 루트의 `AGENTS.md`에 둔다.
@@ -107,6 +107,14 @@ GET {URL}?action=summary
         "month": "2026-04",
         "channel": "홈페이지"
       }
+    ],
+    "clientBriefs": [
+      {
+        "clientId": "btskin",
+        "brandSummary": "거래처 콘텐츠 포지션",
+        "doctorStyle": "원장님 스타일",
+        "procedurePrices": []
+      }
     ]
   }
 }
@@ -117,6 +125,7 @@ GET {URL}?action=summary
 - `monthlyJobs[].kind` — `"필수"` 또는 `"서브"` 또는 `"순위"`
 - `monthlyJobs[].currentCount / targetCount` — 필수 업무 달성률
 - `monthlyJobs[].note` — `"완료"` 이면 완료 처리된 서브업무
+- `clientBriefs[]` — 콘텐츠 작성 전 참고할 거래처별 브리프
 
 ---
 
@@ -359,6 +368,7 @@ delta: `1` (증가) 또는 `-1` (감소)
 | 7 | 서브업무 마감일 변경 | `updateSubJob` | dueDate만 전달 가능 |
 | 8 | 클라이언트 미팅 메모 | `addLog` | 대시보드에 미표시, Sheets에만 저장 |
 | 9 | 진행률 확인 | `summary` GET → monthlyJobs 분석 | 월말 보고 준비 등 |
+| 10 | 거래처 브리프 기반 초안 작성 | `clientBrief` GET → `addDraft` | 병원 특징/시술/가격/작성 지침을 먼저 확인 |
 
 ---
 
@@ -670,7 +680,142 @@ const content = data.content;
 
 ---
 
-## 7. 상담내역 (월말보고서용)
+## 7. 거래처 콘텐츠 브리프
+
+거래처별 병원 특징, 원장님 스타일, 대표 시술, 시술 가격, 글 작성 지침, 의료광고 주의사항을 저장한다.  
+Codex나 외부 작성 에이전트는 콘텐츠 초안을 만들기 전에 해당 거래처의 브리프를 먼저 조회하고, 작성 완료 후 기존 `addDraft`로 글 보관함에 저장한다.
+
+### ClientBriefs 시트 컬럼 구조
+
+| 컬럼 | 타입 | 설명 |
+|------|------|------|
+| clientId | string | 공식 거래처 ID |
+| brandSummary | text | 한 줄 포지션 / 콘텐츠 기준 |
+| clinicFeatures | text | 병원 특징, 강점, 공간, 장비, 운영 방식 |
+| doctorStyle | text | 원장님 상담 스타일, 선호 표현, 피하고 싶은 이미지 |
+| targetPatients | text | 핵심 타깃, 지역, 환자 고민, 검색 의도 |
+| representativeTreatments | text | 대표 시술 / 주력 서비스 |
+| procedureNotes | text | 시술별 설명 포인트, 사후관리, FAQ |
+| pricingMemo | text | 가격표 해석, 이벤트 조건, 공개 시 주의사항 |
+| procedurePricesJson | JSON string | 구조화된 시술/가격 행 배열 |
+| writingGuidelines | text | 제목, 본문 흐름, CTA, 채널별 작성 지침 |
+| toneAndManner | text | 톤앤매너 |
+| requiredPhrases | text | 반드시 포함할 표현, 고정 CTA |
+| forbiddenPhrases | text | 금지/주의 표현 |
+| medicalAdCautions | text | 의료광고, 심의, 효과 표현 주의사항 |
+| contentAngles | text | 콘텐츠 소재, 계절 이슈, 기획 방향 |
+| keywords | text | 핵심/지역/롱테일 키워드 |
+| faq | text | 자주 묻는 질문과 답변 기준 |
+| localContext | text | 지역, 경쟁, 유입 채널, 운영 맥락 |
+| referenceLinks | text | 홈페이지, 플레이스, 내부 자료 링크 |
+| internalNotes | text | 기타 내부 메모. 계정/비밀번호 입력 금지 |
+| updatedAt | YYYY-MM-DD | 브리프 수정일 |
+
+`procedurePricesJson` 예시:
+
+```json
+[
+  {
+    "category": "피부",
+    "name": "리프팅",
+    "regularPrice": "300,000원",
+    "eventPrice": "199,000원",
+    "sessionInfo": "1회 / 부위별 상담",
+    "notes": "가격 공개 전 확인"
+  }
+]
+```
+
+### GET — 브리프 목록 조회 (`clientBriefs`)
+
+```javascript
+const res = await fetch(API + '?action=clientBriefs');
+const { data } = await res.json();
+```
+
+응답:
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "clientId": "kyunghee",
+      "brandSummary": "한 줄 포지션",
+      "doctorStyle": "원장님 스타일",
+      "procedurePrices": [
+        {
+          "category": "한의원",
+          "name": "시술명",
+          "regularPrice": "가격",
+          "eventPrice": "",
+          "sessionInfo": "구성",
+          "notes": "주의사항"
+        }
+      ],
+      "updatedAt": "2026-06-28"
+    }
+  ]
+}
+```
+
+### GET — 단일 거래처 브리프 조회 (`clientBrief`)
+
+```javascript
+const res = await fetch(API + '?action=clientBrief&clientId=kyunghee');
+const { data } = await res.json();
+```
+
+브리프가 아직 없어도 `{ success: true, data: { clientId, procedurePrices: [] } }` 형태로 빈 객체를 반환한다.
+
+### POST — 브리프 저장/수정 (`upsertClientBrief`)
+
+```javascript
+const res = await fetch(API, {
+  method: 'POST',
+  redirect: 'follow',
+  body: JSON.stringify({
+    action: 'upsertClientBrief',
+    clientId: 'kyunghee',
+    brandSummary: '365경희부부한의원 피부센터 콘텐츠 포지션',
+    clinicFeatures: '병원 특징...',
+    doctorStyle: '원장님 스타일...',
+    representativeTreatments: '대표 시술...',
+    writingGuidelines: '글 작성 지침...',
+    medicalAdCautions: '의료광고 주의사항...',
+    procedurePricesJson: JSON.stringify([
+      {
+        category: '피부',
+        name: '시술명',
+        regularPrice: '정상가',
+        eventPrice: '이벤트가',
+        sessionInfo: '구성',
+        notes: '비고'
+      }
+    ])
+  })
+});
+```
+
+응답:
+
+```json
+{ "success": true, "action": "updated", "clientId": "kyunghee", "updatedAt": "2026-06-28" }
+```
+
+### 콘텐츠 작성 시 사용 규칙
+
+1. `summary&draftMode=light`로 현재 업무/최근 발행 흐름을 확인한다.
+2. `clientBrief&clientId=...`로 거래처 브리프를 조회한다.
+3. 브리프의 `doctorStyle`, `writingGuidelines`, `forbiddenPhrases`, `medicalAdCautions`, `procedurePrices`를 우선 기준으로 초안을 작성한다.
+4. 브리프에 없거나 외부에서 확인되지 않은 수치, 가격, 효과는 만들지 않고 “자료 확인 필요”로 남긴다.
+5. 작성이 끝나면 기존 `addDraft`로 글 보관함에 저장한다.
+
+> 민감 정보 주의: 이 API는 익명 접근 가능한 Apps Script Web App 구조다. 계정/비밀번호, 내부 계약조건, 공개되면 안 되는 할인 전략은 `ClientBriefs`에 넣지 않는다.
+
+---
+
+## 8. 상담내역 (월말보고서용)
 
 > Apps Script v14 패치 적용 후 지원. 대시보드 입력 방식은 유지하고, `btskin`/`belrmon` 상담내역을 Sheets `Consults` 시트에도 동기화해 월말보고서 생성 스크립트가 읽을 수 있게 한다.
 
@@ -760,7 +905,7 @@ const res = await fetch(API, {
 
 ---
 
-## 8. 네이버플레이스 방문자 리뷰 모니터링 (Codex/자동화 스크립트)
+## 9. 네이버플레이스 방문자 리뷰 모니터링 (Codex/자동화 스크립트)
 
 > Apps Script v13부터 지원. 비교 대상은 **방문자 리뷰(visitor review)만** 해당. 블로그 리뷰는 저장·비교하지 않는다.
 
@@ -916,7 +1061,7 @@ const res = await fetch(API, {
 
 ---
 
-## 9. 대시보드·월말보고서 운영 규칙
+## 10. 대시보드·월말보고서 운영 규칙
 
 ### 공통 데이터 정규화
 
@@ -1014,7 +1159,7 @@ Apps Script의 `doGet`, `doPost`, 시트 컬럼, action 이름, 응답 구조를
 
 ---
 
-## 9. 에러 처리
+## 11. 에러 처리
 
 | 응답 | 의미 |
 |------|------|
