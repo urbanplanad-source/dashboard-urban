@@ -1,0 +1,183 @@
+{
+  "version": "2026-06-29",
+  "sourcePriority": [
+    {
+      "id": "healthy-medical-ads-2nd",
+      "file": "docs/compliance/source-pdfs/healthy-medical-ads-2nd.pdf",
+      "label": "건강한 의료광고, 우리가 함께 만들어요! 유형별 의료광고 사례 및 체크리스트 2판"
+    },
+    {
+      "id": "medical-ad-cases-checklist-guide",
+      "file": "docs/compliance/source-pdfs/medical-ad-cases-checklist-guide.pdf",
+      "label": "유형별 의료광고 사례 및 체크리스트 이전판"
+    }
+  ],
+  "reviewVerdicts": ["PASS", "REVISE", "HOLD"],
+  "items": [
+    {
+      "id": "MEDIA_PRE_REVIEW",
+      "severityDefault": "P0",
+      "title": "사전심의 대상 매체 여부",
+      "sourceHint": "2판 부록 의료광고 유형별 체크리스트, 사전심의 대상 여부",
+      "check": "광고 매체가 신문, 인터넷신문, 정기간행물, 현수막, 벽보, 전단, 교통시설/교통수단, 전광판, 일정 규모 이상의 인터넷 매체나 SNS에 해당하는지 확인한다.",
+      "triggerExamples": ["SNS 광고", "배너", "랜딩페이지", "전단", "현수막", "인터넷신문", "기사형 광고"],
+      "requiredEvidence": ["게시 매체", "심의필 번호와 유효기간", "심의받은 원문"],
+      "saferDefault": "사전심의 대상 가능성이 있으면 HOLD로 두고 심의 필요 여부를 확인한다."
+    },
+    {
+      "id": "AD_SUBJECT",
+      "severityDefault": "P1",
+      "title": "의료광고 주체와 의료기관 표시",
+      "sourceHint": "2판 부록 의료광고 주체, 의료기관 명칭 표시",
+      "check": "허용된 의료광고 주체인지, 의료기관명/종별/진료과목/전문의 표시가 소비자를 오인시키지 않는지 확인한다.",
+      "triggerExamples": ["센터", "연구소", "클리닉", "전문의", "진료과목 표시"],
+      "requiredEvidence": ["병원 공식 명칭", "개설 신고/허가 명칭", "의료인 면허와 전문의 여부"],
+      "saferDefault": "공식 명칭과 확인된 진료과목만 쓴다."
+    },
+    {
+      "id": "SPECIAL_HOSPITAL_TERMS",
+      "severityDefault": "P0",
+      "title": "전문병원/전문/특화/첨단 표현",
+      "sourceHint": "2판 위반유형별 사례 전문병원 명칭사용, 부록 전문병원 명칭사용 위반",
+      "check": "보건복지부 지정 전문병원 사실이나 객관적 근거 없이 전문병원, 전문, 특화, 첨단 등 오인 가능한 표현을 쓰지 않는다.",
+      "triggerExamples": ["전문병원", "전문", "특화", "첨단", "최고 수준"],
+      "requiredEvidence": ["전문병원 지정 여부", "지정 분야", "지정 기간", "표현 근거"],
+      "saferDefault": "확인되지 않으면 병원명과 진료 분야 중심으로 표현한다."
+    },
+    {
+      "id": "PATIENT_INDUCEMENT",
+      "severityDefault": "P0",
+      "title": "환자 유인/알선/소개",
+      "sourceHint": "2판 위반유형별 사례 환자 유인행위 등, 부록 환자 유인행위 등",
+      "check": "금품, 선물, 교통편의, 소개 혜택, 제3자 동반 혜택, 과도한 할인 조건, 판매중개형 구조가 환자 유인에 해당할 가능성을 확인한다.",
+      "triggerExamples": ["상담만 받아도 선물", "친구와 함께 오면 할인", "진료비 지원", "무료 체험단", "선착순 이벤트"],
+      "requiredEvidence": ["이벤트 조건", "대상 제한", "기간", "할인 폭", "혜택 제공 방식"],
+      "saferDefault": "경제적 이익 제공이 있으면 HOLD로 두고 사람 확인을 받는다."
+    },
+    {
+      "id": "NON_COVERED_PRICE_DISCOUNT",
+      "severityDefault": "P1",
+      "title": "비급여 할인/면제 가격 표시",
+      "sourceHint": "2판 부록 소비자 오인소지 비급여 진료비용 할인 광고",
+      "check": "비급여 할인/면제 광고는 할인 금액, 대상, 기간, 범위, 할인 전 비용을 명확히 제공해야 한다.",
+      "triggerExamples": ["특가", "무료", "할인", "이벤트가", "가격 문의", "최저가", "비용 문의"],
+      "requiredEvidence": ["정상가", "할인가", "대상", "기간", "포함 범위", "제외 비용"],
+      "saferDefault": "조건이 불명확하면 가격 표현을 제거하거나 자료 확인 필요로 남긴다."
+    },
+    {
+      "id": "TESTIMONIALS_REVIEWS",
+      "severityDefault": "P0",
+      "title": "치료경험담/후기 활용",
+      "sourceHint": "2판 위반유형별 사례 치료경험담 등 치료효과 오인 우려 광고, 부록 치료경험담",
+      "check": "치료효과를 오인하게 할 수 있는 후기, 치료경험담, 대가성 후기, 광고대행사가 만든 후기를 쓰지 않는다.",
+      "triggerExamples": ["후기", "체험담", "통증이 사라졌어요", "수술 후 만족", "완치", "효과 봤다"],
+      "requiredEvidence": ["작성 주체", "대가 제공 여부", "후기 원문", "치료효과 표현 포함 여부"],
+      "saferDefault": "치료결과가 드러나는 후기는 사용하지 않고, 병원 이용 절차나 안내 중심으로 바꾼다."
+    },
+    {
+      "id": "BEFORE_AFTER_MEDIA",
+      "severityDefault": "P0",
+      "title": "전후사진/치료사례 이미지",
+      "sourceHint": "2판 부록 치료 전후 사진 관련 체크",
+      "check": "전후사진은 동일 조건 촬영, 촬영시기, 부작용, 개인차 고지가 필요하며 조작·과장으로 보일 가능성을 확인한다.",
+      "triggerExamples": ["전후사진", "Before/After", "치료사례", "초음파사진", "검사결과지"],
+      "requiredEvidence": ["촬영 동의", "촬영 조건", "촬영 시기", "부작용 고지", "개인차 문구"],
+      "saferDefault": "조건과 고지가 확인되지 않으면 이미지를 쓰지 않는다."
+    },
+    {
+      "id": "FALSE_EXAGGERATED_CLAIMS",
+      "severityDefault": "P0",
+      "title": "거짓/과장/배타적 표현",
+      "sourceHint": "2판 주요 위반유형 거짓 광고, 과장 광고, 표시광고법 판단기준",
+      "check": "객관적 사실과 다르거나 증명이 어려운 배타적·절대적 표현을 쓰지 않는다.",
+      "triggerExamples": ["세계최초", "가장 안전한", "전국 최저가", "완벽 해결", "100%", "부작용 없음", "유일"],
+      "requiredEvidence": ["객관적 근거자료", "통계 출처", "논문/임상 근거", "병원 내부 증빙"],
+      "saferDefault": "절대 표현을 삭제하고 개인차, 상담 필요성, 조건부 표현으로 완화한다."
+    },
+    {
+      "id": "COMPARISON_DEFAMATION",
+      "severityDefault": "P0",
+      "title": "비교/비방 광고",
+      "sourceHint": "2판 주요 위반유형 비교 광고, 비방 광고",
+      "check": "다른 의료인/의료기관의 기능, 진료방법과 비교해 우수성을 말하거나 불리한 사실만 강조하지 않는다.",
+      "triggerExamples": ["타 병원보다", "일반 병원과 달리", "기존 방식은 위험", "OO보다 효과"],
+      "requiredEvidence": ["비교 대상", "비교 기준", "객관적 자료", "공정한 표현 여부"],
+      "saferDefault": "비교 대신 우리 병원의 절차, 확인 기준, 상담 방식만 설명한다."
+    },
+    {
+      "id": "PROCEDURE_EXPOSURE",
+      "severityDefault": "P1",
+      "title": "시술행위 노출",
+      "sourceHint": "2판 주요 위반유형 시술행위 노출 광고",
+      "check": "수술 장면, 환부, 혐오감을 줄 수 있는 시술 사진/영상 노출이 있는지 확인한다.",
+      "triggerExamples": ["수술 장면", "환부 사진", "피부 절개", "시술 과정 영상"],
+      "requiredEvidence": ["이미지/영상 원본", "노출 수위", "게시 목적"],
+      "saferDefault": "과정 설명은 일러스트나 비침습적 안내 중심으로 바꾼다."
+    },
+    {
+      "id": "SIDE_EFFECTS_OMISSION",
+      "severityDefault": "P1",
+      "title": "부작용/중요 정보 누락",
+      "sourceHint": "2판 부록 부작용 정보 누락 광고",
+      "check": "치료효과나 장점을 설명하면서 심각한 부작용, 회복기간, 개인차, 상담 필요성을 눈에 띄게 안내하는지 확인한다.",
+      "triggerExamples": ["통증 없음", "출혈 없음", "바로 일상", "안전한 시술", "간단한 시술"],
+      "requiredEvidence": ["부작용 안내 문구", "회복기간", "개인차 고지", "상담 필요성"],
+      "saferDefault": "장점 문장 가까이에 개인차와 부작용 가능성을 함께 둔다."
+    },
+    {
+      "id": "UNLAWFUL_QUALIFICATION",
+      "severityDefault": "P0",
+      "title": "법적 근거 없는 자격/명칭",
+      "sourceHint": "2판 부록 법적 근거없는 자격·명칭 표방 광고",
+      "check": "박사, 교수, 전문의, 인증의, 센터장, 학회 직함 등 자격·명칭의 법적/객관적 근거가 있는지 확인한다.",
+      "triggerExamples": ["박사", "교수", "명의", "전문의", "인증의", "센터장"],
+      "requiredEvidence": ["자격증", "임명장", "소속/기간", "표기 허용 범위"],
+      "saferDefault": "확인된 현재 직함과 면허 정보만 표기한다."
+    },
+    {
+      "id": "ARTICLE_EXPERT_FORMAT",
+      "severityDefault": "P1",
+      "title": "기사형/전문가 의견형 광고",
+      "sourceHint": "2판 주요 위반유형 신문 등 전문가 의견 형태 광고",
+      "check": "기사나 전문가 의견 형식으로 객관성·전문성을 오인시키면서 병원명, 연락처, 약도, 진료방법, 예약 유도를 넣지 않는다.",
+      "triggerExamples": ["전문가 칼럼", "기사", "보도자료", "언론 보도", "의사가 알려주는"],
+      "requiredEvidence": ["원문 출처", "광고성 편집 여부", "병원 정보 포함 여부"],
+      "saferDefault": "의학정보와 광고/예약 유도 요소를 분리한다."
+    },
+    {
+      "id": "AWARDS_CERTIFICATIONS",
+      "severityDefault": "P0",
+      "title": "수상/인증/보증/추천",
+      "sourceHint": "2판 상장·감사장 이용, 인증·보증·추천 광고",
+      "check": "상장, 감사장, 언론사 수상, 민간 인증, 추천 표현이 금지 유형에 해당하는지 확인한다. 허용 인증은 기간과 범위를 정확히 표시한다.",
+      "triggerExamples": ["대상 수상", "추천 병원", "인증", "보증", "감사장", "언론사 선정"],
+      "requiredEvidence": ["인증 주체", "법적 근거", "유효기간", "인증 범위"],
+      "saferDefault": "공공/법령 근거가 확인되지 않으면 삭제한다."
+    },
+    {
+      "id": "FOREIGN_PATIENT_ADS",
+      "severityDefault": "P0",
+      "title": "외국인환자 유치 광고",
+      "sourceHint": "2판 부록 외국인환자 유치 국내광고",
+      "check": "외국인환자 유치 목적, 외국어 홈페이지/광고, 게시 장소, 등록 여부, 심의 필요성을 확인한다.",
+      "triggerExamples": ["외국인 환자", "영문 페이지", "중문 페이지", "관광객", "글로벌 진료"],
+      "requiredEvidence": ["유치업 등록 여부", "게시 장소", "언어", "진료과목", "심의 여부"],
+      "saferDefault": "등록과 게시 조건이 확인되지 않으면 HOLD로 둔다."
+    }
+  ],
+  "outputSchema": {
+    "verdict": "PASS | REVISE | HOLD",
+    "summary": "1~3 sentence Korean summary",
+    "findings": [
+      {
+        "severity": "P0 | P1 | P2",
+        "checklistId": "string",
+        "quote": "problematic draft text",
+        "reason": "why it is risky",
+        "rewrite": "safer suggested rewrite"
+      }
+    ],
+    "needsEvidence": ["items to confirm with client or source"],
+    "finalSafeCopy": "optional revised copy"
+  }
+}

@@ -1,5 +1,5 @@
 # 어반플랜애드 대시보드 Apps Script API Reference
-> 최종 업데이트: 2026-06-28 / Apps Script 버전 15 (거래처 콘텐츠 브리프 포함) / 글 보관함 경량 조회 규칙 반영
+> 최종 업데이트: 2026-06-29 / Apps Script 버전 15 (거래처 콘텐츠 브리프 포함) / 의료광고 검수 자료 연결 / 글 보관함 경량 조회 규칙 반영
 
 이 문서는 Apps Script API, Google Sheets 구조, 대시보드 운영 규칙의 상세 계약이다.
 Codex의 항상 읽는 작업 지시는 저장소 루트의 `AGENTS.md`에 둔다.
@@ -368,7 +368,7 @@ delta: `1` (증가) 또는 `-1` (감소)
 | 7 | 서브업무 마감일 변경 | `updateSubJob` | dueDate만 전달 가능 |
 | 8 | 클라이언트 미팅 메모 | `addLog` | 대시보드에 미표시, Sheets에만 저장 |
 | 9 | 진행률 확인 | `summary` GET → monthlyJobs 분석 | 월말 보고 준비 등 |
-| 10 | 거래처 브리프 기반 초안 작성 | `clientBrief` GET → `addDraft` | 병원 특징/시술/가격/작성 지침을 먼저 확인 |
+| 10 | 거래처 브리프 기반 초안 작성 | `clientBrief` GET → 의료광고 검수 → `addDraft` | 병원 특징/시술/가격/작성 지침과 `docs/compliance/` 기준을 먼저 확인 |
 
 ---
 
@@ -808,8 +808,25 @@ const res = await fetch(API, {
 1. `summary&draftMode=light`로 현재 업무/최근 발행 흐름을 확인한다.
 2. `clientBrief&clientId=...`로 거래처 브리프를 조회한다.
 3. 브리프의 `doctorStyle`, `writingGuidelines`, `forbiddenPhrases`, `medicalAdCautions`, `procedurePrices`를 우선 기준으로 초안을 작성한다.
-4. 브리프에 없거나 외부에서 확인되지 않은 수치, 가격, 효과는 만들지 않고 “자료 확인 필요”로 남긴다.
-5. 작성이 끝나면 기존 `addDraft`로 글 보관함에 저장한다.
+4. 의료/시술 콘텐츠는 `docs/compliance/medical-ad-review-guide.md`와 `docs/compliance/medical-ad-checklist.json`을 함께 참고한다.
+5. 브리프에 없거나 외부에서 확인되지 않은 수치, 가격, 효과는 만들지 않고 “자료 확인 필요”로 남긴다.
+6. 작성 후 `docs/compliance/medical-ad-reviewer-prompt.md` 형식으로 별도 검수를 수행한다.
+7. 검수 결론이 `PASS`가 아니면 수정 또는 사람 확인 대상으로 남긴다. `HOLD`는 발행용으로 넘기지 않는다.
+8. 작성이 끝나면 기존 `addDraft`로 글 보관함에 저장하고, memo에 `의료광고 검수: PASS/REVISE/HOLD`를 남긴다.
+
+### 의료광고 검수 자료
+
+의료광고 검수 기준은 저장소의 `docs/compliance/`에 둔다.
+
+| 파일 | 용도 |
+|------|------|
+| `docs/compliance/source-pdfs/healthy-medical-ads-2nd.pdf` | 보건복지부 의료광고 가이드 2판 원본. 우선 기준 |
+| `docs/compliance/source-pdfs/medical-ad-cases-checklist-guide.pdf` | 이전판 원본. 보조 근거 |
+| `docs/compliance/medical-ad-review-guide.md` | 콘텐츠 작성자/검수자용 운영 가이드 |
+| `docs/compliance/medical-ad-checklist.json` | 구조화된 검수 체크리스트 |
+| `docs/compliance/medical-ad-reviewer-prompt.md` | 서브에이전트 검수 프롬프트 |
+
+이 자료는 법률 자문이나 심의 승인 문서가 아니라 보건복지부 가이드 기반의 발행 전 리스크 점검 도구다. 사전심의 대상 매체, 환자 유인, 치료경험담/후기, 전후사진, 비급여 할인, 수상/인증, 전문병원/전문 표현처럼 판단이 갈리는 항목은 사람 확인을 우선한다.
 
 > 민감 정보 주의: 이 API는 익명 접근 가능한 Apps Script Web App 구조다. 계정/비밀번호, 내부 계약조건, 공개되면 안 되는 할인 전략은 `ClientBriefs`에 넣지 않는다.
 
