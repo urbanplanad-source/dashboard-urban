@@ -426,16 +426,386 @@
 <main class="container">
   <p class="timeline-label">보고서 목록</p>
   <div class="month-tabs">
-    <div class="month-tab active" onclick="switchTab('may', event)">2026년 5월</div>
+    <div class="month-tab active" onclick="switchTab('jun', event)">2026년 6월</div>
+    <div class="month-tab" onclick="switchTab('may', event)">2026년 5월</div>
     <div class="month-tab" onclick="switchTab('apr', event)">2026년 4월</div>
     <div class="month-tab" onclick="switchTab('mar', event)">2026년 3월</div>
     <div class="month-tab" onclick="switchTab('feb', event)">2026년 2월</div>
   </div>
 
   <!-- ═══════════════════════════════════════
+       6월 보고서
+  ═══════════════════════════════════════ -->
+  <div class="report-panel active" id="panel-jun">
+
+    <div class="summary-band">
+      <div class="band-title">MONTHLY SUMMARY</div>
+      <div class="band-month">2026년 6월 마케팅 결과보고</div>
+      <div class="band-points">
+        <div class="band-point"><div class="dot"></div><p><strong>홈페이지 방문 확대</strong> — 6월 페이지뷰 8,625회, 방문자 6,329명으로 5월보다 방문 규모가 크게 늘었습니다.</p></div>
+        <div class="band-point"><div class="dot"></div><p><strong>플레이스 순위 회복</strong> — 월초 7위권에서 6월 16~19일 2위까지 올라갔고, 월말에는 3위로 안정 마감했습니다.</p></div>
+        <div class="band-point"><div class="dot"></div><p><strong>외국인 응대 기반 강화</strong> — 위챗 친구 288명 도달, 자동응답·가격표·중국어 가능 코디네이터 채용광고까지 함께 진행했습니다.</p></div>
+      </div>
+    </div>
+
+    <div class="performance-flow">
+      <div class="flow-node">
+        <div class="flow-kicker">홈페이지</div>
+        <div class="flow-value">8,625</div>
+        <div class="flow-label">6월 페이지뷰</div>
+      </div>
+      <div class="flow-node">
+        <div class="flow-kicker">방문자</div>
+        <div class="flow-value">6,329명</div>
+        <div class="flow-label">5월 대비 +2,495명</div>
+      </div>
+      <div class="flow-node">
+        <div class="flow-kicker">플레이스</div>
+        <div class="flow-value">2위</div>
+        <div class="flow-label">6/16~6/19 최고 순위</div>
+      </div>
+      <div class="flow-node">
+        <div class="flow-kicker">당근 광고</div>
+        <div class="flow-value">31.4만</div>
+        <div class="flow-label">게시글+채용공고 지출</div>
+      </div>
+    </div>
+
+    <div class="metrics-grid">
+      <div class="metric-card highlight">
+        <div class="mc-label">홈페이지 페이지뷰</div>
+        <div class="mc-value">8,625</div>
+        <div class="mc-sub">5월 5,602 대비 +3,023</div>
+      </div>
+      <div class="metric-card highlight">
+        <div class="mc-label">홈페이지 방문자</div>
+        <div class="mc-value">6,329<span style="font-size:16px;font-weight:400">명</span></div>
+        <div class="mc-sub">5월 3,834 대비 +2,495명</div>
+      </div>
+      <div class="metric-card">
+        <div class="mc-label">위챗 친구</div>
+        <div class="mc-value">288<span style="font-size:16px;font-weight:400">명</span></div>
+        <div class="mc-sub">6/1 252명 → 6/30 288명</div>
+      </div>
+      <div class="metric-card">
+        <div class="mc-label">콘텐츠 발행</div>
+        <div class="mc-value">6<span style="font-size:16px;font-weight:400">건</span></div>
+        <div class="mc-sub">블로그 3 · 홈페이지 2 · 인스타 1</div>
+      </div>
+    </div>
+
+    <!-- 홈페이지 성과 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-blue">📈</div>
+        <h3>홈페이지 방문 현황</h3>
+      </div>
+      <div class="section-body">
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:18px;">
+          <div style="text-align:center;padding:16px;background:var(--blue-light);border-radius:12px;">
+            <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;">6월 페이지뷰</div>
+            <div style="font-size:28px;font-weight:800;color:var(--blue);">8,625</div>
+          </div>
+          <div style="text-align:center;padding:16px;background:var(--accent-light);border-radius:12px;">
+            <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;">6월 방문자</div>
+            <div style="font-size:28px;font-weight:800;color:#5b21b6;">6,329</div>
+          </div>
+          <div style="text-align:center;padding:16px;background:var(--green-light);border-radius:12px;">
+            <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;">방문자 증가</div>
+            <div style="font-size:28px;font-weight:800;color:var(--green);">+2,495</div>
+          </div>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-green"></div>
+          <p>5월 대비 페이지뷰는 약 54%, 방문자는 약 65% 증가해 병원 홈페이지를 확인하는 실제 이용자 규모가 크게 커졌습니다.</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-blue"></div>
+          <p>주문·매출 전환은 0건이지만, 병원 홈페이지 특성상 직접 예약 전 탐색·시술 확인·외국어 안내 확인 목적의 방문 지표로 해석하는 것이 적절합니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 유입 사이트 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-green">🔎</div>
+        <h3>홈페이지 유입 경로</h3>
+      </div>
+      <div class="section-body">
+        <div class="chart-row">
+          <div class="chart-label"><span>직접방문·자사 도메인</span><span style="color:var(--primary);font-weight:800;">6,624</span></div>
+          <div class="chart-bar-bg"><div class="chart-bar" style="width:100%;background:var(--primary);"></div></div>
+        </div>
+        <div class="chart-row">
+          <div class="chart-label"><span>네이버 검색·플레이스·블로그</span><span style="color:var(--green);font-weight:800;">1,092</span></div>
+          <div class="chart-bar-bg"><div class="chart-bar" style="width:17%;background:var(--green);"></div></div>
+        </div>
+        <div class="chart-row">
+          <div class="chart-label"><span>구글</span><span style="color:#3182ce;font-weight:800;">357</span></div>
+          <div class="chart-bar-bg"><div class="chart-bar" style="width:5%;background:#3182ce;"></div></div>
+        </div>
+        <div class="chart-row">
+          <div class="chart-label"><span>인스타그램</span><span style="color:#ad1457;font-weight:800;">56</span></div>
+          <div class="chart-bar-bg"><div class="chart-bar" style="width:3%;background:#ad1457;"></div></div>
+        </div>
+        <div class="chart-row">
+          <div class="chart-label"><span>다음·야후·빙·페이스북·AI 검색</span><span style="color:var(--muted);font-weight:800;">57+</span></div>
+          <div class="chart-bar-bg"><div class="chart-bar" style="width:3%;background:#a0aec0;"></div></div>
+        </div>
+        <div class="status-item" style="margin-top:14px;">
+          <div class="status-dot dot-green"></div>
+          <p>직접방문과 자사 도메인 유입이 가장 크며, 병원명을 알고 다시 찾아오는 브랜드 탐색 구조가 강하게 유지되고 있습니다.</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-purple"></div>
+          <p>네이버 유입은 모바일 검색과 플레이스 중심으로 확인됩니다. 6월 중순 이후 플레이스 순위가 2~3위권으로 올라간 흐름과 함께 홈페이지 방문 확대가 나타났습니다.</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-blue"></div>
+          <p>ChatGPT 유입 3건도 확인되어, 병원명·시술 정보가 검색 외 경로에서도 노출될 가능성이 보입니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 네이버 순위 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-purple">📍</div>
+        <h3>네이버 플레이스 순위 추이</h3>
+      </div>
+      <div class="section-body">
+        <div class="visual-grid">
+          <div class="visual-card">
+            <div class="v-label">월초 순위</div>
+            <div class="v-value">7위</div>
+            <div class="v-sub">6/1~6/3 기준</div>
+          </div>
+          <div class="visual-card emph">
+            <div class="v-label">최고 순위</div>
+            <div class="v-value">2위</div>
+            <div class="v-sub">6/16~6/19 유지</div>
+          </div>
+          <div class="visual-card">
+            <div class="v-label">월말 순위</div>
+            <div class="v-value">3위</div>
+            <div class="v-sub">6/20~6/30 안정 유지</div>
+          </div>
+        </div>
+        <div class="chart-row">
+          <div class="chart-label"><span>6/1~6/10</span><span style="color:var(--muted);font-weight:800;">6~7위권 등락</span></div>
+          <div class="chart-bar-bg"><div class="chart-bar" style="width:40%;background:#a0aec0;"></div></div>
+        </div>
+        <div class="chart-row">
+          <div class="chart-label"><span>6/11~6/15</span><span style="color:var(--accent);font-weight:800;">4위 → 3위</span></div>
+          <div class="chart-bar-bg"><div class="chart-bar" style="width:70%;background:var(--accent);"></div></div>
+        </div>
+        <div class="chart-row">
+          <div class="chart-label"><span>6/16~6/19</span><span style="color:var(--primary);font-weight:800;">2위 유지</span></div>
+          <div class="chart-bar-bg"><div class="chart-bar" style="width:100%;background:var(--primary);"></div></div>
+        </div>
+        <div class="chart-row">
+          <div class="chart-label"><span>6/20~6/30</span><span style="color:var(--green);font-weight:800;">3위 안정</span></div>
+          <div class="chart-bar-bg"><div class="chart-bar" style="width:90%;background:var(--green);"></div></div>
+        </div>
+        <div class="status-item" style="margin-top:14px;">
+          <div class="status-dot dot-green"></div>
+          <p>월초에는 7위권에서 시작했지만 6월 중순부터 빠르게 회복해, 월말까지 3위권을 안정적으로 유지했습니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 위챗 공식계정 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-green">💬</div>
+        <h3>위챗 공식계정 운영 현황</h3>
+      </div>
+      <div class="section-body">
+        <div class="metrics-grid" style="margin-bottom:18px;">
+          <div class="metric-card highlight">
+            <div class="mc-label">6월 말 친구 수</div>
+            <div class="mc-value">288<span style="font-size:16px;font-weight:400">명</span></div>
+            <div class="mc-sub">6/1 252명 → 6/30 288명</div>
+          </div>
+          <div class="metric-card">
+            <div class="mc-label">순증가</div>
+            <div class="mc-value">+36<span style="font-size:16px;font-weight:400">명</span></div>
+            <div class="mc-sub">월 +14.29%</div>
+          </div>
+          <div class="metric-card">
+            <div class="mc-label">신규 팔로워</div>
+            <div class="mc-value">40<span style="font-size:16px;font-weight:400">명</span></div>
+            <div class="mc-sub">취소 반영 전 신규 기준</div>
+          </div>
+        </div>
+        <div class="visual-grid">
+          <div class="visual-card emph">
+            <div class="v-label">게시물 팔로우</div>
+            <div class="v-value">20명</div>
+            <div class="v-sub">신규의 50%</div>
+          </div>
+          <div class="visual-card">
+            <div class="v-label">QR코드 스캔</div>
+            <div class="v-value">14명</div>
+            <div class="v-sub">신규의 35%</div>
+          </div>
+          <div class="visual-card">
+            <div class="v-label">검색·기타</div>
+            <div class="v-value">6명</div>
+            <div class="v-sub">검색 4 · 더보기 2</div>
+          </div>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-green"></div>
+          <p>6월 신규 팔로워는 게시물 팔로우와 QR코드 스캔 비중이 높아, 콘텐츠 노출과 오프라인 접점이 동시에 작동했습니다.</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-blue"></div>
+          <p>위챗 자동응답 시스템 구축과 가격표 공지 정비가 함께 진행되어, 친구 추가 이후 상담 전 안내 흐름을 더 빠르게 만들 수 있는 기반을 마련했습니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 당근비즈니스 광고 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-orange">🥕</div>
+        <h3>당근비즈니스 광고 및 채용공고</h3>
+      </div>
+      <div class="section-body">
+        <div class="visual-grid">
+          <div class="visual-card emph">
+            <div class="v-label">게시글 광고 합산</div>
+            <div class="v-value">25,696</div>
+            <div class="v-sub">노출 · 클릭 234회</div>
+          </div>
+          <div class="visual-card">
+            <div class="v-label">게시글 광고비</div>
+            <div class="v-value">104,281원</div>
+            <div class="v-sub">스토리 16,649 · 소식 87,632</div>
+          </div>
+          <div class="visual-card">
+            <div class="v-label">채용공고 광고비</div>
+            <div class="v-value">210,000원</div>
+            <div class="v-sub">중국어 가능 코디네이터 채용</div>
+          </div>
+        </div>
+        <div class="region-graph">
+          <div class="region-title">
+            <span>6월 당근 게시글 광고 성과</span>
+            <span>2개 광고 합산</span>
+          </div>
+          <div class="region-row">
+            <div class="region-name">소식</div>
+            <div class="region-track"><div class="region-fill" style="width:100%;"></div></div>
+            <div class="region-count">19,212</div>
+          </div>
+          <div class="region-row">
+            <div class="region-name">스토리</div>
+            <div class="region-track"><div class="region-fill" style="width:34%;"></div></div>
+            <div class="region-count">6,484</div>
+          </div>
+          <div class="region-row">
+            <div class="region-name">클릭</div>
+            <div class="region-track"><div class="region-fill" style="width:91%;"></div></div>
+            <div class="region-count">234</div>
+          </div>
+          <div class="region-row">
+            <div class="region-name">지출</div>
+            <div class="region-track"><div class="region-fill" style="width:54%;"></div></div>
+            <div class="region-count">10.4만</div>
+          </div>
+        </div>
+        <div class="insight-chips">
+          <span class="insight-chip">비즈프로필 소식 클릭 우세</span>
+          <span class="insight-chip">스토리 CTR 0.58%</span>
+          <span class="insight-chip">소식 CTR 1.03%</span>
+          <span class="insight-chip">채용공고 광고비 21만 원</span>
+        </div>
+        <div class="status-item" style="margin-top:14px;">
+          <div class="status-dot dot-gold"></div>
+          <p>당근 게시글 광고는 비즈프로필 소식형 소재가 노출과 클릭 모두 더 높았습니다. 신화월드 인근 피부과·성형외과 인지도를 생활권 안에서 반복 노출하는 역할을 했습니다.</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-blue"></div>
+          <p>중국어 가능한 코디네이터 채용공고도 당근에 집행했고, 채용공고 광고비로 21만 원을 사용했습니다. 이는 외국인 상담 응대 인력을 보강하기 위한 운영 투자로 보고서에 별도 반영했습니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6월 운영 업무 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-blue">⚙️</div>
+        <h3>6월 운영 업무 <span class="count-chip">핵심 4개 축</span></h3>
+      </div>
+      <div class="section-body">
+        <div class="section-lead">
+          <strong>운영 정리</strong>
+          <p>6월 운영 업무는 외국인 상담 대응력, 신규 장비 홍보, 전후사진 운영 환경, 중국어 응대 인력 확보를 함께 정비한 달로 볼 수 있습니다.</p>
+        </div>
+
+        <ul class="sub-list">
+          <li><div class="sub-num">1</div><span><strong>외국인 상담 응대 기반 강화</strong> — 메디보이스 네이티브 앱을 데스크에 전달하고, 위챗 자동응답·라인비즈니스 인사말·가격표 공지를 정비해 상담 전 안내 흐름을 빠르게 만들었습니다.</span></li>
+          <li><div class="sub-num">2</div><span><strong>리투오·써마지FLX 홍보 자산 정리</strong> — 신규 장비 관련 보도자료와 외국어 홈페이지 콘텐츠를 제작해 해외 고객이 확인할 수 있는 기본 설명 자료를 보강했습니다.</span></li>
+          <li><div class="sub-num">3</div><span><strong>전후사진 운영 환경 구축</strong> — 촬영 후 공유폴더로 자동 전송되는 벨르몬 전용 촬영앱을 개발하고, 촬영룸 조명·배경·장비 세팅까지 맞춰 상담 자료 관리 기반을 만들었습니다.</span></li>
+          <li><div class="sub-num">4</div><span><strong>중국어 응대 인력 확보 시도</strong> — 중국어 가능 코디네이터 채용공고를 당근에 집행하고 광고비 21만 원을 사용했습니다. 7월에는 지원자 수와 실제 면접 전환 여부까지 확인해 채용 효율을 판단할 필요가 있습니다.</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 콘텐츠 발행 내역 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-purple">📝</div>
+        <h3>발행 글 목록 <span class="count-chip">6건</span></h3>
+      </div>
+      <div class="section-body" style="padding:0;">
+        <div style="overflow-x:auto;">
+          <table class="content-table publish-table">
+            <thead>
+              <tr><th>#</th><th>채널</th><th>제목</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>1</td><td><span class="tag tag-blog">블로그</span></td><td>서귀포 눈성형 상담 전 꼭 물어봐야 할 질문 7가지</td></tr>
+              <tr><td>2</td><td><span class="tag tag-blog">블로그</span></td><td>서귀포성형외과 눈 수술 후 좌우 차이가 보일 때 확인할 점</td></tr>
+              <tr><td>3</td><td><span class="tag tag-homepage">홈페이지</span></td><td>濟州神話世界附近緊緻提升｜Bellemorn Clinic Thermage FLX 鳳凰電波・熱瑪吉</td></tr>
+              <tr><td>4</td><td><span class="tag tag-homepage">홈페이지</span></td><td>濟州神話世界附近皮膚管理｜Bellemorn Clinic Ultherapy Prime 音波拉提・超聲刀</td></tr>
+              <tr><td>5</td><td><span class="tag tag-blog">블로그</span></td><td>제주 다크서클, 눈밑이 어두워 보이는 이유는 한 가지가 아닙니다</td></tr>
+              <tr><td>6</td><td><span class="tag tag-insta">인스타그램</span></td><td>글로벌 인스타그램 - 다크서클</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="next-band">
+      <h3>7월 중점 방향</h3>
+      <div class="next-item">
+        <div class="n-num">1</div>
+        <p>플레이스 3위권을 유지하면서 신화월드·서귀포 성형외과/피부관리 검색 유입을 계속 보강합니다.</p>
+      </div>
+      <div class="next-item">
+        <div class="n-num">2</div>
+        <p>위챗 신규 팔로워가 게시물·QR에서 늘어난 흐름을 활용해 가격표·시술 안내 자동응답을 상담 전환 구조로 연결합니다.</p>
+      </div>
+      <div class="next-item">
+        <div class="n-num">3</div>
+        <p>당근 광고는 소식형 소재 중심으로 유지하고, 채용공고는 지원자 수·문의 수까지 확인해 채용 효율을 판단합니다.</p>
+      </div>
+      <div class="next-item">
+        <div class="n-num">4</div>
+        <p>전후사진 촬영앱과 촬영룸 세팅을 실제 운영에 맞춰 안정화하고, 삼각대 교체 등 촬영 품질 관리를 이어갑니다.</p>
+      </div>
+    </div>
+
+  </div><!-- /panel-jun -->
+
+  <!-- ═══════════════════════════════════════
        5월 보고서
   ═══════════════════════════════════════ -->
-  <div class="report-panel active" id="panel-may">
+  <div class="report-panel" id="panel-may">
 
     <div class="summary-band">
       <div class="band-title">MONTHLY SUMMARY</div>

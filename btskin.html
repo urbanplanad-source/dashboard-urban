@@ -632,16 +632,419 @@
 
   <!-- MONTH TABS -->
   <div class="month-tabs">
-    <div class="month-tab active" onclick="switchTab('may', event)">2026년 5월</div>
+    <div class="month-tab active" onclick="switchTab('jun', event)">2026년 6월</div>
+    <div class="month-tab" onclick="switchTab('may', event)">2026년 5월</div>
     <div class="month-tab" onclick="switchTab('apr', event)">2026년 4월</div>
     <div class="month-tab" onclick="switchTab('mar', event)">2026년 3월</div>
     <div class="month-tab" onclick="switchTab('feb', event)">2026년 2월</div>
   </div>
 
   <!-- ══════════════════════════════════
+       6월 보고서
+  ══════════════════════════════════ -->
+  <div class="report-panel active" id="panel-jun">
+
+    <!-- 요약 배너 -->
+    <div class="summary-band">
+      <div class="band-title">MONTHLY SUMMARY</div>
+      <div class="band-month">2026년 6월 결과보고</div>
+      <div class="band-points">
+        <div class="band-point">
+          <div class="dot"></div>
+          <p>6월 한 달 동안 홈페이지에 8,974회 방문이 있었고, 실제 방문자는 4,515명입니다. 네이버 유입이 4,549회로 가장 큰 비중을 차지했습니다.</p>
+        </div>
+        <div class="band-point">
+          <div class="dot"></div>
+          <p>네이버 플레이스 순위는 월초 9위에서 6월 12일 2위까지 회복했고, 월말에도 5위권 안에서 마감했습니다.</p>
+        </div>
+        <div class="band-point">
+          <div class="dot"></div>
+          <p>위챗 친구는 384명에서 433명으로 늘었고, 신규 팔로워 49명 중 검색 유입이 31명으로 가장 많았습니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="performance-flow">
+      <div class="flow-node">
+        <div class="flow-kicker">홈페이지</div>
+        <div class="flow-value">8,974</div>
+        <div class="flow-label">6월 방문 횟수</div>
+      </div>
+      <div class="flow-node">
+        <div class="flow-kicker">네이버</div>
+        <div class="flow-value">4,549</div>
+        <div class="flow-label">가장 큰 유입 경로</div>
+      </div>
+      <div class="flow-node">
+        <div class="flow-kicker">순위</div>
+        <div class="flow-value">2위</div>
+        <div class="flow-label">6/12~6/16 최고 순위</div>
+      </div>
+      <div class="flow-node">
+        <div class="flow-kicker">위챗 친구</div>
+        <div class="flow-value">+49명</div>
+        <div class="flow-label">384명 → 433명</div>
+      </div>
+    </div>
+
+    <!-- 핵심 지표 -->
+    <div class="metrics-grid">
+      <div class="metric-card highlight">
+        <div class="mc-label">전체 방문 횟수</div>
+        <div class="mc-value">8,974</div>
+        <div class="mc-sub">방문자 4,515명</div>
+      </div>
+      <div class="metric-card">
+        <div class="mc-label">네이버 유입</div>
+        <div class="mc-value">4,549</div>
+        <div class="mc-sub">전체의 약 51%</div>
+      </div>
+      <div class="metric-card">
+        <div class="mc-label">위챗 친구</div>
+        <div class="mc-value">433<span style="font-size:16px;font-weight:400">명</span></div>
+        <div class="mc-sub">6/1 대비 +49명</div>
+      </div>
+      <div class="metric-card">
+        <div class="mc-label">콘텐츠 발행</div>
+        <div class="mc-value">13<span style="font-size:16px;font-weight:400">건</span></div>
+        <div class="mc-sub">홈페이지 5 · 블로그 4 · 인스타 3 · 기타 1</div>
+      </div>
+    </div>
+
+    <!-- 홈페이지 유입 현황 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-blue">📊</div>
+        <h3>홈페이지 유입 현황</h3>
+      </div>
+      <div class="section-body">
+        <div class="source-grid">
+          <div class="source-item">
+            <div class="s-label">네이버에서 들어온 방문</div>
+            <div class="s-value">4,549</div>
+            <div class="s-sub">검색·플레이스에서 병원을 확인한 뒤 홈페이지로 들어온 방문</div>
+          </div>
+          <div class="source-item">
+            <div class="s-label">병원을 알고 들어온 방문</div>
+            <div class="s-value">3,003</div>
+            <div class="s-sub">주소 입력, 즐겨찾기, 병원명 기억 후 재방문</div>
+          </div>
+          <div class="source-item">
+            <div class="s-label">구글에서 들어온 방문</div>
+            <div class="s-value">1,046</div>
+            <div class="s-sub">구글 검색을 통해 홈페이지로 연결된 방문</div>
+          </div>
+          <div class="source-item">
+            <div class="s-label">기타 경로</div>
+            <div class="s-value">376</div>
+            <div class="s-sub">자사 도메인, 다음·카카오, AI 검색, 기타 검색/링크 유입</div>
+          </div>
+        </div>
+
+        <div style="margin-bottom:20px;">
+          <div style="display:flex;height:12px;border-radius:8px;overflow:hidden;gap:2px;">
+            <div style="width:51%;background:#e07b2a;border-radius:8px 0 0 8px;"></div>
+            <div style="width:33%;background:#2d5fa8;"></div>
+            <div style="width:12%;background:#3a8c5c;"></div>
+            <div style="width:4%;background:#c0c0c0;border-radius:0 8px 8px 0;"></div>
+          </div>
+        </div>
+
+        <div class="status-item">
+          <div class="status-dot dot-gold"></div>
+          <p><strong>6월은 네이버 유입이 전체 방문의 절반 이상을 만들었습니다.</strong> 플레이스 순위 회복과 네이버 검색·플레이스 확인 흐름이 홈페이지 방문 증가로 연결됐습니다.</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-green"></div>
+          <p><strong>직접 유입도 3,003회로 안정적입니다.</strong> 병원명을 알고 다시 찾아오는 재방문 구조가 유지되고 있습니다.</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-green"></div>
+          <p><strong>구글 유입은 1,046회로 외국인·제주 외 지역 검색 접점을 보완했습니다.</strong> 영어·중국어 페이지 정비와 함께 검색 커버리지를 넓히는 기반이 됩니다.</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-gold"></div>
+          <p><strong>AI 검색 유입도 소량 확인됩니다.</strong> ChatGPT 34회, Perplexity 2회가 확인되어 앞으로 병원 정보 구조화와 외국어 페이지 정비의 중요성이 커지고 있습니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 네이버 순위 그래프 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-gold">🥇</div>
+        <h3>네이버 순위 추이 <span class="count-chip">제주피부과</span></h3>
+      </div>
+      <div class="section-body">
+        <div class="rank-chart-wrap">
+          <svg class="rank-chart" viewBox="0 0 640 220" role="img" aria-label="2026년 6월 제주피부과 네이버 순위 추이">
+            <line x1="28" y1="28" x2="612" y2="28" stroke="#eee7dc" />
+            <line x1="28" y1="69" x2="612" y2="69" stroke="#eee7dc" />
+            <line x1="28" y1="110" x2="612" y2="110" stroke="#eee7dc" />
+            <line x1="28" y1="151" x2="612" y2="151" stroke="#eee7dc" />
+            <line x1="28" y1="192" x2="612" y2="192" stroke="#eee7dc" />
+            <text x="4" y="31" class="rank-axis">1위</text>
+            <text x="4" y="72" class="rank-axis">3위</text>
+            <text x="4" y="113" class="rank-axis">5위</text>
+            <text x="4" y="154" class="rank-axis">7위</text>
+            <text x="4" y="195" class="rank-axis">9위</text>
+            <path class="rank-area" d="M28.0,192.0 L48.1,171.5 L68.3,171.5 L88.4,151.0 L108.6,130.5 L128.7,130.5 L148.8,130.5 L169.0,151.0 L189.1,151.0 L209.2,171.5 L229.4,110.0 L249.5,48.5 L269.7,48.5 L289.8,48.5 L309.9,48.5 L330.1,48.5 L350.2,69.0 L370.3,69.0 L390.5,89.5 L410.6,89.5 L430.8,89.5 L450.9,89.5 L471.0,89.5 L491.2,89.5 L511.3,110.0 L531.4,89.5 L551.6,89.5 L571.7,110.0 L591.9,110.0 L612.0,110.0 L612,205 L28,205 Z" />
+            <polyline class="rank-line" points="28.0,192.0 48.1,171.5 68.3,171.5 88.4,151.0 108.6,130.5 128.7,130.5 148.8,130.5 169.0,151.0 189.1,151.0 209.2,171.5 229.4,110.0 249.5,48.5 269.7,48.5 289.8,48.5 309.9,48.5 330.1,48.5 350.2,69.0 370.3,69.0 390.5,89.5 410.6,89.5 430.8,89.5 450.9,89.5 471.0,89.5 491.2,89.5 511.3,110.0 531.4,89.5 551.6,89.5 571.7,110.0 591.9,110.0 612.0,110.0" />
+            <circle class="rank-dot low" cx="28" cy="192" r="5" />
+            <circle class="rank-dot" cx="108.6" cy="130.5" r="5" />
+            <circle class="rank-dot" cx="229.4" cy="110" r="5" />
+            <circle class="rank-dot best" cx="249.5" cy="48.5" r="6" />
+            <circle class="rank-dot best" cx="330.1" cy="48.5" r="6" />
+            <circle class="rank-dot" cx="390.5" cy="89.5" r="5" />
+            <circle class="rank-dot" cx="511.3" cy="110" r="5" />
+            <circle class="rank-dot" cx="612" cy="110" r="5" />
+            <text x="28" y="216" class="rank-axis">6/1</text>
+            <text x="306" y="216" class="rank-axis">6/16</text>
+            <text x="588" y="216" class="rank-axis">6/30</text>
+          </svg>
+          <svg class="rank-mobile-chart" viewBox="0 0 340 190" role="img" aria-label="모바일용 제주피부과 6월 순위 요약 그래프">
+            <line class="m-grid" x1="40" y1="32" x2="326" y2="32" />
+            <line class="m-grid" x1="40" y1="94" x2="326" y2="94" />
+            <line class="m-grid" x1="40" y1="156" x2="326" y2="156" />
+            <text class="m-axis" x="10" y="36">2위</text>
+            <text class="m-axis" x="10" y="98">5위</text>
+            <text class="m-axis" x="10" y="160">8위</text>
+            <polyline class="m-line" points="40,170 88,140 136,155 184,32 232,62 280,94 326,94" />
+            <circle class="m-dot" cx="40" cy="170" r="5" />
+            <circle class="m-dot" cx="88" cy="140" r="5" />
+            <circle class="m-dot" cx="136" cy="155" r="5" />
+            <circle class="m-dot" cx="184" cy="32" r="5" />
+            <circle class="m-dot" cx="232" cy="62" r="5" />
+            <circle class="m-dot" cx="280" cy="94" r="5" />
+            <circle class="m-dot" cx="326" cy="94" r="5" />
+            <text class="m-label" x="40" y="160" text-anchor="middle">9위</text>
+            <text class="m-label" x="184" y="24" text-anchor="middle">2위</text>
+            <text class="m-label" x="326" y="86" text-anchor="middle">5위</text>
+            <text class="m-date" x="40" y="184" text-anchor="middle">6/1</text>
+            <text class="m-date" x="184" y="184" text-anchor="middle">6/12</text>
+            <text class="m-date" x="326" y="184" text-anchor="middle">6/30</text>
+          </svg>
+        </div>
+
+        <div style="padding:13px 15px;background:var(--blue-light);border-radius:10px;border-left:3px solid var(--blue);">
+          <p style="font-size:13px;line-height:1.7;color:#1a3a6b;">
+            6월 초에는 9위에서 시작했지만 6월 12일부터 16일까지 2위를 유지하며 빠르게 회복했습니다. 월말에는 4~5위권에서 마감해, 5월 말의 하락 구간보다 안정적인 순위 흐름을 만들었습니다.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 위챗 공식계정 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-green">💬</div>
+        <h3>위챗 공식계정 운영 현황</h3>
+      </div>
+      <div class="section-body">
+        <div class="metrics-grid" style="margin-bottom:20px;">
+          <div class="metric-card highlight">
+            <div class="mc-label">6월 말 친구 수</div>
+            <div class="mc-value">433<span style="font-size:16px;font-weight:400">명</span></div>
+            <div class="mc-sub">6/1 384명 → 6/30 433명</div>
+          </div>
+          <div class="metric-card">
+            <div class="mc-label">순증가</div>
+            <div class="mc-value">+49<span style="font-size:16px;font-weight:400">명</span></div>
+            <div class="mc-sub">월 +12.76% 성장</div>
+          </div>
+          <div class="metric-card">
+            <div class="mc-label">신규 팔로워</div>
+            <div class="mc-value">49<span style="font-size:16px;font-weight:400">명</span></div>
+            <div class="mc-sub">위챗 통계 기준</div>
+          </div>
+          <div class="metric-card">
+            <div class="mc-label">검색 유입</div>
+            <div class="mc-value">31<span style="font-size:16px;font-weight:400">명</span></div>
+            <div class="mc-sub">신규의 63.27%</div>
+          </div>
+        </div>
+
+        <div class="wechat-grid">
+          <div class="wechat-donut">
+            <div class="wechat-donut-label">
+              <strong>49명</strong>
+              <span>신규 팔로워</span>
+            </div>
+          </div>
+          <div>
+            <div class="wechat-legend">
+              <div class="wechat-legend-item"><span class="legend-dot" style="background:#10b85f;"></span><p><strong>검색(搜一搜) 31명</strong><br>63.27% · 브랜드/시술 검색 기반 유입</p></div>
+              <div class="wechat-legend-item"><span class="legend-dot" style="background:#3bbf8f;"></span><p><strong>QR코드 스캔 12명</strong><br>24.49% · 원내/홍보물 접점 연계</p></div>
+              <div class="wechat-legend-item"><span class="legend-dot" style="background:#38c7d9;"></span><p><strong>게시물 팔로우 1명</strong><br>2.04% · 콘텐츠 기반 팔로우</p></div>
+              <div class="wechat-legend-item"><span class="legend-dot" style="background:#4b9fe5;"></span><p><strong>더보기 5명</strong><br>10.2% · 기타 경로 유입</p></div>
+            </div>
+            <div style="margin-top:16px;padding:13px 15px;background:var(--green-light);border-radius:10px;border-left:3px solid var(--green);">
+              <p style="font-size:13px;line-height:1.7;color:#1a3a1a;">
+                <strong>검색 유입 비중이 63.27%</strong>로 높아졌습니다. 위챗 안에서 병원명이나 시술 정보를 직접 찾는 흐름이 강해졌고, QR코드 유입도 12명으로 오프라인 접점이 계속 작동하고 있습니다.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 외국인 상담 기반 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-green">🌏</div>
+        <h3>외국인 상담 기반 및 채널 정비</h3>
+      </div>
+      <div class="section-body">
+        <div class="metrics-grid" style="margin-bottom:18px;">
+          <div class="metric-card highlight">
+            <div class="mc-label">위챗 친구</div>
+            <div class="mc-value">433<span style="font-size:16px;font-weight:400">명</span></div>
+            <div class="mc-sub">중국어 상담 접점 확대</div>
+          </div>
+          <div class="metric-card">
+            <div class="mc-label">검색 팔로워</div>
+            <div class="mc-value">31<span style="font-size:16px;font-weight:400">명</span></div>
+            <div class="mc-sub">搜一搜 유입 중심</div>
+          </div>
+          <div class="metric-card">
+            <div class="mc-label">외국어 페이지</div>
+            <div class="mc-value">3<span style="font-size:16px;font-weight:400">건</span></div>
+            <div class="mc-sub">중국어 2 · 영어 1</div>
+          </div>
+          <div class="metric-card">
+            <div class="mc-label">가격표 정비</div>
+            <div class="mc-value">완료</div>
+            <div class="mc-sub">중국어·영어 상담 전 확인 동선 보강</div>
+          </div>
+        </div>
+
+        <div class="status-item">
+          <div class="status-dot dot-green"></div>
+          <p><strong>중국어 가격표와 위챗 공식계정 가격표를 리뉴얼했습니다.</strong> 외국인 고객이 상담 전 시술비와 기본 안내를 먼저 확인할 수 있는 구조를 보강했습니다.</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-green"></div>
+          <p><strong>위챗 공식계정 자동응답 시스템을 구축했습니다.</strong> 반복 문의에 빠르게 대응할 수 있도록 상담 전 안내 흐름을 정리했습니다.</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-green"></div>
+          <p><strong>써마지FLX와 울쎄라피프라임 중국어 페이지, 영어 가격 안내 페이지를 제작했습니다.</strong> 호텔·제주 방문 외국인 검색 수요와 상담 전환을 함께 고려한 작업입니다.</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-gold"></div>
+          <p><strong>상담 상세 집계는 추가 확인 후 보강 예정입니다.</strong> 현재 초안에는 확인된 위챗 친구 수, 외국어 페이지, 가격표 정비, 자동응답 구축 데이터를 우선 반영했습니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 당근 광고 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-orange">🥕</div>
+        <h3>당근비즈니스 광고 성과</h3>
+      </div>
+      <div class="section-body">
+        <table class="ad-table">
+          <thead>
+            <tr><th>지표</th><th>수치</th><th>비고</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>노출수</td><td>17,691회</td><td>노형동 6,448 · 연동 5,263 중심</td></tr>
+            <tr><td>도달수</td><td>6,996명</td><td>노형·연동 중심 지역 노출</td></tr>
+            <tr><td>클릭수</td><td>257회</td><td>지역 타깃 대상 홈페이지/소식 확인</td></tr>
+            <tr><td>클릭률(CTR)</td><td>1.46%</td><td>클릭당 지출 335원</td></tr>
+            <tr><td>총 지출</td><td>86,282원</td><td>6월 집행 기준</td></tr>
+            <tr><td>반응</td><td>6건</td><td>단골 3명 · 관심 3개</td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top:12px; padding:12px 14px; background:var(--orange-light); border-radius:8px; border-left:3px solid var(--orange);">
+          <p style="font-size:12px; line-height:1.6; color:#7a3510;">6월 당근비즈니스 광고는 노형동·연동 중심으로 노출이 집중되었습니다. 외도동·외도일동까지 보조 노출이 발생해 병원 인근 생활권 중심의 지역 인지 흐름을 유지했습니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 운영 및 추가 업무 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-gold">⚙️</div>
+        <h3>6월 운영 및 추가 업무 <span class="count-chip">핵심 4개 축</span></h3>
+      </div>
+      <div class="section-body">
+        <div class="section-lead">
+          <strong>운영 정리</strong>
+          <p>6월 추가 운영은 단순 제작 건수보다 신규 장비 도입 홍보, 외국인 응대 기반, 홈페이지 검색 구조, 원내 안내물 업데이트를 동시에 정비한 달로 정리할 수 있습니다.</p>
+        </div>
+
+        <div class="status-item"><div class="status-dot dot-green"></div><p><strong>신규 장비·시술 도입 홍보</strong> — 써마지FLX, 울쎄라피프라임, 리투오 도입 소식을 보도자료·홈페이지·블로그·당근·카카오채널·원내 영상까지 연결해 온라인과 원내 접점에 함께 반영했습니다.</p></div>
+        <div class="status-item"><div class="status-dot dot-green"></div><p><strong>외국인 응대와 가격 안내 정비</strong> — 중국어 가격표를 리뉴얼해 위챗과 홈페이지에 반영했고, 영어 가격 안내와 영어 피부과 페이지도 보강해 외국인 상담 전 안내 흐름을 정리했습니다.</p></div>
+        <div class="status-item"><div class="status-dot dot-green"></div><p><strong>상담 효율화 기반 구축</strong> — 실시간 번역 웹앱을 네이티브 앱으로 업그레이드하고, 위챗 공식계정 자동응답을 구축해 반복 문의 응대와 외국어 상담의 초기 대응 속도를 높였습니다.</p></div>
+        <div class="status-item"><div class="status-dot dot-green"></div><p><strong>홈페이지·검색 기반 보강</strong> — 홈페이지 메인 화면과 SEO/GEO 구조를 정비하고, 주사 시술 가격표와 신규 장비 공지를 반영해 검색 유입 이후 확인해야 할 정보의 완성도를 높였습니다.</p></div>
+
+        <div style="font-size:11px;font-weight:800;color:var(--muted);margin:18px 0 10px;text-transform:uppercase;letter-spacing:.5px;">7월 후속 관리</div>
+        <div class="status-item"><div class="status-dot dot-gold"></div><p>시술 후 안내문은 환자에게 꼭 전달해야 할 내용을 전단지 형태로 정리하고, 기본 안내는 기존 톤을 유지해 과도한 변경 없이 개선합니다.</p></div>
+        <div class="status-item"><div class="status-dot dot-gold"></div><p>네이버플레이스는 5위 이내 방어를 기준으로 리뷰·콘텐츠·플레이스 신호를 함께 관리하고, 인스타그램은 발행량을 보강해 상시 노출 채널로 다시 끌어올립니다.</p></div>
+      </div>
+    </div>
+
+    <!-- 콘텐츠 발행 내역 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-blue">📋</div>
+        <h3>콘텐츠 발행 내역 <span class="count-chip" id="jun-chip">13건</span></h3>
+      </div>
+      <div id="jun-content-area" style="overflow-x:auto;">
+        <table class="content-table">
+          <thead>
+            <tr><th>#</th><th>제목</th><th>채널</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>제주 여드름 치료 반복되는 원인부터 확인해야 하는 이유</td><td><span class="tag tag-blog">블로그</span></td></tr>
+            <tr><td>2</td><td>노형 리프팅 시작 시기, 나이보다 먼저 봐야 할 피부 변화</td><td><span class="tag tag-blog">블로그</span></td></tr>
+            <tr><td>3</td><td>써마지FLX 신규 도입 안내</td><td><span class="tag tag-blog">블로그</span></td></tr>
+            <tr><td>4</td><td>써마지FLX 신규 도입안내</td><td><span class="tag tag-insta">인스타그램</span></td></tr>
+            <tr><td>5</td><td>써마지FLX 신규 도입안내 (당근소식)</td><td><span class="tag tag-homepage">기타</span></td></tr>
+            <tr><td>6</td><td>레비나스 소개 -global 계정</td><td><span class="tag tag-insta">인스타그램</span></td></tr>
+            <tr><td>7</td><td>濟州君悅酒店附近皮膚科｜Thermage FLX 鳳凰電波・熱瑪吉</td><td><span class="tag tag-homepage">홈페이지</span></td></tr>
+            <tr><td>8</td><td>濟州老衡路皮膚科｜Ultherapy Prime 音波拉提・超聲刀</td><td><span class="tag tag-homepage">홈페이지</span></td></tr>
+            <tr><td>9</td><td>제주 리투오 도입 안내, 피부 속 환경을 섬세하게 바라보는 스킨부스터</td><td><span class="tag tag-homepage">홈페이지</span></td></tr>
+            <tr><td>10</td><td>제주 리투오 엘라비에, 무세포동종진피의 원리와 특징 정리</td><td><span class="tag tag-blog">블로그</span></td></tr>
+            <tr><td>11</td><td>신제주 피부관리, 피부과전문의가 말하는 내 피부에 맞는 관리</td><td><span class="tag tag-homepage">홈페이지</span></td></tr>
+            <tr><td>12</td><td>글로벌 인스타 - 모든언어 응대가능하다는 게시물</td><td><span class="tag tag-insta">인스타그램</span></td></tr>
+            <tr><td>13</td><td>영어페이지 가격 안내 작성</td><td><span class="tag tag-homepage">홈페이지</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 7월 방향 -->
+    <div class="next-band">
+      <h4>7월 진행 방향</h4>
+      <div class="next-items">
+        <div class="next-item">
+          <div class="n-num">1</div>
+          <p>제주피부과 키워드 5위권 이내 유지 — 2위권 회복 구간 이후 월말 4~5위 흐름 방어</p>
+        </div>
+        <div class="next-item">
+          <div class="n-num">2</div>
+          <p>네이버·직접 유입 중심의 홈페이지 방문 9천 회대 유지와 외국어 페이지 검색 노출 확대</p>
+        </div>
+        <div class="next-item">
+          <div class="n-num">3</div>
+          <p>위챗 친구 450명대 진입 목표 — 搜一搜 검색 유입과 QR 접점 동시 강화</p>
+        </div>
+        <div class="next-item">
+          <div class="n-num">4</div>
+          <p>써마지FLX·리투오·영양주사 가격표 업데이트를 상담 전 안내 콘텐츠와 연결</p>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /panel-jun -->
+
+  <!-- ══════════════════════════════════
        5월 보고서
   ══════════════════════════════════ -->
-  <div class="report-panel active" id="panel-may">
+  <div class="report-panel" id="panel-may">
 
     <!-- 요약 배너 -->
     <div class="summary-band">
@@ -2132,6 +2535,7 @@
 <script>
   const API_URL = 'https://script.google.com/macros/s/AKfycbwUsy5dDEG-t4FszWRCj-f0-FLIOY4SPMatiNsm55xM7bFXzaAEFS6McQdvmXT85dT0/exec';
   const CLIENT_ID = 'btskin';
+  const JUNE_MONTH = '2026-06';
   const MAY_MONTH = '2026-05';
   const MAY_REPORT_START = '2026-05-01';
   const MAY_REPORT_END = '2026-06-03';
@@ -2246,6 +2650,27 @@
       });
   }
 
+  // ── 6월 로딩 ──
+  let junLoaded = false;
+  function loadJuneContent() {
+    if (junLoaded) return;
+    junLoaded = true;
+    loadSummary()
+      .then(allPosts => {
+        const posts = allPosts
+          .filter(p => p.clientId === CLIENT_ID && p.month === JUNE_MONTH)
+          .sort((a, b) => (a.publishedAt || '').localeCompare(b.publishedAt || ''));
+        renderContentToArea(posts, 'jun-chip', 'jun-content-area');
+      })
+      .catch(() => {
+        const el = document.getElementById('jun-content-area');
+        if (el) el.innerHTML = '<p style="font-size:14px;color:var(--muted);padding:20px;">데이터를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.</p>';
+        const chip = document.getElementById('jun-chip');
+        if (chip) chip.textContent = '오류';
+        junLoaded = false;
+      });
+  }
+
   // ── 5월 로딩 ──
   let mayLoaded = false;
   function loadMayContent() {
@@ -2319,13 +2744,14 @@
     if (evt && evt.currentTarget) evt.currentTarget.classList.add('active');
     document.querySelectorAll('.report-panel').forEach(p => p.classList.remove('active'));
     document.getElementById('panel-' + id).classList.add('active');
+    if (id === 'jun') loadJuneContent();
     if (id === 'may') loadMayContent();
     if (id === 'apr') loadAprilContent();
     if (id === 'mar') loadMarchContent();
   }
 
-  // 페이지 로드 시 5월 탭이 기본이므로 즉시 로드
-  document.addEventListener('DOMContentLoaded', loadMayContent);
+  // 페이지 로드 시 6월 탭이 기본이므로 즉시 로드
+  document.addEventListener('DOMContentLoaded', loadJuneContent);
 </script>
 
 </body>

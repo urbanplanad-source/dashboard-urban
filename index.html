@@ -2495,8 +2495,13 @@
       || (b.procedurePrices || []).length > 0;
   }
 
+  function getClientBriefWikiPath(clientId) {
+    return `docs/briefs/clients/${clientId}.md`;
+  }
+
   function formatClientBriefContext(client, brief, data) {
     const b = normalizeClientBrief(brief || {}, client.clientId);
+    const wikiBriefPath = getClientBriefWikiPath(client.clientId);
     const jobs = sortJobsForFocus((data.monthlyJobs || [])
       .filter(j => j.clientId === client.clientId && !isJobDone(j)))
       .slice(0, 12);
@@ -2513,6 +2518,13 @@
       `진료과/분야: ${client.specialty || ''}`,
       `담당자: ${client.mainContact || ''}`,
       `브리프 업데이트: ${b.updatedAt || '미입력'}`,
+      `상세 브리프 위키: ${wikiBriefPath}`,
+      '',
+      '## 읽기 순서',
+      '1. 대시보드 clientBrief API 브리프',
+      `2. ${wikiBriefPath}`,
+      '3. docs/compliance/medical-ad-review-guide.md',
+      '4. docs/compliance/medical-ad-checklist.json',
       '',
       '## 콘텐츠 브리프',
     ];
@@ -2561,8 +2573,10 @@
       '',
       '## 작성 전 확인',
       '- 위 브리프를 우선 기준으로 삼고, 확인되지 않은 수치나 효과는 만들지 않는다.',
+      `- 긴 맥락은 ${wikiBriefPath}를 함께 확인한다.`,
+      '- 의료/시술 콘텐츠는 docs/compliance 기준으로 PASS/REVISE/HOLD 검수를 수행한다.',
       '- 의료/시술 콘텐츠는 개인별 차이와 상담 필요성을 자연스럽게 반영한다.',
-      '- 작성 후 대시보드 글 보관함에는 addDraft 구조로 저장한다.'
+      '- 작성 후 대시보드 글 보관함에는 addDraft 구조로 저장하고 memo에 의료광고 검수 결론을 남긴다.'
     );
 
     return lines.join('\n');
@@ -2582,6 +2596,7 @@
     }, [client.clientId, briefSignature]);
 
     const currentBrief = normalizeClientBrief(editing ? form : (brief || {}), client.clientId);
+    const wikiBriefPath = getClientBriefWikiPath(client.clientId);
     const hasContent = hasClientBriefContent(currentBrief);
     const compact = (value, fallback='미입력') => String(value || '').trim() || fallback;
     const iS = { fontFamily:'inherit', fontSize:12.5, border:'1px solid var(--border)', borderRadius:7, padding:'7px 9px', outline:'none', background:'var(--surface)', boxSizing:'border-box' };
@@ -2695,10 +2710,14 @@
             {!hasContent && (
               <div style={{fontSize:12,color:'var(--text-3)',background:'var(--surface-2)',border:'1px dashed var(--border)',borderRadius:9,padding:'12px 14px',marginBottom:14}}>
                 아직 브리프가 없습니다. 수정 버튼을 눌러 병원 특징, 시술 가격, 작성 지침을 입력하세요.
+                <div style={{marginTop:7}}>상세 브리프 위키: <code style={{fontSize:11,color:'var(--text-2)'}}>{wikiBriefPath}</code></div>
               </div>
             )}
             {hasContent && (
             <>
+            <div style={{fontSize:11.5,color:'var(--text-3)',background:'var(--surface-2)',border:'1px solid var(--border-2)',borderRadius:8,padding:'8px 10px',marginBottom:12}}>
+              상세 브리프 위키: <code style={{fontSize:11,color:'var(--text-2)'}}>{wikiBriefPath}</code>
+            </div>
             <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(180px,1fr))',gap:10,marginBottom:14}}>
               {[
                 ['포지션', currentBrief.brandSummary],

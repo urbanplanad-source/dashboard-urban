@@ -683,7 +683,16 @@ const content = data.content;
 ## 7. 거래처 콘텐츠 브리프
 
 거래처별 병원 특징, 원장님 스타일, 대표 시술, 시술 가격, 글 작성 지침, 의료광고 주의사항을 저장한다.  
-Codex나 외부 작성 에이전트는 콘텐츠 초안을 만들기 전에 해당 거래처의 브리프를 먼저 조회하고, 작성 완료 후 기존 `addDraft`로 글 보관함에 저장한다.
+Codex나 외부 작성 에이전트는 콘텐츠 초안을 만들기 전에 해당 거래처의 브리프를 먼저 조회하고, 상세 맥락은 `docs/briefs/clients/{clientId}.md`에서 확인한다. 작성 완료 후 기존 `addDraft`로 글 보관함에 저장한다.
+
+### 역할 분리
+
+| 저장 위치 | 역할 | 사용 시점 |
+|----------|------|-----------|
+| Google Sheets `ClientBriefs` | 대시보드에서 빠르게 보는 핵심 브리프, 가격표, 금지 표현 | 매번 API로 조회 |
+| `docs/briefs/clients/{clientId}.md` | 긴 맥락, 콘텐츠 전략, FAQ, 소재, 원본 자료 링크 | 초안 작성 전 함께 확인 |
+| `docs/briefs/sources/{clientId}/` | 가격표, 미팅 메모, 병원 자료 원본 | 근거 확인이 필요할 때 |
+| `docs/compliance/` | 의료광고 공통 검수 기준 | 의료/시술 콘텐츠 작성 및 검수 시 |
 
 ### ClientBriefs 시트 컬럼 구조
 
@@ -807,12 +816,26 @@ const res = await fetch(API, {
 
 1. `summary&draftMode=light`로 현재 업무/최근 발행 흐름을 확인한다.
 2. `clientBrief&clientId=...`로 거래처 브리프를 조회한다.
-3. 브리프의 `doctorStyle`, `writingGuidelines`, `forbiddenPhrases`, `medicalAdCautions`, `procedurePrices`를 우선 기준으로 초안을 작성한다.
-4. 의료/시술 콘텐츠는 `docs/compliance/medical-ad-review-guide.md`와 `docs/compliance/medical-ad-checklist.json`을 함께 참고한다.
-5. 브리프에 없거나 외부에서 확인되지 않은 수치, 가격, 효과는 만들지 않고 “자료 확인 필요”로 남긴다.
-6. 작성 후 `docs/compliance/medical-ad-reviewer-prompt.md` 형식으로 별도 검수를 수행한다.
-7. 검수 결론이 `PASS`가 아니면 수정 또는 사람 확인 대상으로 남긴다. `HOLD`는 발행용으로 넘기지 않는다.
-8. 작성이 끝나면 기존 `addDraft`로 글 보관함에 저장하고, memo에 `의료광고 검수: PASS/REVISE/HOLD`를 남긴다.
+3. `docs/briefs/clients/{clientId}.md`로 긴 맥락, FAQ, 소재, 원본 자료 링크를 확인한다.
+4. 브리프의 `doctorStyle`, `writingGuidelines`, `forbiddenPhrases`, `medicalAdCautions`, `procedurePrices`를 우선 기준으로 초안을 작성한다.
+5. 의료/시술 콘텐츠는 `docs/compliance/medical-ad-review-guide.md`와 `docs/compliance/medical-ad-checklist.json`을 함께 참고한다.
+6. 브리프에 없거나 외부에서 확인되지 않은 수치, 가격, 효과는 만들지 않고 “자료 확인 필요”로 남긴다.
+7. 작성 후 `docs/compliance/medical-ad-reviewer-prompt.md` 형식으로 별도 검수를 수행한다.
+8. 검수 결론이 `PASS`가 아니면 수정 또는 사람 확인 대상으로 남긴다. `HOLD`는 발행용으로 넘기지 않는다.
+9. 작성이 끝나면 기존 `addDraft`로 글 보관함에 저장하고, memo에 `의료광고 검수: PASS/REVISE/HOLD`를 남긴다.
+
+### 브리프 위키 자료
+
+거래처별 긴 브리프 기준은 저장소의 `docs/briefs/`에 둔다.
+
+| 파일 | 용도 |
+|------|------|
+| `docs/briefs/README.md` | 브리프 위키 운영 원칙 |
+| `docs/briefs/index.md` | 거래처별 상세 브리프 목차 |
+| `docs/briefs/overview.md` | 전체 거래처 콘텐츠 운영 요약 |
+| `docs/briefs/clients/{clientId}.md` | 거래처별 상세 브리프 |
+| `docs/briefs/sources/{clientId}/` | 거래처별 원본 자료 보관 |
+| `docs/briefs/templates/client-brief-template.md` | 새 거래처 브리프 템플릿 |
 
 ### 의료광고 검수 자료
 

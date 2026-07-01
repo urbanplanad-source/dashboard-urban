@@ -12,6 +12,8 @@ Codex가 이 저장소에서 항상 먼저 참고하는 작업 지시다. 이 �
 - `.github/workflows/naver-review-monitor.yml`: 리뷰 모니터 정기 실행 워크플로.
 - `apps-script/*.gs`: Google Apps Script에 수동 반영할 패치/헬퍼 코드. 배포된 라이브 코드 자체가 아니라 적용용 스니펫이다.
 - `docs/apps-script-api.md`: Apps Script API, Google Sheets 구조, 대시보드 운영 규칙의 상세 기준 문서.
+- `docs/briefs/`: 거래처별 상세 브리프 위키. 대시보드 `ClientBriefs`보다 긴 맥락, 원본 자료 링크, 작성 기준을 보관한다.
+- `docs/compliance/`: 의료광고 검수 원본 PDF, 운영 가이드, JSON 체크리스트, 서브에이전트 검수 프롬프트.
 - `review-monitor.config.example.json`: 로컬 리뷰 모니터 설정 예시. 실제 설정 파일 `review-monitor.config.json`은 커밋하지 않는다.
 
 ## Operating Principles
@@ -36,11 +38,13 @@ Codex가 이 저장소에서 항상 먼저 참고하는 작업 지시다. 이 �
 - 잘못된 별칭 `bellemont`, `eyeclinic`, `igo`는 사용하지 않는다. 각각 `belrmon`, `eyecare`, `igochi`로 정정한다.
 - 발행 기록은 `postLogs`를 기준으로 하며, `publishedAt`은 `YYYY-MM-DD`, `month`는 `YYYY-MM`, `channel`은 문서의 정규화 규칙에 맞춰 처리한다.
 - API/Sheets에서 확인 가능한 정량 수치와 사용자가 제공한 외부 콘솔 수치를 구분한다. 확인되지 않은 수치는 만들지 않고 “자료 확인 필요”로 남긴다.
+- 의료/시술 콘텐츠 초안 작성 전에는 `clientBrief&clientId=...`, `docs/briefs/clients/{clientId}.md`, `docs/compliance/`를 함께 확인한다.
 
 ## Dashboard Rules
 
 - `index.html`은 CDN 기반 브라우저 실행 파일이다. Node 빌드 검사가 대시보드 JSX까지 검증해주지 않는다는 점을 감안한다.
 - 화면 문구를 바꿀 때는 대시보드 사용자에게 보이는 운영 표현으로 작성한다. 내부 구현 설명이나 사용법 문장을 불필요하게 늘리지 않는다.
+- 대시보드 `ClientBriefs`는 빠른 운영 입력용이다. 긴 거래처 맥락, 원본 자료, 작성 패턴은 `docs/briefs/`에 보관한다.
 - 거래처 카드, 손익, 비용, 글 보관함, 캘린더는 Apps Script `summary` 응답과 연결되어 있다. 관련 데이터 구조를 바꾸면 `docs/apps-script-api.md`를 확인하고 함께 수정한다.
 - 서브/순위 업무의 `진행중/완료` 상태는 Sheets `MonthlyJobs.note`를 기준으로 동기화한다. `localStorage`는 화면 즉시 반영과 API 응답 전 임시 항목 보존용으로만 사용한다.
 - 월간 초기화는 자동 실행하지 않는다. 월말보고서 작성을 끝낸 뒤 대시보드 `다음 달 초기화` 버튼으로만 실행하며, 버튼은 Sheets 처리 성공을 확인한 후 로컬 상태를 초기화해야 한다.

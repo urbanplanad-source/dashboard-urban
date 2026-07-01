@@ -371,15 +371,545 @@
 <main class="container">
   <p class="timeline-label">보고서 목록</p>
   <div class="month-tabs">
-    <div class="month-tab active" onclick="switchTab('may', event)">2026년 5월</div>
+    <div class="month-tab active" onclick="switchTab('jun', event)">2026년 6월</div>
+    <div class="month-tab" onclick="switchTab('may', event)">2026년 5월</div>
     <div class="month-tab" onclick="switchTab('apr', event)">2026년 4월</div>
     <div class="month-tab" onclick="switchTab('mar', event)">2026년 3월</div>
   </div>
 
   <!-- ═══════════════════════════════════════
+       6월 보고서
+  ═══════════════════════════════════════ -->
+  <div class="report-panel active pilot-report" id="panel-jun">
+
+    <!-- 요약 배너 -->
+    <div class="summary-band">
+      <div class="band-title">MONTHLY SUMMARY</div>
+      <div class="band-month">2026년 6월 마케팅 결과보고</div>
+      <div class="band-sub">6월은 슈링크·올리지오 도입 이후 홈페이지 유입, 365경희부부한의원 플레이스 순위, 지역 광고가 함께 강화된 월입니다.</div>
+      <div class="band-points">
+        <div class="insight-card">
+          <strong>홈페이지 유입 확대</strong>
+          <p>6월 홈페이지 방문은 3,470회, 방문자는 1,610명으로 확인됩니다.</p>
+        </div>
+        <div class="insight-card">
+          <strong>365경희부부한의원 순위 상위권</strong>
+          <p>월초 8~9위권에서 6월 8~12일 1위까지 올라갔고, 월말에도 4위권을 유지했습니다.</p>
+        </div>
+        <div class="insight-card">
+          <strong>지역 광고 반응 확보</strong>
+          <p>당근 광고는 노출 29,114회, 클릭 388회, 반응 22건을 만들었습니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="performance-flow">
+      <div class="flow-node">
+        <div class="flow-kicker">홈페이지</div>
+        <div class="flow-value">3,470</div>
+        <div class="flow-label">6월 방문 횟수</div>
+      </div>
+      <div class="flow-node">
+        <div class="flow-kicker">방문자</div>
+        <div class="flow-value">1,610</div>
+        <div class="flow-label">홈페이지 방문자</div>
+      </div>
+      <div class="flow-node">
+        <div class="flow-kicker">당근 광고</div>
+        <div class="flow-value">29,114</div>
+        <div class="flow-label">지역 광고 노출</div>
+      </div>
+      <div class="flow-node">
+        <div class="flow-kicker">콘텐츠</div>
+        <div class="flow-value">14건</div>
+        <div class="flow-label">월 목표 초과</div>
+      </div>
+    </div>
+
+    <!-- 핵심 지표 -->
+    <div class="kpi-title">핵심 KPI</div>
+    <div class="primary-kpis">
+      <div class="metric-card highlight">
+        <div class="mc-label">홈페이지 방문</div>
+        <div class="mc-value">3,470</div>
+        <div class="mc-sub">방문자 1,610명</div>
+      </div>
+      <div class="metric-card">
+        <div class="mc-label">네이버 유입</div>
+        <div class="mc-value">2,420</div>
+        <div class="mc-sub">전체 방문의 약 70%</div>
+      </div>
+      <div class="metric-card">
+        <div class="mc-label">365경희부부한의원 순위</div>
+        <div class="mc-value">1위</div>
+        <div class="mc-sub">6/8~6/12, 6/14 최고 순위</div>
+      </div>
+      <div class="metric-card">
+        <div class="mc-label">콘텐츠 발행</div>
+        <div class="mc-value">14건</div>
+        <div class="mc-sub">블로그 7 · 홈페이지 4 · 인스타 1 · 기타 2</div>
+      </div>
+    </div>
+
+    <details class="support-panel">
+      <summary>운영 참고지표 보기</summary>
+      <div class="support-kpis">
+        <div class="metric-card">
+          <div class="mc-label">직접 유입</div>
+          <div class="mc-value">707</div>
+          <div class="mc-sub">방문자 268명</div>
+        </div>
+        <div class="metric-card highlight">
+          <div class="mc-label">당근 광고 클릭</div>
+          <div class="mc-value">388</div>
+          <div class="mc-sub">CTR 1.34%</div>
+        </div>
+        <div class="metric-card">
+          <div class="mc-label">당근 반응</div>
+          <div class="mc-value">22건</div>
+          <div class="mc-sub">단골 9 · 쿠폰 7 · 관심 5 · 전화 1</div>
+        </div>
+        <div class="metric-card">
+          <div class="mc-label">블로그 조회수</div>
+          <div class="mc-value">2,459</div>
+          <div class="mc-sub">검색 유입 40.40%</div>
+        </div>
+        <div class="metric-card warn">
+          <div class="mc-label">6월 업무</div>
+          <div class="mc-value">19/20</div>
+          <div class="mc-sub">완료 19건 · 진행 1건</div>
+        </div>
+      </div>
+    </details>
+
+    <nav class="section-nav" aria-label="6월 보고서 섹션">
+      <a href="#jun-homepage">홈페이지</a>
+      <a href="#jun-place">플레이스</a>
+      <a href="#jun-blog">블로그</a>
+      <a href="#jun-ads">지역광고</a>
+      <a href="#jun-content">발행내역</a>
+      <a href="#jun-ops">업무</a>
+    </nav>
+
+    <!-- 홈페이지 유입 현황 -->
+    <div class="section-card" id="jun-homepage">
+      <div class="section-header">
+        <div class="icon icon-green">🏠</div>
+        <h3>홈페이지 유입 현황</h3>
+      </div>
+      <div class="section-body">
+        <div class="section-lead">
+          <strong>한 줄 결론</strong>
+          <p>6월 홈페이지 유입은 네이버 검색·블로그·플레이스가 중심이고, 직접유입과 자사 도메인 재방문도 함께 확인됩니다.</p>
+        </div>
+
+        <div class="metric-strip">
+          <div class="mini-stat"><span>방문 횟수</span><strong>3,470</strong></div>
+          <div class="mini-stat"><span>방문자</span><strong>1,610명</strong></div>
+          <div class="mini-stat"><span>네이버 유입</span><strong>2,420회</strong></div>
+          <div class="mini-stat"><span>직접유입</span><strong>707회</strong></div>
+        </div>
+
+        <details class="details-box">
+          <summary>세부 유입 경로 보기</summary>
+          <div class="details-inner">
+        <div class="two-col" style="margin-bottom:0;">
+          <div>
+            <p style="font-size:12px;font-weight:800;color:var(--muted);margin-bottom:10px;">유입분석 기준</p>
+            <div style="display:grid;gap:10px;">
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:5px;"><span>네이버</span><span>2,420회</span></div>
+                <div style="height:9px;background:var(--border);border-radius:6px;overflow:hidden;"><div style="height:100%;width:70%;background:var(--accent);border-radius:6px;"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:5px;"><span>직접유입</span><span>707회</span></div>
+                <div style="height:9px;background:var(--border);border-radius:6px;overflow:hidden;"><div style="height:100%;width:20%;background:#6aa57c;border-radius:6px;"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:5px;"><span>자사 도메인</span><span>275회</span></div>
+                <div style="height:9px;background:var(--border);border-radius:6px;overflow:hidden;"><div style="height:100%;width:8%;background:var(--blue);border-radius:6px;"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:5px;"><span>인스타그램 UTM</span><span>22회</span></div>
+                <div style="height:9px;background:var(--border);border-radius:6px;overflow:hidden;"><div style="height:100%;width:3%;background:#c13584;border-radius:6px;"></div></div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <p style="font-size:12px;font-weight:800;color:var(--muted);margin-bottom:10px;">유입사이트 기준</p>
+            <ul class="sub-list">
+              <li><div class="sub-num">1</div><span><strong>네이버 모바일검색 1,183회</strong> — 6월 외부 유입의 가장 큰 경로</span></li>
+              <li><div class="sub-num">2</div><span><strong>직접방문 464회</strong> — 병원명 인지 후 직접 접속하는 흐름 유지</span></li>
+              <li><div class="sub-num">3</div><span><strong>네이버 블로그 254회</strong> — m.blog 239회 + blog 15회</span></li>
+              <li><div class="sub-num">4</div><span><strong>네이버 플레이스/지도 151회</strong> — pcmap 55회, m.place 48회 등 병원 정보 탐색 유입 확인</span></li>
+            </ul>
+          </div>
+        </div>
+          </div>
+        </details>
+
+        <div class="status-item">
+          <div class="status-dot dot-green"></div>
+          <p><strong>해석</strong> — 6월은 네이버 모바일검색이 가장 큰 유입 경로입니다. 블로그와 플레이스, 자사 도메인까지 함께 작동해 검색 후 병원 정보를 확인하는 흐름이 분명합니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 네이버 플레이스 순위 관리 -->
+    <div class="section-card" id="jun-place">
+      <div class="section-header">
+        <div class="icon icon-green">📍</div>
+        <h3>365경희부부한의원 플레이스 순위 관리</h3>
+      </div>
+      <div class="section-body">
+        <div class="section-lead">
+          <strong>한 줄 결론</strong>
+          <p>6월 플레이스 순위는 피부클리닉이 아닌 <strong>365경희부부한의원</strong> 기준으로 관리했고, 월초 8~9위권에서 1위까지 회복한 뒤 월말 4위권으로 마감했습니다.</p>
+        </div>
+
+        <div class="rank-chart-card">
+          <div class="rank-chart-head">
+            <div>
+              <strong>365경희부부한의원 플레이스 순위 추이</strong>
+              <span>6월 8~12일 1위, 월말 4위 유지</span>
+            </div>
+            <div class="rank-badge">최고 1위</div>
+          </div>
+
+          <svg class="rank-svg" viewBox="0 0 360 200" role="img" aria-label="365경희부부한의원 6월 네이버 플레이스 순위 추이 그래프">
+            <rect x="0" y="0" width="360" height="200" rx="12" fill="#f8faf8"></rect>
+            <line x1="38" y1="28" x2="342" y2="28" stroke="#dfe7df" stroke-width="1"></line>
+            <line x1="38" y1="84" x2="342" y2="84" stroke="#dfe7df" stroke-width="1"></line>
+            <line x1="38" y1="140" x2="342" y2="140" stroke="#dfe7df" stroke-width="1"></line>
+            <text x="14" y="32" fill="#6b756f" font-size="11" font-weight="800">1위</text>
+            <text x="14" y="88" fill="#6b756f" font-size="11" font-weight="800">5위</text>
+            <text x="14" y="144" fill="#6b756f" font-size="11" font-weight="800">9위</text>
+
+            <polyline points="38,126 62,140 86,126 110,70 134,56 158,42 182,28 206,28 230,56 254,70 278,84 302,56 326,56 342,84" fill="none" stroke="#2d8c52" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></polyline>
+            <circle cx="38" cy="126" r="4" fill="#fff" stroke="#2d8c52" stroke-width="3"></circle>
+            <circle cx="62" cy="140" r="4" fill="#2d8c52"></circle>
+            <circle cx="86" cy="126" r="4" fill="#2d8c52"></circle>
+            <circle cx="110" cy="70" r="4" fill="#2d8c52"></circle>
+            <circle cx="134" cy="56" r="4" fill="#2d8c52"></circle>
+            <circle cx="158" cy="42" r="4" fill="#2d8c52"></circle>
+            <circle cx="182" cy="28" r="5" fill="#fff" stroke="#2d8c52" stroke-width="3"></circle>
+            <circle cx="206" cy="28" r="5" fill="#fff" stroke="#2d8c52" stroke-width="3"></circle>
+            <circle cx="230" cy="56" r="4" fill="#2d8c52"></circle>
+            <circle cx="254" cy="70" r="4" fill="#2d8c52"></circle>
+            <circle cx="278" cy="84" r="4" fill="#2d8c52"></circle>
+            <circle cx="302" cy="56" r="4" fill="#2d8c52"></circle>
+            <circle cx="326" cy="56" r="4" fill="#2d8c52"></circle>
+            <circle cx="342" cy="84" r="4" fill="#fff" stroke="#2d8c52" stroke-width="3"></circle>
+
+            <text x="38" y="162" text-anchor="middle" fill="#6b756f" font-size="11" font-weight="800">6/1</text>
+            <text x="182" y="162" text-anchor="middle" fill="#6b756f" font-size="11" font-weight="800">6/8</text>
+            <text x="254" y="162" text-anchor="middle" fill="#6b756f" font-size="11" font-weight="800">6/20</text>
+            <text x="342" y="162" text-anchor="middle" fill="#6b756f" font-size="11" font-weight="800">6/30</text>
+            <text x="38" y="118" text-anchor="middle" fill="#1f5e49" font-size="12" font-weight="900">8위</text>
+            <text x="62" y="133" text-anchor="middle" fill="#d52d2d" font-size="12" font-weight="900">9위</text>
+            <text x="182" y="20" text-anchor="middle" fill="#d52d2d" font-size="13" font-weight="900">1위</text>
+            <text x="342" y="76" text-anchor="middle" fill="#1f5e49" font-size="12" font-weight="900">4위</text>
+          </svg>
+        </div>
+
+        <div class="rank-note-grid">
+          <div class="rank-note">
+            <span>월초 순위</span>
+            <strong>8~9위</strong>
+          </div>
+          <div class="rank-note">
+            <span>최고 순위</span>
+            <strong>1위</strong>
+          </div>
+          <div class="rank-note">
+            <span>월말 순위</span>
+            <strong>4위</strong>
+          </div>
+        </div>
+
+        <div class="status-item">
+          <div class="status-dot dot-green"></div>
+          <p><strong>해석</strong> — 365경희부부한의원 플레이스 순위가 6월 초 빠르게 회복되면서 네이버 검색·플레이스 유입 기반이 강화됐습니다. 7월에는 3~4위권 방어와 후기/콘텐츠 신호 보강이 핵심입니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 블로그 유입 분석 -->
+    <div class="section-card" id="jun-blog">
+      <div class="section-header">
+        <div class="icon icon-blue">📊</div>
+        <h3>네이버 블로그 유입 분석</h3>
+      </div>
+      <div class="section-body">
+        <div class="section-lead">
+          <strong>한 줄 결론</strong>
+          <p>6월 블로그 조회수는 2,459건으로 5월 2,492건과 비슷한 수준을 유지했고, 검색 유입에서는 레이저제모 키워드가 가장 강하게 확인됩니다.</p>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px;">
+          <div style="text-align:center;padding:16px;background:#f5f7f5;border-radius:12px;border:1px solid var(--border);">
+            <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;">2026년 4월</div>
+            <div style="font-size:24px;font-weight:800;color:var(--muted);">2,960</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:4px;">고점 형성</div>
+          </div>
+          <div style="text-align:center;padding:16px;background:#f5f7f5;border-radius:12px;border:1px solid var(--border);">
+            <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;">2026년 5월</div>
+            <div style="font-size:24px;font-weight:800;color:var(--primary);">2,492</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:4px;">전월 대비 보합권</div>
+          </div>
+          <div style="text-align:center;padding:16px;background:var(--accent);border-radius:12px;">
+            <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.7);margin-bottom:6px;">2026년 6월</div>
+            <div style="font-size:24px;font-weight:800;color:#fff;">2,459</div>
+            <div style="font-size:11px;color:#b3e8cc;margin-top:4px;">검색 유입 40.40%</div>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div>
+            <p style="font-size:12px;font-weight:800;color:var(--muted);margin-bottom:10px;">주요 유입 경로</p>
+            <ul class="sub-list">
+              <li><div class="sub-num">1</div><span><strong>네이버 통합검색_모바일 33.07%</strong> — 모바일 검색 기반 유입이 가장 큼</span></li>
+              <li><div class="sub-num">2</div><span><strong>네이버 블로그_PC 25.50%</strong> — 블로그 생태계 내 소비가 안정적으로 유지</span></li>
+              <li><div class="sub-num">3</div><span><strong>네이버 플레이스_모바일 15.93%</strong> — 플레이스 확인 후 블로그로 이어지는 흐름 유지</span></li>
+              <li><div class="sub-num">4</div><span><strong>네이버 블로그_모바일 8.60%</strong> — 모바일 블로그 탐색 유입도 보조 역할</span></li>
+            </ul>
+          </div>
+          <div>
+            <p style="font-size:12px;font-weight:800;color:var(--muted);margin-bottom:10px;">검색 키워드 흐름</p>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;">
+              <span class="tag tag-done">제주 레이저제모 4.54%</span>
+              <span class="tag tag-blog">제주 브라질리언 레이저 2.13%</span>
+              <span class="tag tag-done">제주도 레이저제모 1.99%</span>
+              <span class="tag tag-blog">제주 겨드랑이 제모 1.70%</span>
+              <span class="tag tag-done">365경희부부한의원 1.56%</span>
+              <span class="tag tag-blog">여드름 붉은자국 1.28%</span>
+              <span class="tag tag-blog">제주 남자 레이저제모 0.85%</span>
+              <span class="tag tag-blog">제주 제모 0.85%</span>
+            </div>
+            <div class="status-item">
+              <div class="status-dot dot-blue"></div>
+              <p><strong>핵심</strong> — 6월 검색 유입은 레이저제모가 가장 강합니다. 리프팅·색소레이저 신규 장비 콘텐츠가 추가됐지만, 실제 검색 수요는 제모 계열에서 계속 크게 확인됩니다.</p>
+            </div>
+          </div>
+        </div>
+
+        <details class="details-box">
+          <summary>6월 조회수 상위 게시물 보기</summary>
+          <div class="details-inner">
+            <table class="content-table">
+              <thead>
+                <tr><th style="width:48px;">순위</th><th>제목</th><th style="width:80px;">조회수</th><th style="width:96px;">작성일</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>1</td><td>제주 레이저 제모 브라질리언, 남자도 위생 관리를 위해</td><td>160</td><td>2026.05.08</td></tr>
+                <tr><td>2</td><td>이벤트 안내</td><td>151</td><td>2026.04.14</td></tr>
+                <tr><td>3</td><td>제주도 제모, 피부 타입에 따라 방향이 달라질 수 있어요</td><td>94</td><td>2026.06.02</td></tr>
+                <tr><td>4</td><td>의료진 소개</td><td>81</td><td>2026.03.09</td></tr>
+                <tr><td>5</td><td>슈링크&amp;올리지오 신규 도입!</td><td>57</td><td>2026.06.08</td></tr>
+                <tr><td>6</td><td>4층 피부클리닉 안내</td><td>53</td><td>2026.06.08</td></tr>
+                <tr><td>7</td><td>삼화지구 제모, 레이저 제모 전후 관리까지</td><td>48</td><td>2026.05.26</td></tr>
+                <tr><td>8</td><td>제주 제모, 레이저 제모 전 알아두세요</td><td>45</td><td>2026.06.25</td></tr>
+                <tr><td>9</td><td>제주시 여드름 자국, 붉은 자국과 갈색 자국은 치료 방향이 다릅니다</td><td>44</td><td>2026.05.20</td></tr>
+                <tr><td>10</td><td>조천 한의원 척추 감압치료기 신규 도입 안내</td><td>43</td><td>2026.05.28</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <!-- SNS 및 지역 광고 성과 -->
+    <div class="section-card" id="jun-ads">
+      <div class="section-header">
+        <div class="icon icon-orange">📣</div>
+        <h3>SNS 및 지역 광고 성과</h3>
+      </div>
+      <div class="section-body">
+        <div class="section-lead">
+          <strong>한 줄 결론</strong>
+          <p>당근 광고는 일도2동·도련일동·삼양동·화북권 중심으로 노출되며 클릭과 쿠폰 다운로드, 전화 문의까지 만들었습니다.</p>
+        </div>
+
+        <div class="two-col">
+          <div>
+            <div style="background:var(--orange-light);border:1px solid var(--orange);border-radius:12px;padding:18px 20px;margin-bottom:14px;">
+              <p style="font-size:12px;font-weight:800;color:var(--orange);margin-bottom:8px;">당근비즈니스 광고</p>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div>
+                  <div style="font-size:22px;font-weight:800;color:var(--orange);">29,114</div>
+                  <div style="font-size:11px;color:var(--muted);">노출</div>
+                </div>
+                <div>
+                  <div style="font-size:22px;font-weight:800;color:var(--orange);">6,998명</div>
+                  <div style="font-size:11px;color:var(--muted);">도달</div>
+                </div>
+                <div>
+                  <div style="font-size:22px;font-weight:800;color:var(--orange);">388</div>
+                  <div style="font-size:11px;color:var(--muted);">클릭</div>
+                </div>
+                <div>
+                  <div style="font-size:22px;font-weight:800;color:var(--orange);">1.34%</div>
+                  <div style="font-size:11px;color:var(--muted);">클릭률</div>
+                </div>
+              </div>
+            </div>
+            <ul class="sub-list">
+              <li><div class="sub-num">1</div><span><strong>총 지출 212,294원</strong> — 클릭당 지출 547원</span></li>
+              <li><div class="sub-num">2</div><span><strong>반응 22건</strong> — 단골 9명, 쿠폰 다운로드 7회, 관심 5개, 전화 문의 1회</span></li>
+              <li><div class="sub-num">3</div><span><strong>지역 노출</strong> — 일도2동 7,985회, 도련일동 3,523회, 삼양동 3,345회, 화북권 7천 회 이상</span></li>
+            </ul>
+          </div>
+          <div>
+            <div style="margin-top:0;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px 20px;">
+              <p style="font-size:12px;font-weight:800;color:var(--muted);margin-bottom:12px;">당근 광고 주요 노출 지역</p>
+              <div style="display:grid;gap:9px;">
+                <div><div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:4px;"><span>일도2동</span><span>7,985회</span></div><div style="height:8px;background:#e6e6e6;border-radius:6px;overflow:hidden;"><div style="width:100%;height:100%;background:var(--orange);border-radius:6px;"></div></div></div>
+                <div><div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:4px;"><span>도련일동</span><span>3,523회</span></div><div style="height:8px;background:#e6e6e6;border-radius:6px;overflow:hidden;"><div style="width:44%;height:100%;background:var(--orange);border-radius:6px;"></div></div></div>
+                <div><div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:4px;"><span>삼양동</span><span>3,345회</span></div><div style="height:8px;background:#e6e6e6;border-radius:6px;overflow:hidden;"><div style="width:42%;height:100%;background:var(--orange);border-radius:6px;"></div></div></div>
+                <div><div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:4px;"><span>화북일동</span><span>3,251회</span></div><div style="height:8px;background:#e6e6e6;border-radius:6px;overflow:hidden;"><div style="width:41%;height:100%;background:var(--orange);border-radius:6px;"></div></div></div>
+                <div><div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;margin-bottom:4px;"><span>화북동</span><span>3,243회</span></div><div style="height:8px;background:#e6e6e6;border-radius:6px;overflow:hidden;"><div style="width:41%;height:100%;background:var(--orange);border-radius:6px;"></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="status-item">
+          <div class="status-dot dot-orange"></div>
+          <p><strong>해석</strong> — 광고 반응 22건 중 쿠폰 다운로드와 전화 문의가 포함되어 있어 단순 노출뿐 아니라 실제 행동까지 일부 확인됩니다. 7월에는 쿠폰 사용 여부와 상담 전환을 함께 확인하면 광고 효율을 더 정확히 판단할 수 있습니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 콘텐츠 발행 내역 -->
+    <div class="section-card" id="jun-content">
+      <div class="section-header">
+        <div class="icon" style="background:var(--accent-light);">📝</div>
+        <h3>콘텐츠 발행 내역 <span class="count-chip">14건</span></h3>
+      </div>
+      <div class="section-body">
+        <div class="section-lead">
+          <strong>한 줄 결론</strong>
+          <p>6월에는 슈링크·올리지오 도입, 색소레이저, 리프팅, 제모, 스킨부스터처럼 신규 장비와 여름 피부관리 수요를 중심으로 콘텐츠를 확장했습니다.</p>
+        </div>
+        <div class="desktop-log-table">
+        <table class="content-table">
+          <thead>
+            <tr><th style="width:48px;">#</th><th style="width:84px;">일자</th><th>제목</th><th style="width:90px;">분류</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>6/8</td><td>4층 피부클리닉 안내 - 2층 한의원 공지</td><td><span class="tag tag-blog">블로그</span></td></tr>
+            <tr><td>2</td><td>6/8</td><td>4층 피부클리닉 안내 - 조천점 공지</td><td><span class="tag tag-blog">블로그</span></td></tr>
+            <tr><td>3</td><td>6/10</td><td>제주 색소레이저 피코레이저 후 피부톤이 맑아져 보이는 원리</td><td><span class="tag tag-blog">블로그</span></td></tr>
+            <tr><td>4</td><td>6/12</td><td>화북 피부과 찾는다면, 슈링크 유니버스 리프팅으로 탄력 고민부터 윤곽관리까지</td><td><span class="tag tag-homepage">홈페이지</span></td></tr>
+            <tr><td>5</td><td>6/19</td><td>제주 올리지오 리프팅, 집속 초음파가 피부에서 하는 일</td><td><span class="tag tag-blog">블로그</span></td></tr>
+            <tr><td>6</td><td>6/19</td><td>글로벌 인스타 - 소개</td><td><span class="tag tag-done">인스타</span></td></tr>
+            <tr><td>7</td><td>6/22</td><td>제주 올리지오 리프팅, 피부 탄력과 잔주름이 신경 쓰일 때</td><td><span class="tag tag-homepage">홈페이지</span></td></tr>
+            <tr><td>8</td><td>6/23</td><td>제주 슈링크, 턱선과 볼 처짐이 신경 쓰일 때 살펴볼 리프팅 관리</td><td><span class="tag tag-homepage">홈페이지</span></td></tr>
+            <tr><td>9</td><td>6/24</td><td>제주 제모, 레이저 제모 전 알아두세요</td><td><span class="tag tag-blog">블로그</span></td></tr>
+            <tr><td>10</td><td>6/24</td><td>삼화지구 피부관리 필링 피부결이 거칠고 칙칙해 보일 때 고려할 점</td><td><span class="tag tag-blog">블로그</span></td></tr>
+            <tr><td>11</td><td>6/25</td><td>제주 리프팅, 슈링크와 올리지오를 함께 보는 이유</td><td><span class="tag tag-homepage">홈페이지</span></td></tr>
+            <tr><td>12</td><td>6/26</td><td>화북 피부과 스킨부스터 피부결과 탄력을 함께 고려하는 관리</td><td><span class="tag tag-blog">블로그</span></td></tr>
+            <tr><td>13</td><td>6/26</td><td>제주 슈링크 고민되서 상담 먼저 받아보고 왔어요</td><td><span class="tag tag-done">카페</span></td></tr>
+            <tr><td>14</td><td>6/26</td><td>제주 슈링크 알아보고 후기 남겨요!</td><td><span class="tag tag-done">카페</span></td></tr>
+          </tbody>
+        </table>
+        </div>
+        <div class="mobile-log-list">
+          <div class="log-card"><div class="log-meta"><span>6/8</span><span>블로그</span></div><div class="log-title">4층 피부클리닉 안내 - 2층 한의원 공지</div></div>
+          <div class="log-card"><div class="log-meta"><span>6/10</span><span>블로그</span></div><div class="log-title">제주 색소레이저 피코레이저 후 피부톤이 맑아져 보이는 원리</div></div>
+          <div class="log-card"><div class="log-meta"><span>6/12</span><span>홈페이지</span></div><div class="log-title">화북 피부과 찾는다면, 슈링크 유니버스 리프팅으로 탄력 고민부터 윤곽관리까지</div></div>
+          <div class="log-card"><div class="log-meta"><span>6/19</span><span>블로그</span></div><div class="log-title">제주 올리지오 리프팅, 집속 초음파가 피부에서 하는 일</div></div>
+          <details class="details-box">
+            <summary>나머지 발행 내역 10건 보기</summary>
+            <div class="details-inner">
+              <div class="log-card"><div class="log-meta"><span>6/22</span><span>홈페이지</span></div><div class="log-title">제주 올리지오 리프팅, 피부 탄력과 잔주름이 신경 쓰일 때</div></div>
+              <div class="log-card"><div class="log-meta"><span>6/23</span><span>홈페이지</span></div><div class="log-title">제주 슈링크, 턱선과 볼 처짐이 신경 쓰일 때 살펴볼 리프팅 관리</div></div>
+              <div class="log-card"><div class="log-meta"><span>6/24</span><span>블로그</span></div><div class="log-title">제주 제모, 레이저 제모 전 알아두세요</div></div>
+              <div class="log-card"><div class="log-meta"><span>6/24</span><span>블로그</span></div><div class="log-title">삼화지구 피부관리 필링 피부결이 거칠고 칙칙해 보일 때 고려할 점</div></div>
+              <div class="log-card"><div class="log-meta"><span>6/25</span><span>홈페이지</span></div><div class="log-title">제주 리프팅, 슈링크와 올리지오를 함께 보는 이유</div></div>
+              <div class="log-card"><div class="log-meta"><span>6/26</span><span>블로그</span></div><div class="log-title">화북 피부과 스킨부스터 피부결과 탄력을 함께 고려하는 관리</div></div>
+              <div class="log-card"><div class="log-meta"><span>6/26</span><span>카페</span></div><div class="log-title">제주 슈링크 고민되서 상담 먼저 받아보고 왔어요</div></div>
+              <div class="log-card"><div class="log-meta"><span>6/26</span><span>카페</span></div><div class="log-title">제주 슈링크 알아보고 후기 남겨요!</div></div>
+            </div>
+          </details>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6월 운영 업무 -->
+    <div class="section-card" id="jun-ops">
+      <div class="section-header" style="background:var(--accent-light);">
+        <div class="icon" style="background:#fff;">🧩</div>
+        <h3>6월 운영 업무 정리</h3>
+      </div>
+      <div class="section-body">
+        <div class="section-lead">
+          <strong>운영 정리</strong>
+          <p>6월은 슈링크·올리지오 도입을 중심으로 홈페이지, 플레이스, 당근, 카카오 안내가 한 번에 정비된 달입니다. 단순 작업 처리보다 신규 장비를 검색·상담·지역 노출에 연결하는 기반을 만든 점이 핵심입니다.</p>
+        </div>
+
+        <div class="progress-grid">
+          <div class="progress-item progress-done">
+            <div class="p-status">장비 홍보</div>
+            <div class="p-title">슈링크·올리지오 도입 소식을 카카오 광고, 당근 소식, 콘텐츠 발행으로 확산</div>
+          </div>
+          <div class="progress-item progress-done">
+            <div class="p-status">검색 기반</div>
+            <div class="p-title">홈페이지 보유장비·단독 페이지·비급여 안내·SEO 구조를 함께 정비</div>
+          </div>
+          <div class="progress-item progress-done">
+            <div class="p-status">지역 채널</div>
+            <div class="p-title">당근비즈니스 이벤트와 병원 사진을 정리해 생활권 노출의 기본 정보를 보강</div>
+          </div>
+          <div class="progress-item progress-done">
+            <div class="p-status">플레이스</div>
+            <div class="p-title">365경희부부한의원 플레이스 썸네일과 4층 피부클리닉 안내 공지를 정비</div>
+          </div>
+          <div class="progress-item progress-done">
+            <div class="p-status">외국인 유치</div>
+            <div class="p-title">영어 랜딩페이지와 유치 관련 후속 서류를 준비해 외국인 상담 기반을 보강</div>
+          </div>
+          <div class="progress-item progress-wip">
+            <div class="p-status">후속 과제</div>
+            <div class="p-title">신규 장비 체험단과 후기 소재 확보는 7월 전환 관리 과제로 이어짐</div>
+          </div>
+        </div>
+
+        <ul class="sub-list" style="margin-top:16px;">
+          <li><div class="sub-num">1</div><span><strong>신규 장비 인지도 확보</strong> — 슈링크·올리지오 도입 사실을 여러 채널에 동시에 반영해 검색자와 기존 고객 모두가 확인할 수 있게 했습니다.</span></li>
+          <li><div class="sub-num">2</div><span><strong>검색 후 확인 정보 보강</strong> — 홈페이지와 플레이스의 장비·공지·썸네일·비급여 정보를 정리해 유입 이후 이탈을 줄일 수 있는 기본 정보를 보완했습니다.</span></li>
+          <li><div class="sub-num">3</div><span><strong>7월 전환 과제</strong> — 체험단, 후기, 당근 광고 반응 후속 확인을 통해 6월에 만든 노출을 실제 상담과 예약으로 이어가는 관리가 필요합니다.</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 7월 방향 -->
+    <div class="next-band">
+      <h3>💡 7월 중점 방향</h3>
+      <div class="next-item">
+        <div class="n-num">1</div>
+        <p>365경희부부한의원 플레이스 3~4위권 방어 — 리뷰·콘텐츠·플레이스 공지 신호를 함께 보강</p>
+      </div>
+      <div class="next-item">
+        <div class="n-num">2</div>
+        <p>슈링크·올리지오 체험단 및 후기 확보 — 신규 장비 도입 후 실제 상담 전환을 만들 수 있는 후기 소재 확보</p>
+      </div>
+      <div class="next-item">
+        <div class="n-num">3</div>
+        <p>당근 광고 쿠폰 다운로드·전화 문의 후속 확인 — 단순 반응을 상담/예약으로 이어가는 운영 체크 필요</p>
+      </div>
+      <div class="next-item">
+        <div class="n-num">4</div>
+        <p>네이버블로그 조회수·검색 키워드 확인 후 7월 콘텐츠 보강 — 제모·리프팅·스킨부스터·필링 키워드 중심</p>
+      </div>
+    </div>
+
+  </div><!-- /panel-jun -->
+
+  <!-- ═══════════════════════════════════════
        5월 보고서
   ═══════════════════════════════════════ -->
-  <div class="report-panel active pilot-report" id="panel-may">
+  <div class="report-panel pilot-report" id="panel-may">
 
     <!-- 요약 배너 -->
     <div class="summary-band">
