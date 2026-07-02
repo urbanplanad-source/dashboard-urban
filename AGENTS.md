@@ -58,6 +58,7 @@ Codex가 이 저장소에서 항상 먼저 참고하는 작업 지시다. 이 �
 - 기존 월 보고서 내용은 삭제하지 않는다.
 - 발행 내역은 API/Sheets `postLogs`를 기준으로 하되, 보고월의 `YYYY-MM` 필터를 적용한다.
 - 월말보고서 작성 전 `npm.cmd run report:context -- --month YYYY-MM --client CLIENT_ID` 또는 `--all`을 실행해 보고서용 컨텍스트를 먼저 생성한다.
+- `btskin`/`belrmon` 보고서는 상담내역 표준경로 확인을 위해 가능하면 `npm.cmd run report:consults:check -- --month YYYY-MM --client btskin,belrmon`도 먼저 실행한다.
 - 생성된 `.report-context/` 파일은 업무/발행/상담/비용/계약/리뷰 데이터를 정규화한 작업용 스냅샷이며 커밋하지 않는다.
 - 외부 콘솔 수치가 없으면 임의로 만들지 않는다. 필요한 항목은 “자료 확인 필요”로 남기거나 사용자에게 요청한다.
 
@@ -77,6 +78,7 @@ PowerShell에서 `npm` 실행 정책 오류가 나면 `npm.cmd`를 사용한다.
 ```bash
 npm run check
 npm run check:syntax
+npm run report:consults:check -- --month YYYY-MM --client btskin,belrmon
 npm run report:context -- --month YYYY-MM --client btskin
 npm run review:monitor:check
 npm run review:monitor:dry-run
@@ -85,6 +87,7 @@ npm run review:monitor
 
 - `npm run check`: 저장소 운영 점검 전체 실행.
 - `npm run check:syntax`: 리뷰 모니터 스크립트 문법 검사.
+- `npm run report:consults:check -- --month YYYY-MM --client btskin,belrmon`: 월말보고서 상담내역 API 표준경로 확인.
 - `npm run report:context -- --month YYYY-MM --client btskin`: 월말보고서 작성용 거래처 데이터 스냅샷 생성.
 - `npm run review:monitor:check`: `check:syntax`와 동일한 호환 명령.
 - `npm run review:monitor:dry-run`: Apps Script 갱신 없이 모니터 로직 확인.

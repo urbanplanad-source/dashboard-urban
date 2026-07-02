@@ -600,7 +600,7 @@
       },
       addConsult: (clientId, consult) => fetch(API_URL, {
         method: 'POST', redirect: 'follow',
-        body: JSON.stringify({ action:'addConsult', clientId, ...consult })
+        body: JSON.stringify({ action:'addConsult', clientId, ...consult, month: consult?.month || normalizeMonth(consult?.date) })
       }).then(r => r.json()),
       deleteConsult: (clientId, consultId) => fetch(API_URL, {
         method: 'POST', redirect: 'follow',
@@ -2893,6 +2893,7 @@
           clientId: client.clientId,
           consultId: entry.id,
           date: entry.date,
+          month: entry.month || normalizeMonth(entry.date),
           channel: entry.channel,
           nickname: entry.nickname,
           content: entry.content,
@@ -2969,6 +2970,7 @@
                     clientId: client.clientId,
                     consultId: c.id,
                     date: c.date,
+                    month: c.month || normalizeMonth(c.date),
                     channel: c.channel,
                     nickname: c.nickname,
                     content: c.content,
@@ -2993,6 +2995,7 @@
                     clientId: client.clientId,
                     consultId: c.id,
                     date: c.date,
+                    month: c.month || normalizeMonth(c.date),
                     channel: c.channel,
                     nickname: c.nickname,
                     content: c.content,
@@ -5198,6 +5201,21 @@
         if (!result.success) throw new Error(result.error || `${body.action} 실패`);
         return result;
       };
+      const consultSheetBody = (clientId, record, fallbackMonth) => {
+        const item = normalizeConsult({ ...record, clientId: record.clientId || clientId });
+        if (!item.id) return null;
+        return {
+          action: 'addConsult',
+          clientId,
+          consultId: item.id,
+          date: item.date,
+          month: item.month || fallbackMonth || normalizeMonth(item.date),
+          channel: item.channel,
+          nickname: item.nickname,
+          content: item.content,
+          createdAt: item.createdAt || new Date().toISOString(),
+        };
+      };
 
       const targetExpenseMonth = nowMonth();
       const sourceExpenseMonth = prevMonth();
@@ -5270,6 +5288,11 @@
       let copiedFixedExpenses = [];
       let fixedCopyError = null;
       try {
+        const consultBodies = newHistories
+          .flatMap(h => (h.records || []).map(record => consultSheetBody(h.clientId, record, h.month)))
+          .filter(Boolean);
+        await Promise.all(consultBodies.map(body => postJson(body)));
+
         await Promise.all(completedServerSubs.map(deleteCompletedSubJob));
         await postJson({ action: 'monthlyReset', month: targetExpenseMonth });
 

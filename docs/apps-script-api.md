@@ -906,7 +906,7 @@ const consults = data.consults;
 
 ### POST — 상담내역 저장 (`addConsult`)
 
-대시보드 상담 폼에서 저장할 때 localStorage 저장 후 비차단 방식으로 호출한다.
+대시보드 상담 폼에서 저장할 때 localStorage 저장 후 비차단 방식으로 호출한다. `month`는 보고서 필터 안정성을 위해 함께 보낸다.
 
 ```javascript
 const res = await fetch(API, {
@@ -917,6 +917,7 @@ const res = await fetch(API, {
     clientId: 'btskin',
     consultId: 'cs-lx123',
     date: '2026-05-12',
+    month: '2026-05',
     channel: '위챗',
     nickname: '상담고객',
     content: '상담 내용...',
@@ -942,6 +943,14 @@ const res = await fetch(API, {
 ```
 
 > `summary` GET에도 `consults` 배열이 포함될 수 있다. 보고서 생성 스크립트는 우선 `consultsList`를 시도하고, 미배포 상태면 `summary.consults` 또는 자료 공백 표시로 처리한다.
+
+보고서 작성 전 상담 표준경로만 빠르게 확인하려면 아래 명령을 사용한다.
+
+```bash
+npm.cmd run report:consults:check -- --month YYYY-MM --client btskin,belrmon
+```
+
+이 명령이 성공하면 Apps Script `consultsList`가 배포되어 있고, 월말보고서 컨텍스트 생성 시 상담내역을 자동으로 읽을 수 있는 상태다.
 
 ---
 
@@ -1134,10 +1143,11 @@ const res = await fetch(API, {
 
 ```bash
 npm.cmd run report:context -- --month YYYY-MM --client btskin
+npm.cmd run report:consults:check -- --month YYYY-MM --client btskin,belrmon
 npm.cmd run report:context -- --month YYYY-MM --all
 ```
 
-생성 파일은 `.report-context/YYYY-MM/{clientId}.json`에 저장되며 커밋하지 않는다. 이 파일은 `summary&draftMode=light`, `consultsList` 조회 결과를 정규화한 보고서 작성용 스냅샷이다.
+생성 파일은 `.report-context/YYYY-MM/{clientId}.json`에 저장되며 커밋하지 않는다. 이 파일은 `summary&draftMode=light`, `consultsList` 조회 결과를 정규화한 보고서 작성용 스냅샷이다. `btskin`/`belrmon` 보고서는 상담 표준경로 확인 후 작성한다.
 
 1. 새 월 보고서는 기존 최신 월 탭 위에 추가하고, 새 월을 기본 `active` 탭으로 둔다.
 2. 기존 월 보고서 내용은 삭제하지 않는다.

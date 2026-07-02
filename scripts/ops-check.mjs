@@ -14,6 +14,8 @@ const expectedPaths = [
   'apps-script/contracts_patch.gs',
   'apps-script/expenses_drafts_patch_v12.gs',
   'apps-script/review_monitor_patch_v13.gs',
+  'apps-script/consults_patch_v14.gs',
+  'scripts/check-consults-api.mjs',
   'scripts/naver-review-monitor.mjs',
   'scripts/fetch-report-context.mjs',
   '.github/workflows/naver-review-monitor.yml',
@@ -191,6 +193,7 @@ function isSourceFile(rel) {
 async function checkScriptSyntax() {
   await checkNodeSyntax('scripts/naver-review-monitor.mjs');
   await checkNodeSyntax('scripts/fetch-report-context.mjs');
+  await checkNodeSyntax('scripts/check-consults-api.mjs');
 }
 
 async function checkNodeSyntax(rel) {

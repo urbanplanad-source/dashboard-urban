@@ -46,13 +46,33 @@
 // [3] 파일 하단에 추가할 함수들
 // ──────────────────────────────────────────────────────────────
 
+var CONSULTS_COLUMNS = ['consultId','clientId','date','month','channel','nickname','content','createdAt','status'];
+
 function ensureConsultsSheet() {
   var ss = SpreadsheetApp.openById(SHEET_ID);
   var sheet = ss.getSheetByName('Consults');
   if (!sheet) {
     sheet = ss.insertSheet('Consults');
-    sheet.appendRow(['consultId','clientId','date','month','channel','nickname','content','createdAt','status']);
   }
+
+  var lastCol = sheet.getLastColumn();
+  var header = lastCol > 0 ? sheet.getRange(1, 1, 1, lastCol).getValues()[0].map(function(col) {
+    return String(col || '').trim();
+  }) : [];
+
+  var hasHeader = header.some(function(col) { return col; });
+  if (!hasHeader) {
+    sheet.getRange(1, 1, 1, CONSULTS_COLUMNS.length).setValues([CONSULTS_COLUMNS]);
+    return sheet;
+  }
+
+  var missing = CONSULTS_COLUMNS.filter(function(col) {
+    return header.indexOf(col) < 0;
+  });
+  if (missing.length > 0) {
+    sheet.getRange(1, header.length + 1, 1, missing.length).setValues([missing]);
+  }
+
   return sheet;
 }
 
@@ -62,7 +82,7 @@ function getConsultsList(clientId, month) {
   if (lastRow < 2) return [];
 
   var values = sheet.getRange(1, 1, lastRow, sheet.getLastColumn()).getValues();
-  var header = values[0];
+  var header = values[0].map(function(col) { return String(col || '').trim(); });
   var rows = values.slice(1);
 
   var cId = header.indexOf('consultId');
@@ -76,22 +96,22 @@ function getConsultsList(clientId, month) {
   var cStatus = header.indexOf('status');
 
   return rows.map(function(row) {
-    var date = normalizeSheetDate_(row[cDate]);
-    var rowMonth = row[cMonth] || date.slice(0, 7);
+    var date = normalizeSheetDate_(cellValue_(row, cDate));
+    var rowMonth = cellValue_(row, cMonth) || date.slice(0, 7);
     return {
-      consultId: row[cId],
-      id: row[cId],
-      clientId: row[cClient],
+      consultId: cellValue_(row, cId),
+      id: cellValue_(row, cId),
+      clientId: cellValue_(row, cClient),
       date: date,
       month: rowMonth,
-      channel: row[cChannel] || '',
-      nickname: row[cNickname] || '',
-      content: row[cContent] || '',
-      createdAt: normalizeSheetDateTime_(row[cCreated]),
-      status: row[cStatus] || 'active'
+      channel: cellValue_(row, cChannel),
+      nickname: cellValue_(row, cNickname),
+      content: cellValue_(row, cContent),
+      createdAt: normalizeSheetDateTime_(cellValue_(row, cCreated)),
+      status: cellValue_(row, cStatus) || 'active'
     };
   }).filter(function(item) {
-    if (item.status === 'deleted') return false;
+    if (String(item.status || '').toLowerCase() === 'deleted') return false;
     if (clientId && String(item.clientId) !== String(clientId)) return false;
     if (month && String(item.month) !== String(month)) return false;
     return true;
@@ -120,35 +140,38 @@ function addConsult(body) {
 
   var sheet = ensureConsultsSheet();
   var values = sheet.getDataRange().getValues();
-  var header = values[0];
+  var header = values[0].map(function(col) { return String(col || '').trim(); });
   var idCol = header.indexOf('consultId');
+  var clientCol = header.indexOf('clientId');
   if (idCol < 0) return { success: false, error: 'Consults.consultId 컬럼 없음' };
 
   for (var i = 1; i < values.length; i++) {
-    if (String(values[i][idCol]) === String(consultId)) {
+    if (String(values[i][idCol]) === String(consultId) && (clientCol < 0 || String(values[i][clientCol]) === String(clientId))) {
       writeConsultRow_(sheet, header, i + 1, rowObject);
       return { success: true, action: 'updated', consultId: consultId };
     }
   }
 
-  sheet.appendRow(header.map(function(col) { return rowObject[col] || ''; }));
+  sheet.appendRow(header.map(function(col) { return rowObject[col] !== undefined ? rowObject[col] : ''; }));
   return { success: true, action: 'inserted', consultId: consultId };
 }
 
 function deleteConsult(body) {
+  var clientId = body.clientId;
   var consultId = body.consultId || body.id;
   if (!consultId) return { success: false, error: 'consultId 필수' };
 
   var sheet = ensureConsultsSheet();
   var values = sheet.getDataRange().getValues();
-  var header = values[0];
+  var header = values[0].map(function(col) { return String(col || '').trim(); });
   var idCol = header.indexOf('consultId');
+  var clientCol = header.indexOf('clientId');
   var statusCol = header.indexOf('status');
   if (idCol < 0) return { success: false, error: 'Consults.consultId 컬럼 없음' };
   if (statusCol < 0) return { success: false, error: 'Consults.status 컬럼 없음' };
 
   for (var i = 1; i < values.length; i++) {
-    if (String(values[i][idCol]) === String(consultId)) {
+    if (String(values[i][idCol]) === String(consultId) && (!clientId || clientCol < 0 || String(values[i][clientCol]) === String(clientId))) {
       sheet.getRange(i + 1, statusCol + 1).setValue('deleted');
       return { success: true, deleted: true, consultId: consultId };
     }
@@ -159,9 +182,13 @@ function deleteConsult(body) {
 function writeConsultRow_(sheet, header, rowNumber, item) {
   var row = header.map(function(col) {
     if (col === 'status') return item.status || 'active';
-    return item[col] || '';
+    return item[col] !== undefined ? item[col] : '';
   });
   sheet.getRange(rowNumber, 1, 1, header.length).setValues([row]);
+}
+
+function cellValue_(row, index) {
+  return index >= 0 ? row[index] : '';
 }
 
 function normalizeSheetDate_(value) {
