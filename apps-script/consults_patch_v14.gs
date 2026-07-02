@@ -97,7 +97,8 @@ function getConsultsList(clientId, month) {
 
   return rows.map(function(row) {
     var date = normalizeSheetDate_(cellValue_(row, cDate));
-    var rowMonth = cellValue_(row, cMonth) || date.slice(0, 7);
+    var rawMonth = cellValue_(row, cMonth);
+    var rowMonth = rawMonth ? normalizeSheetMonth_(rawMonth) : date.slice(0, 7);
     return {
       consultId: cellValue_(row, cId),
       id: cellValue_(row, cId),
@@ -125,7 +126,7 @@ function addConsult(body) {
   if (!consultId) return { success: false, error: 'consultId 필수' };
 
   var date = body.date || normalizeSheetDate_(new Date());
-  var month = body.month || String(date).slice(0, 7);
+  var month = normalizeSheetMonth_(body.month || date);
   var rowObject = {
     consultId: consultId,
     clientId: clientId,
@@ -199,6 +200,21 @@ function normalizeSheetDate_(value) {
   var text = String(value);
   var match = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
   if (match) return match[1] + '-' + match[2] + '-' + match[3];
+  return text;
+}
+
+function normalizeSheetMonth_(value) {
+  if (!value) return '';
+  if (value instanceof Date) {
+    return Utilities.formatDate(value, 'Asia/Seoul', 'yyyy-MM');
+  }
+  var text = String(value);
+  var match = text.match(/^(\d{4})-(\d{2})/);
+  if (match) return match[1] + '-' + match[2];
+  var parsed = new Date(text);
+  if (!isNaN(parsed.getTime())) {
+    return Utilities.formatDate(parsed, 'Asia/Seoul', 'yyyy-MM');
+  }
   return text;
 }
 
