@@ -352,6 +352,8 @@ delta: `1` (증가) 또는 `-1` (감소)
 > 대시보드 버튼은 먼저 `note`가 `"완료"` 또는 `"완료 (...)"`로 시작하는 완료된 서브업무만 `deleteSubJob`으로 삭제한 뒤, `monthlyReset`으로 필수 업무 카운트 초기화와 새 달 시트 구성을 처리한다. 완료 체크하지 않은 서브업무는 다음 달로 이월한다. 완료 서브업무 삭제 중 `Job not found`가 나오면 이미 Sheets에서 삭제된 항목으로 간주하고 계속 진행한다. 초기화 후 `summary`를 다시 조회해 이월 대상 서브업무가 누락됐으면 `addSubJob`/`updateSubJob`으로 보강한다. `month`는 새 운영월(`YYYY-MM`)을 전달한다.
 >
 > 손익 관리의 `Expenses` 중 전월 `type`이 `"고정비"`인 항목은 `다음 달 초기화` 성공 후 새 운영월로 자동 복사한다. 복사는 기존 `addExpense` 액션을 사용하며, 새 운영월에 같은 카테고리·세부 내용·금액·거래처·결제수단·메모 조합의 고정비가 이미 있으면 중복 생성하지 않는다.
+>
+> `monthlyReset` 서버 구현은 `apps-script/monthly_reset_patch_v16.gs`를 기준으로 배포한다. 대시보드에서 `<!DOCTYPE ... is not valid JSON` 또는 `응답이 JSON이 아닙니다`가 나오면 Apps Script Web App 배포에 `monthlyReset` case/함수 또는 doPost JSON 예외 래퍼가 빠졌는지 먼저 확인한다.
 
 ---
 

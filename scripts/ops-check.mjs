@@ -15,6 +15,7 @@ const expectedPaths = [
   'apps-script/expenses_drafts_patch_v12.gs',
   'apps-script/review_monitor_patch_v13.gs',
   'apps-script/consults_patch_v14.gs',
+  'apps-script/monthly_reset_patch_v16.gs',
   'scripts/check-consults-api.mjs',
   'scripts/naver-review-monitor.mjs',
   'scripts/fetch-report-context.mjs',

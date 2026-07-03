@@ -622,9 +622,28 @@
     };
   }
 
+  async function readApiJson(res, actionLabel) {
+    const text = await res.text();
+    let json;
+    try {
+      json = text ? JSON.parse(text) : {};
+    } catch (e) {
+      const preview = String(text || '')
+        .replace(/<[^>]*>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, 180);
+      throw new Error(`${actionLabel || 'API'} 응답이 JSON이 아닙니다. Apps Script 배포/권한/서버 오류를 확인해 주세요.${preview ? ` 응답: ${preview}` : ''}`);
+    }
+    if (!res.ok) {
+      throw new Error(`${actionLabel || 'API'} HTTP ${res.status}: ${json.error || res.statusText || '요청 실패'}`);
+    }
+    return json;
+  }
+
   async function fetchFromSheets() {
     const res  = await fetch(API_URL + '?action=summary&draftMode=light');
-    const json = await res.json();
+    const json = await readApiJson(res, 'summary');
     if (!json.success) throw new Error(json.error || 'API 오류');
     const d = json.data;
     return {
@@ -5197,8 +5216,9 @@
           redirect: 'follow',
           body: JSON.stringify(body)
         });
-        const result = await res.json();
-        if (!result.success) throw new Error(result.error || `${body.action} 실패`);
+        const action = body && body.action ? body.action : 'POST';
+        const result = await readApiJson(res, action);
+        if (!result.success) throw new Error(`${action} 실패: ${result.error || 'API 오류'}`);
         return result;
       };
       const consultSheetBody = (clientId, record, fallbackMonth) => {
