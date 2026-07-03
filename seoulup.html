@@ -178,14 +178,262 @@
 <main class="container">
   <p class="timeline-label">보고서 목록</p>
   <div class="month-tabs">
-    <div class="month-tab active" onclick="switchTab('may', event)">2026년 5월</div>
+    <div class="month-tab active" onclick="switchTab('jun', event)">2026년 6월</div>
+    <div class="month-tab" onclick="switchTab('may', event)">2026년 5월</div>
     <div class="month-tab" onclick="switchTab('apr', event)">2026년 4월</div>
     <div class="month-tab" onclick="switchTab('mar', event)">2026년 3월</div>
     <div class="month-tab" onclick="switchTab('feb', event)">2026년 2월</div>
   </div>
 
+  <!-- ═══════ 6월 보고서 ═══════ -->
+  <div class="report-panel active" id="panel-jun">
+
+    <div class="summary-band">
+      <div class="band-title">MONTHLY SUMMARY</div>
+      <div class="band-month">2026년 6월 마케팅 결과보고</div>
+      <div class="band-points">
+        <div class="band-point"><div class="dot"></div><p><strong>월말 9위 마감</strong> — 5월 말 49위에서 6월 말 9위로 회복하며 한 달 만에 40계단 개선됐습니다.</p></div>
+        <div class="band-point"><div class="dot"></div><p><strong>중순 이후 한 자릿수 안착</strong> — 6/18부터 6/30까지 13일 연속 10위 이내를 유지했습니다.</p></div>
+        <div class="band-point"><div class="dot"></div><p><strong>최고 순위 4위 달성</strong> — 6/21과 6/24에는 4위까지 올라 상위 노출 회복력을 확인했습니다.</p></div>
+        <div class="band-point"><div class="dot"></div><p><strong>블로그 작성 1건 완료</strong> — 제주연동치과 스케일링·잇몸검진 주제의 콘텐츠를 순위 보조 신호로 반영했습니다.</p></div>
+      </div>
+    </div>
+
+    <div class="performance-flow">
+      <div class="flow-node">
+        <div class="flow-kicker">월초</div>
+        <div class="flow-value">48위</div>
+        <div class="flow-label">6/1 출발</div>
+      </div>
+      <div class="flow-node">
+        <div class="flow-kicker">최저</div>
+        <div class="flow-value">63위</div>
+        <div class="flow-label">6/6 일시 하락</div>
+      </div>
+      <div class="flow-node">
+        <div class="flow-kicker">최고</div>
+        <div class="flow-value">4위</div>
+        <div class="flow-label">6/21 · 6/24</div>
+      </div>
+      <div class="flow-node">
+        <div class="flow-kicker">월말</div>
+        <div class="flow-value">9위</div>
+        <div class="flow-label">10위 이내 마감</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:28px;">
+      <div style="background:#dbeafe;border-radius:14px;padding:22px 24px;border:1px solid var(--accent);">
+        <div style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:8px;">6월 최고 순위</div>
+        <div style="font-size:26px;font-weight:800;color:#1d4ed8;">4위</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:6px;">6/21 · 6/24 달성</div>
+      </div>
+      <div style="background:#ecfdf5;border-radius:14px;padding:22px 24px;border:1px solid #6ee7b7;">
+        <div style="font-size:12px;color:#065f46;font-weight:600;margin-bottom:8px;">월말 순위</div>
+        <div style="font-size:26px;font-weight:800;color:#059669;">9위</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:6px;">6/30 기준 · 10위 이내</div>
+      </div>
+      <div style="background:#fff7ed;border-radius:14px;padding:22px 24px;border:1px solid #fed7aa;">
+        <div style="font-size:12px;color:#c2410c;font-weight:600;margin-bottom:8px;">순위 회복폭</div>
+        <div style="font-size:26px;font-weight:800;color:#c2410c;">54계단</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:6px;">최저 63위 → 월말 9위</div>
+      </div>
+      <div style="background:#fff;border-radius:14px;padding:22px 24px;border:1px solid var(--border);">
+        <div style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:8px;">10위 이내 유지</div>
+        <div style="font-size:26px;font-weight:800;color:var(--primary);">13일</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:6px;">6/18~6/30 연속 유지</div>
+      </div>
+      <div style="background:#fff;border-radius:14px;padding:22px 24px;border:1px solid var(--border);">
+        <div style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:8px;">블로그 작성</div>
+        <div style="font-size:26px;font-weight:800;color:var(--primary);">1건</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:6px;">연동·스케일링·잇몸검진 소재</div>
+      </div>
+      <div style="background:#fff;border-radius:14px;padding:22px 24px;border:1px solid var(--border);">
+        <div style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:8px;">키워드 초안</div>
+        <div style="font-size:26px;font-weight:800;color:var(--primary);">5건</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:6px;">7월 콘텐츠 연결 소재</div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon">📍</div>
+        <h3>네이버 플레이스 순위 추이</h3>
+      </div>
+      <div class="section-body">
+        <div class="rank-chart-wrap" aria-label="2026년 6월 서울업치과 네이버 플레이스 순위 그래프">
+          <svg class="rank-chart" viewBox="0 0 720 260" role="img" aria-label="6월 1일부터 30일까지 네이버 플레이스 순위 추이">
+            <line class="rank-grid" x1="54" y1="34" x2="698" y2="34"></line>
+            <line class="rank-grid" x1="54" y1="80" x2="698" y2="80"></line>
+            <line class="rank-grid" x1="54" y1="126" x2="698" y2="126"></line>
+            <line class="rank-grid" x1="54" y1="172" x2="698" y2="172"></line>
+            <line class="rank-grid" x1="54" y1="218" x2="698" y2="218"></line>
+            <text class="rank-axis-text" x="20" y="38">1위</text>
+            <text class="rank-axis-text" x="15" y="84">18위</text>
+            <text class="rank-axis-text" x="15" y="130">35위</text>
+            <text class="rank-axis-text" x="15" y="176">52위</text>
+            <text class="rank-axis-text" x="15" y="222">69위</text>
+            <polyline class="rank-line" points="54.0,161.2 76.2,169.3 98.4,182.8 120.6,188.2 142.8,177.4 165.0,201.8 187.2,153.1 209.4,131.4 231.7,131.4 253.9,139.5 276.1,104.4 298.3,101.6 320.5,128.7 342.7,104.4 364.9,93.5 387.1,98.9 409.3,90.8 431.5,44.8 453.7,50.2 475.9,44.8 498.1,42.1 520.3,44.8 542.6,44.8 564.8,42.1 587.0,52.9 609.2,52.9 631.4,47.5 653.6,52.9 675.8,52.9 698.0,55.6"></polyline>
+            <g class="rank-marker">
+              <circle cx="54" cy="161.2" r="6"></circle>
+              <text x="41" y="150">48위</text>
+              <text class="rank-date" x="43" y="242">6/1</text>
+            </g>
+            <g class="rank-marker">
+              <circle cx="165" cy="201.8" r="6"></circle>
+              <text x="151" y="190">63위</text>
+              <text class="rank-date" x="151" y="242">6/6</text>
+            </g>
+            <g class="rank-marker">
+              <circle cx="431.5" cy="44.8" r="6"></circle>
+              <text x="420" y="32">5위</text>
+              <text class="rank-date" x="418" y="242">6/18</text>
+            </g>
+            <g class="rank-marker">
+              <circle cx="498.1" cy="42.1" r="6"></circle>
+              <text x="487" y="30">4위</text>
+              <text class="rank-date" x="485" y="242">6/21</text>
+            </g>
+            <g class="rank-marker">
+              <circle cx="698" cy="55.6" r="6"></circle>
+              <text x="674" y="45">9위</text>
+              <text class="rank-date" x="674" y="242">6/30</text>
+            </g>
+          </svg>
+          <svg class="rank-mobile-chart" viewBox="0 0 340 190" role="img" aria-label="모바일용 서울업치과 6월 네이버 플레이스 순위 요약 그래프">
+            <line class="m-grid" x1="42" y1="32" x2="326" y2="32" />
+            <line class="m-grid" x1="42" y1="92" x2="326" y2="92" />
+            <line class="m-grid" x1="42" y1="152" x2="326" y2="152" />
+            <text class="m-axis" x="8" y="36">1위</text>
+            <text class="m-axis" x="2" y="96">35위</text>
+            <text class="m-axis" x="2" y="156">69위</text>
+            <polyline class="m-line" points="42,115 104,141 204,39 254,37 326,46" />
+            <circle class="m-dot" cx="42" cy="115" r="5" />
+            <circle class="m-dot" cx="104" cy="141" r="5" />
+            <circle class="m-dot" cx="204" cy="39" r="5" />
+            <circle class="m-dot" cx="254" cy="37" r="5" />
+            <circle class="m-dot" cx="326" cy="46" r="5" />
+            <text class="m-label" x="42" y="105" text-anchor="middle">48위</text>
+            <text class="m-label" x="104" y="161" text-anchor="middle">63위</text>
+            <text class="m-label" x="204" y="27" text-anchor="middle">5위</text>
+            <text class="m-label" x="254" y="57" text-anchor="middle">4위</text>
+            <text class="m-label" x="326" y="36" text-anchor="middle">9위</text>
+            <text class="m-date" x="42" y="184" text-anchor="middle">6/1</text>
+            <text class="m-date" x="104" y="184" text-anchor="middle">6/6</text>
+            <text class="m-date" x="204" y="184" text-anchor="middle">6/18</text>
+            <text class="m-date" x="254" y="184" text-anchor="middle">6/21</text>
+            <text class="m-date" x="326" y="184" text-anchor="middle">6/30</text>
+          </svg>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:18px;">
+          <div style="background:#fff7ed;border-radius:10px;padding:12px 14px;border:1px solid #fed7aa;">
+            <div style="font-size:10px;font-weight:700;color:#c2410c;margin-bottom:4px;">6/1 ~ 6/6</div>
+            <div style="font-size:22px;font-weight:800;color:#c2410c;">48~63위</div>
+            <div style="font-size:11px;color:var(--muted);">월초 하락 구간</div>
+          </div>
+          <div style="background:#fff8e6;border-radius:10px;padding:12px 14px;border:1px solid #f59e0b;">
+            <div style="font-size:10px;font-weight:700;color:#8a6230;margin-bottom:4px;">6/7 ~ 6/17</div>
+            <div style="font-size:22px;font-weight:800;color:#d97706;">22~45위</div>
+            <div style="font-size:11px;color:var(--muted);">점진 회복 구간</div>
+          </div>
+          <div style="background:#dbeafe;border-radius:10px;padding:12px 14px;border:1px solid var(--accent);">
+            <div style="font-size:10px;font-weight:700;color:#1d4ed8;margin-bottom:4px;">6/18 ~ 6/24</div>
+            <div style="font-size:22px;font-weight:800;color:#1d4ed8;">4~7위</div>
+            <div style="font-size:11px;color:var(--muted);">상위권 진입</div>
+          </div>
+          <div style="background:#ecfdf5;border-radius:10px;padding:12px 14px;border:1px solid #6ee7b7;">
+            <div style="font-size:10px;font-weight:700;color:#065f46;margin-bottom:4px;">6/25 ~ 6/30</div>
+            <div style="font-size:22px;font-weight:800;color:#059669;">6~9위</div>
+            <div style="font-size:11px;color:var(--muted);">10위 이내 마감</div>
+          </div>
+        </div>
+
+        <div class="status-item">
+          <div class="status-dot" style="background:#059669;"></div>
+          <p>5월 말 49위로 마감했던 순위가 6월 말 9위까지 회복되어, 순위 관리 작업의 반등 효과가 뚜렷하게 나타났습니다.</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot" style="background:var(--accent);"></div>
+          <p>6/18 이후에는 계속 한 자릿수 순위를 유지했습니다. 7월에는 이 흐름을 5위권 안착으로 연결하는 것이 핵심입니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon">📊</div>
+        <h3>홈페이지 통계 반영 상태</h3>
+      </div>
+      <div class="section-body">
+        <div style="background:#f0f7ff;border-radius:12px;padding:16px 18px;border:1px solid #bfdbfe;margin-bottom:12px;">
+          <p style="font-size:14px;line-height:1.7;color:#1e3a8a;">
+            첨부된 홈페이지 통계 이미지 4건은 현재 파일 경로가 확인되지 않아 6월 수치를 정확히 읽지 못했습니다.
+            이번 초안은 플레이스 순위와 거래처카드 데이터 중심으로 작성했고, 홈페이지 방문·방문자·유입 채널 수치를 받으면 이 영역을 5월 보고서처럼 그래프형 표로 교체하겠습니다.
+          </p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot" style="background:var(--accent);"></div>
+          <p>추가로 필요한 홈페이지 수치는 총 방문, 방문자, 네이버 유입, 구글 유입, 직접유입, 플레이스 유입입니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon">📝</div>
+        <h3>6월 운영 및 콘텐츠 신호</h3>
+      </div>
+      <div class="section-body">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:16px;">
+          <div style="background:#fff;border-radius:10px;padding:16px;text-align:center;border:1px solid var(--border);">
+            <div style="font-size:30px;font-weight:800;color:var(--primary);">1건</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px;">블로그 작성 완료</div>
+          </div>
+          <div style="background:#dbeafe;border-radius:10px;padding:16px;text-align:center;border:1px solid var(--accent);">
+            <div style="font-size:30px;font-weight:800;color:#1d4ed8;">5건</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px;">치과 키워드 초안</div>
+          </div>
+          <div style="background:#fff;border-radius:10px;padding:16px;text-align:center;border:1px solid var(--border);">
+            <div style="font-size:30px;font-weight:800;color:var(--primary);">5건</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px;">콘텐츠 소재 풀</div>
+          </div>
+        </div>
+        <div class="status-item">
+          <div class="status-dot" style="background:var(--accent);"></div>
+          <p><strong>제주연동치과 스케일링과 잇몸검진이 중요한 이유</strong> 주제의 블로그 작성이 완료됐습니다. 지역 키워드와 예방진료 키워드를 함께 보강하는 콘텐츠입니다.</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot" style="background:#c9a96e;"></div>
+          <p>제주시 치과, 제주 치과 임플란트, 제주치아교정, 노형치과, 연동치과 등 7월 콘텐츠 운영에 연결 가능한 소재도 확인됩니다.</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot"></div>
+          <p>6월 운영은 순위 회복과 콘텐츠 소재 확보를 중심으로 정리했습니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:var(--accent-light);border:1px solid var(--accent);border-radius:14px;padding:24px 28px;margin-bottom:20px;">
+      <h3 style="font-size:15px;font-weight:700;color:#1d4ed8;margin-bottom:16px;">7월 중점 방향</h3>
+      <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:10px;">
+        <div style="min-width:24px;height:24px;background:var(--accent);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;">1</div>
+        <p style="font-size:14px;line-height:1.6;padding-top:2px;"><strong>5위권 안착 관리</strong> — 6월 말 9위 흐름을 유지하면서 4~5위권 재진입 빈도를 늘립니다.</p>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:10px;">
+        <div style="min-width:24px;height:24px;background:var(--accent);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;">2</div>
+        <p style="font-size:14px;line-height:1.6;padding-top:2px;">연동·노형·임플란트·교정 등 지역/진료 키워드 콘텐츠를 실제 발행과 연결해 검색 신호를 이어갑니다.</p>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:12px;">
+        <div style="min-width:24px;height:24px;background:var(--accent);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;">3</div>
+        <p style="font-size:14px;line-height:1.6;padding-top:2px;">홈페이지 통계가 확인되면 순위 회복과 홈페이지 유입 변화가 함께 움직였는지 비교합니다.</p>
+      </div>
+    </div>
+
+  </div><!-- /panel-jun -->
+
   <!-- ═══════ 5월 보고서 ═══════ -->
-  <div class="report-panel active" id="panel-may">
+  <div class="report-panel" id="panel-may">
 
     <!-- 요약 배너 -->
     <div class="summary-band">

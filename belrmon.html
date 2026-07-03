@@ -145,6 +145,28 @@
     .topic-card { border: 1px solid var(--border); border-radius: 10px; background: var(--bg); padding: 10px; min-height: 64px; }
     .topic-card strong { display: block; font-size: 12px; color: var(--primary); margin-bottom: 5px; }
     .topic-card span { display: block; font-size: 11px; color: var(--muted); line-height: 1.4; }
+    .mom-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .mom-item { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+    .mom-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .mom-name { font-size: 12px; font-weight: 800; color: var(--muted); }
+    .mom-badge { font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 10px; background: var(--green-light); color: var(--green); white-space: nowrap; }
+    .mom-badge.down { background: var(--orange-light); color: var(--orange); }
+    .mom-row { display: grid; grid-template-columns: 34px minmax(0, 1fr) 68px; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .mom-row:last-child { margin-bottom: 0; }
+    .mom-month { font-size: 11px; font-weight: 800; color: var(--muted); }
+    .mom-bar { height: 12px; border-radius: 6px; background: #ded8ef; }
+    .mom-row.cur .mom-bar { background: var(--accent); }
+    .mom-val { font-size: 12px; font-weight: 800; color: var(--primary); text-align: right; white-space: nowrap; }
+    .ops-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-bottom: 4px; }
+    .ops-card { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+    .ops-card .o-icon { font-size: 20px; margin-bottom: 8px; }
+    .ops-card h5 { font-size: 13px; font-weight: 800; color: var(--primary); margin-bottom: 6px; }
+    .ops-card p { font-size: 12px; line-height: 1.6; color: var(--text); }
+    .stack-bar { display: flex; height: 22px; border-radius: 8px; overflow: hidden; margin-bottom: 10px; }
+    .stack-seg { display: flex; align-items: center; justify-content: center; color: #fff; font-size: 11px; font-weight: 800; white-space: nowrap; overflow: hidden; }
+    .stack-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--text); align-items: center; }
+    .stack-legend .sl-item { display: flex; align-items: center; gap: 6px; }
+    .stack-legend .legend-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
     /* 당근 테이블 */
     .daangn-table { width: 100%; border-collapse: collapse; }
     .daangn-table th, .daangn-table td { text-align: center; padding: 10px 12px; font-size: 13px; border-bottom: 1px solid var(--border); }
@@ -206,6 +228,9 @@
       .visual-card .v-label { font-size: 10px; min-height: 24px; margin-bottom: 6px; line-height: 1.25; }
       .visual-card .v-value { font-size: 19px; }
       .visual-card .v-sub { font-size: 10px; line-height: 1.35; }
+      .mom-grid, .ops-grid { grid-template-columns: 1fr; gap: 9px; }
+      .mom-row { grid-template-columns: 30px minmax(0, 1fr) 62px; }
+      .stack-bar { height: 20px; }
       .region-graph { padding: 13px 11px; border-radius: 10px; }
       .region-title { font-size: 11px; margin-bottom: 10px; }
       .region-row { grid-template-columns: 52px minmax(0, 1fr) 44px; gap: 6px; font-size: 11px; margin-bottom: 8px; }
@@ -466,8 +491,8 @@
       </div>
       <div class="flow-node">
         <div class="flow-kicker">당근 광고</div>
-        <div class="flow-value">31.4만</div>
-        <div class="flow-label">게시글+채용공고 지출</div>
+        <div class="flow-value">25,696</div>
+        <div class="flow-label">게시글 노출 합산</div>
       </div>
     </div>
 
@@ -496,6 +521,42 @@
         <div class="mc-label">콘텐츠 발행</div>
         <div class="mc-value">6<span style="font-size:16px;font-weight:400">건</span></div>
         <div class="mc-sub">블로그 3 · 홈페이지 2 · 인스타 1</div>
+      </div>
+    </div>
+
+    <!-- 전월 대비 성과 비교 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-green">📊</div>
+        <h3>전월 대비 성과 비교 <span class="count-chip">5월 → 6월</span></h3>
+      </div>
+      <div class="section-body">
+        <div class="mom-grid">
+          <div class="mom-item">
+            <div class="mom-head"><span class="mom-name">홈페이지 페이지뷰</span><span class="mom-badge">▲ +54%</span></div>
+            <div class="mom-row"><span class="mom-month">5월</span><div class="mom-bar" style="width:65%"></div><span class="mom-val">5,602</span></div>
+            <div class="mom-row cur"><span class="mom-month">6월</span><div class="mom-bar" style="width:100%"></div><span class="mom-val">8,625</span></div>
+          </div>
+          <div class="mom-item">
+            <div class="mom-head"><span class="mom-name">홈페이지 방문자</span><span class="mom-badge">▲ +65%</span></div>
+            <div class="mom-row"><span class="mom-month">5월</span><div class="mom-bar" style="width:61%"></div><span class="mom-val">3,834명</span></div>
+            <div class="mom-row cur"><span class="mom-month">6월</span><div class="mom-bar" style="width:100%"></div><span class="mom-val">6,329명</span></div>
+          </div>
+          <div class="mom-item">
+            <div class="mom-head"><span class="mom-name">네이버 유입</span><span class="mom-badge">▲ 약 4.7배</span></div>
+            <div class="mom-row"><span class="mom-month">5월</span><div class="mom-bar" style="width:21%"></div><span class="mom-val">230</span></div>
+            <div class="mom-row cur"><span class="mom-month">6월</span><div class="mom-bar" style="width:100%"></div><span class="mom-val">1,092</span></div>
+          </div>
+          <div class="mom-item">
+            <div class="mom-head"><span class="mom-name">위챗 친구 수</span><span class="mom-badge">▲ +34명</span></div>
+            <div class="mom-row"><span class="mom-month">5월</span><div class="mom-bar" style="width:88%"></div><span class="mom-val">254명</span></div>
+            <div class="mom-row cur"><span class="mom-month">6월</span><div class="mom-bar" style="width:100%"></div><span class="mom-val">288명</span></div>
+          </div>
+        </div>
+        <div class="status-item" style="margin-top:14px;">
+          <div class="status-dot dot-green"></div>
+          <p>5월 대비 가장 크게 좋아진 지표는 홈페이지 방문 규모와 네이버 유입입니다. 플레이스 순위가 2~3위권으로 회복되면서 검색 후 홈페이지 확인 흐름이 함께 커졌습니다.</p>
+        </div>
       </div>
     </div>
 
@@ -730,14 +791,14 @@
             <div class="v-sub">노출 · 클릭 234회</div>
           </div>
           <div class="visual-card">
-            <div class="v-label">게시글 광고비</div>
-            <div class="v-value">104,281원</div>
-            <div class="v-sub">스토리 16,649 · 소식 87,632</div>
+            <div class="v-label">소식형 소재</div>
+            <div class="v-value">19,212</div>
+            <div class="v-sub">클릭 197회</div>
           </div>
           <div class="visual-card">
-            <div class="v-label">채용공고 광고비</div>
-            <div class="v-value">210,000원</div>
-            <div class="v-sub">중국어 가능 코디네이터 채용</div>
+            <div class="v-label">스토리 소재</div>
+            <div class="v-value">6,484</div>
+            <div class="v-sub">클릭 37회</div>
           </div>
         </div>
         <div class="region-graph">
@@ -761,16 +822,16 @@
             <div class="region-count">234</div>
           </div>
           <div class="region-row">
-            <div class="region-name">지출</div>
+            <div class="region-name">운영 소재</div>
             <div class="region-track"><div class="region-fill" style="width:54%;"></div></div>
-            <div class="region-count">10.4만</div>
+            <div class="region-count">2개</div>
           </div>
         </div>
         <div class="insight-chips">
           <span class="insight-chip">비즈프로필 소식 클릭 우세</span>
           <span class="insight-chip">스토리 CTR 0.58%</span>
           <span class="insight-chip">소식 CTR 1.03%</span>
-          <span class="insight-chip">채용공고 광고비 21만 원</span>
+          <span class="insight-chip">중국어 채용공고 집행</span>
         </div>
         <div class="status-item" style="margin-top:14px;">
           <div class="status-dot dot-gold"></div>
@@ -778,7 +839,7 @@
         </div>
         <div class="status-item">
           <div class="status-dot dot-blue"></div>
-          <p>중국어 가능한 코디네이터 채용공고도 당근에 집행했고, 채용공고 광고비로 21만 원을 사용했습니다. 이는 외국인 상담 응대 인력을 보강하기 위한 운영 투자로 보고서에 별도 반영했습니다.</p>
+          <p>중국어 가능한 코디네이터 채용공고도 당근에 집행했습니다. 외국인 상담 응대 인력을 보강하기 위한 운영 활동으로 함께 정리했습니다.</p>
         </div>
       </div>
     </div>
@@ -795,12 +856,44 @@
           <p>6월 운영 업무는 실제 외국인 상담 25건을 기반으로 응대 구조를 점검하고, 신규 장비 홍보, 전후사진 운영 환경, 중국어 응대 인력 확보를 함께 정비한 달로 볼 수 있습니다.</p>
         </div>
 
-        <ul class="sub-list">
-          <li><div class="sub-num">1</div><span><strong>외국인 상담 응대 기반 강화</strong> — 라인 18건, 인스타그램 7건의 외국인 상담 흐름을 확인했고, 메디보이스 네이티브 앱·위챗 자동응답·라인비즈니스 인사말·가격표 공지를 연결해 상담 전 안내 속도를 높였습니다.</span></li>
-          <li><div class="sub-num">2</div><span><strong>리투오·써마지FLX 홍보 자산 정리</strong> — 신규 장비 관련 보도자료와 외국어 홈페이지 콘텐츠를 제작해 해외 고객이 확인할 수 있는 기본 설명 자료를 보강했습니다.</span></li>
-          <li><div class="sub-num">3</div><span><strong>전후사진 운영 환경 구축</strong> — 촬영 후 공유폴더로 자동 전송되는 벨르몬 전용 촬영앱을 개발하고, 촬영룸 조명·배경·장비 세팅까지 맞춰 상담 자료 관리 기반을 만들었습니다.</span></li>
-          <li><div class="sub-num">4</div><span><strong>중국어 응대 인력 확보 시도</strong> — 중국어 가능 코디네이터 채용공고를 당근에 집행하고 광고비 21만 원을 사용했습니다. 7월에는 지원자 수와 실제 면접 전환 여부까지 확인해 채용 효율을 판단할 필요가 있습니다.</span></li>
-        </ul>
+        <div class="ops-grid">
+          <div class="ops-card">
+            <div class="o-icon">🌐</div>
+            <h5>외국인 상담 응대 기반</h5>
+            <p>라인 18건, 인스타그램 7건 상담 흐름을 기준으로 자동응답, 가격표, 라인비즈니스 인사말을 정비했습니다.</p>
+          </div>
+          <div class="ops-card">
+            <div class="o-icon">💎</div>
+            <h5>신규 장비 홍보 자산</h5>
+            <p>리투오·써마지FLX 보도자료와 외국어 홈페이지 콘텐츠를 연결해 해외 고객용 설명 자료를 보강했습니다.</p>
+          </div>
+          <div class="ops-card">
+            <div class="o-icon">📷</div>
+            <h5>전후사진 운영 환경</h5>
+            <p>벨르몬 전용 촬영앱과 촬영룸 세팅을 맞춰 상담 자료를 더 빠르게 축적할 수 있는 기반을 만들었습니다.</p>
+          </div>
+          <div class="ops-card">
+            <div class="o-icon">👥</div>
+            <h5>중국어 응대 인력 확보</h5>
+            <p>중국어 가능 코디네이터 채용공고를 당근에 집행해 외국인 상담 응대 인프라 보강을 지원했습니다.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 보도자료 배포 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-blue">📰</div>
+        <h3>보도자료 배포 <span class="count-chip">6월 16일</span></h3>
+      </div>
+      <div class="section-body">
+        <div class="section-lead">
+          <strong>레이저 시술·스킨부스터 맞춤 상담 보도자료</strong>
+          <p>메디컬투데이에 레이저 리프팅과 스킨부스터를 개인 피부 상태에 맞춰 계획해야 한다는 내용의 보도자료가 게재됐습니다. 써마지FLX와 리투오 등 6월에 정리한 신규 장비 홍보를 단순 이벤트가 아니라 피부 노화·탄력·잔주름 상담 흐름으로 설명하는 외부 노출입니다.</p>
+        </div>
+        <div class="status-item"><div class="status-dot dot-green"></div><p>외국어 홈페이지 콘텐츠, 가격 안내, 실제 외국인 상담 25건과 함께 활용하면 벨르몬성형외과의 피부관리 상담 전문성을 보완하는 자료로 쓸 수 있습니다.</p></div>
+        <div class="status-item"><div class="status-dot dot-gold"></div><p><a href="https://www.mdtoday.co.kr/news/articleView.html?idxno=600994" target="_blank" rel="noopener" style="color:var(--blue);font-weight:800;text-decoration:none;">기사 확인</a></p></div>
       </div>
     </div>
 
@@ -811,6 +904,18 @@
         <h3>발행 글 목록 <span class="count-chip">6건</span></h3>
       </div>
       <div class="section-body" style="padding:0;">
+        <div style="padding:18px 24px;border-bottom:1px solid var(--border);">
+          <div class="stack-bar">
+            <div class="stack-seg" style="width:50%;background:#e65100;">블로그 3</div>
+            <div class="stack-seg" style="width:33.33%;background:#6a1b9a;">홈페이지 2</div>
+            <div class="stack-seg" style="width:16.67%;background:#ad1457;">인스타 1</div>
+          </div>
+          <div class="stack-legend">
+            <div class="sl-item"><span class="legend-dot" style="background:#e65100;"></span>블로그 50%</div>
+            <div class="sl-item"><span class="legend-dot" style="background:#6a1b9a;"></span>홈페이지 33%</div>
+            <div class="sl-item"><span class="legend-dot" style="background:#ad1457;"></span>인스타그램 17%</div>
+          </div>
+        </div>
         <div style="overflow-x:auto;">
           <table class="content-table publish-table">
             <thead>

@@ -424,6 +424,72 @@
       flex-shrink: 0;
     }
 
+    /* ─── LABELED BAR CHART ─── */
+    .hbar-list { display: flex; flex-direction: column; gap: 11px; margin-bottom: 18px; }
+    .hbar-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 4px; }
+    .hbar-name { font-size: 13px; font-weight: 700; }
+    .hbar-num { font-size: 13px; font-weight: 800; color: var(--primary); white-space: nowrap; }
+    .hbar-num small { font-size: 11px; font-weight: 600; color: var(--muted); margin-left: 3px; }
+    .hbar-track { height: 13px; background: var(--bg); border: 1px solid var(--border); border-radius: 7px; overflow: hidden; }
+    .hbar-fill { height: 100%; border-radius: 7px 0 0 7px; min-width: 8px; }
+
+    /* ─── 전월 대비 비교 ─── */
+    .mom-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .mom-item { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+    .mom-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 8px; }
+    .mom-name { font-size: 12px; font-weight: 700; color: var(--muted); }
+    .mom-badge { font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 10px; background: var(--green-light); color: var(--green); white-space: nowrap; }
+    .mom-badge.down { background: var(--orange-light); color: var(--orange); }
+    .mom-row { display: grid; grid-template-columns: 34px 1fr 58px; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .mom-row:last-child { margin-bottom: 0; }
+    .mom-month { font-size: 11px; font-weight: 700; color: var(--muted); }
+    .mom-bar { height: 12px; border-radius: 6px; background: #d9d2c6; }
+    .mom-row.cur .mom-bar { background: var(--accent); }
+    .mom-val { font-size: 12px; font-weight: 800; color: var(--primary); text-align: right; white-space: nowrap; }
+    .mom-row.cur .mom-val { color: #8a6230; }
+
+    /* ─── 운영 카드 ─── */
+    .ops-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 6px; }
+    .ops-card { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+    .ops-card .o-icon { font-size: 20px; margin-bottom: 8px; }
+    .ops-card h5 { font-size: 13px; font-weight: 800; color: var(--primary); margin-bottom: 6px; }
+    .ops-card p { font-size: 12px; line-height: 1.6; color: var(--text); }
+
+    /* ─── 스택 바 + 범례 ─── */
+    .stack-bar { display: flex; height: 22px; border-radius: 8px; overflow: hidden; margin-bottom: 10px; }
+    .stack-seg { display: flex; align-items: center; justify-content: center; color: #fff; font-size: 11px; font-weight: 800; white-space: nowrap; overflow: hidden; }
+    .stack-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--text); align-items: center; }
+    .stack-legend span.legend-dot { margin-top: 0; display: inline-block; }
+    .stack-legend .sl-item { display: flex; align-items: center; gap: 6px; }
+
+    .viz-lead { padding: 16px 24px 4px; }
+
+    @media(max-width: 640px) {
+      .mom-grid, .ops-grid { grid-template-columns: 1fr; gap: 9px; }
+      .mom-item, .ops-card { padding: 12px 14px; border-radius: 11px; }
+      .mom-row { grid-template-columns: 30px 1fr 52px; gap: 7px; }
+      .mom-head { margin-bottom: 8px; }
+      .mom-name { font-size: 11px; }
+      .mom-badge { font-size: 10px; padding: 2px 7px; }
+      .mom-val { font-size: 11px; }
+      .stack-seg { font-size: 10px; }
+      .stack-bar { height: 20px; }
+      .stack-legend { gap: 4px 12px; font-size: 11px; }
+      .hbar-list { gap: 9px; margin-bottom: 14px; }
+      .hbar-name { font-size: 12px; }
+      .hbar-num { font-size: 12px; }
+      .hbar-num small { font-size: 10px; }
+      .hbar-track { height: 12px; }
+      .ops-card .o-icon { font-size: 18px; margin-bottom: 6px; }
+      .ops-card h5 { font-size: 12.5px; }
+      .ops-card p { font-size: 11.5px; }
+      .viz-lead { padding: 14px 14px 2px; }
+    }
+    @media(max-width: 380px) {
+      .hbar-top { flex-wrap: wrap; row-gap: 1px; }
+      .mom-head { flex-wrap: wrap; row-gap: 4px; }
+    }
+
     @media(max-width: 700px) {
       .source-grid, .rank-note-grid, .wechat-legend { grid-template-columns: 1fr 1fr; }
       .wechat-grid { grid-template-columns: 1fr; }
@@ -659,7 +725,7 @@
         </div>
         <div class="band-point">
           <div class="dot"></div>
-          <p>위챗 친구는 384명에서 433명으로 늘었고, 신규 팔로워 49명 중 검색 유입이 31명으로 가장 많았습니다.</p>
+          <p>위챗 친구는 384명에서 433명으로 늘었고, 위챗 상담기록까지 포함한 6월 외국인 상담은 총 22건으로 확인됐습니다.</p>
         </div>
       </div>
     </div>
@@ -692,22 +758,59 @@
       <div class="metric-card highlight">
         <div class="mc-label">전체 방문 횟수</div>
         <div class="mc-value">8,974</div>
-        <div class="mc-sub">방문자 4,515명</div>
+        <div class="mc-sub">방문자 4,515명 <span class="mom-badge">▲ 13.4%</span></div>
       </div>
       <div class="metric-card">
         <div class="mc-label">네이버 유입</div>
         <div class="mc-value">4,549</div>
-        <div class="mc-sub">전체의 약 51%</div>
+        <div class="mc-sub">전체의 약 51% <span class="mom-badge">▲ 47.4%</span></div>
       </div>
       <div class="metric-card">
         <div class="mc-label">위챗 친구</div>
         <div class="mc-value">433<span style="font-size:16px;font-weight:400">명</span></div>
-        <div class="mc-sub">6/1 대비 +49명</div>
+        <div class="mc-sub">6/1 대비 +49명 <span class="mom-badge">▲ 12.8%</span></div>
+      </div>
+      <div class="metric-card highlight">
+        <div class="mc-label">외국인 상담</div>
+        <div class="mc-value">22<span style="font-size:16px;font-weight:400">건</span></div>
+        <div class="mc-sub">위챗 16 · 라인 4 · 인스타 2</div>
       </div>
       <div class="metric-card">
         <div class="mc-label">콘텐츠 발행</div>
         <div class="mc-value">13<span style="font-size:16px;font-weight:400">건</span></div>
         <div class="mc-sub">홈페이지 5 · 블로그 4 · 인스타 3 · 기타 1</div>
+      </div>
+    </div>
+
+    <!-- 전월 대비 성과 비교 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-gold">📈</div>
+        <h3>전월 대비 성과 비교 <span class="count-chip">5월 → 6월</span></h3>
+      </div>
+      <div class="section-body">
+        <div class="mom-grid">
+          <div class="mom-item">
+            <div class="mom-head"><span class="mom-name">홈페이지 방문 횟수</span><span class="mom-badge">▲ +1,059 (13.4%)</span></div>
+            <div class="mom-row"><span class="mom-month">5월</span><div class="mom-bar" style="width:88%"></div><span class="mom-val">7,915</span></div>
+            <div class="mom-row cur"><span class="mom-month">6월</span><div class="mom-bar" style="width:100%"></div><span class="mom-val">8,974</span></div>
+          </div>
+          <div class="mom-item">
+            <div class="mom-head"><span class="mom-name">실제 방문자 수</span><span class="mom-badge">▲ +1,114 (32.8%)</span></div>
+            <div class="mom-row"><span class="mom-month">5월</span><div class="mom-bar" style="width:75%"></div><span class="mom-val">3,401</span></div>
+            <div class="mom-row cur"><span class="mom-month">6월</span><div class="mom-bar" style="width:100%"></div><span class="mom-val">4,515</span></div>
+          </div>
+          <div class="mom-item">
+            <div class="mom-head"><span class="mom-name">네이버 유입</span><span class="mom-badge">▲ +1,462 (47.4%)</span></div>
+            <div class="mom-row"><span class="mom-month">5월</span><div class="mom-bar" style="width:68%"></div><span class="mom-val">3,087</span></div>
+            <div class="mom-row cur"><span class="mom-month">6월</span><div class="mom-bar" style="width:100%"></div><span class="mom-val">4,549</span></div>
+          </div>
+          <div class="mom-item">
+            <div class="mom-head"><span class="mom-name">위챗 친구 수</span><span class="mom-badge">▲ +49명 (12.8%)</span></div>
+            <div class="mom-row"><span class="mom-month">5월</span><div class="mom-bar" style="width:89%"></div><span class="mom-val">384명</span></div>
+            <div class="mom-row cur"><span class="mom-month">6월</span><div class="mom-bar" style="width:100%"></div><span class="mom-val">433명</span></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -741,12 +844,22 @@
           </div>
         </div>
 
-        <div style="margin-bottom:20px;">
-          <div style="display:flex;height:12px;border-radius:8px;overflow:hidden;gap:2px;">
-            <div style="width:51%;background:#e07b2a;border-radius:8px 0 0 8px;"></div>
-            <div style="width:33%;background:#2d5fa8;"></div>
-            <div style="width:12%;background:#3a8c5c;"></div>
-            <div style="width:4%;background:#c0c0c0;border-radius:0 8px 8px 0;"></div>
+        <div class="hbar-list">
+          <div>
+            <div class="hbar-top"><span class="hbar-name">네이버</span><span class="hbar-num">4,549회<small>전체의 51%</small></span></div>
+            <div class="hbar-track"><div class="hbar-fill" style="width:100%;background:#e07b2a;"></div></div>
+          </div>
+          <div>
+            <div class="hbar-top"><span class="hbar-name">직접 방문 (병원명 인지)</span><span class="hbar-num">3,003회<small>전체의 33%</small></span></div>
+            <div class="hbar-track"><div class="hbar-fill" style="width:66%;background:#2d5fa8;"></div></div>
+          </div>
+          <div>
+            <div class="hbar-top"><span class="hbar-name">구글</span><span class="hbar-num">1,046회<small>전체의 12%</small></span></div>
+            <div class="hbar-track"><div class="hbar-fill" style="width:23%;background:#3a8c5c;"></div></div>
+          </div>
+          <div>
+            <div class="hbar-top"><span class="hbar-name">기타 (다음·카카오·AI 검색 등)</span><span class="hbar-num">376회<small>전체의 4%</small></span></div>
+            <div class="hbar-track"><div class="hbar-fill" style="width:8%;background:#c0c0c0;"></div></div>
           </div>
         </div>
 
@@ -864,6 +977,22 @@
           </div>
         </div>
 
+        <div style="font-size:11px;font-weight:800;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;">위챗 친구 수 성장 추이</div>
+        <div class="hbar-list">
+          <div>
+            <div class="hbar-top"><span class="hbar-name">5월 1일</span><span class="hbar-num">304명</span></div>
+            <div class="hbar-track"><div class="hbar-fill" style="width:70%;background:#3bbf8f;"></div></div>
+          </div>
+          <div>
+            <div class="hbar-top"><span class="hbar-name">6월 1일</span><span class="hbar-num">384명<small>+80명</small></span></div>
+            <div class="hbar-track"><div class="hbar-fill" style="width:89%;background:#22b377;"></div></div>
+          </div>
+          <div>
+            <div class="hbar-top"><span class="hbar-name">6월 30일</span><span class="hbar-num">433명<small>+49명</small></span></div>
+            <div class="hbar-track"><div class="hbar-fill" style="width:100%;background:#10b85f;"></div></div>
+          </div>
+        </div>
+
         <div class="wechat-grid">
           <div class="wechat-donut">
             <div class="wechat-donut-label">
@@ -913,8 +1042,24 @@
           </div>
           <div class="metric-card">
             <div class="mc-label">외국인 상담</div>
-            <div class="mc-value">6<span style="font-size:16px;font-weight:400">건</span></div>
-            <div class="mc-sub">라인 4 · 인스타 2</div>
+            <div class="mc-value">22<span style="font-size:16px;font-weight:400">건</span></div>
+            <div class="mc-sub">위챗 16 · 라인 4 · 인스타 2</div>
+          </div>
+        </div>
+
+        <div style="font-size:11px;font-weight:800;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;">6월 외국인 상담 채널 분포</div>
+        <div class="hbar-list">
+          <div>
+            <div class="hbar-top"><span class="hbar-name">위챗 (중국어권 예약 연결)</span><span class="hbar-num">16건<small>상담실장 연결 8건</small></span></div>
+            <div class="hbar-track"><div class="hbar-fill" style="width:100%;background:#10b85f;"></div></div>
+          </div>
+          <div>
+            <div class="hbar-top"><span class="hbar-name">라인 (일본어권 중심)</span><span class="hbar-num">4건<small>예약 조율형 문의</small></span></div>
+            <div class="hbar-track"><div class="hbar-fill" style="width:25%;background:#2d5fa8;"></div></div>
+          </div>
+          <div>
+            <div class="hbar-top"><span class="hbar-name">인스타그램 (중화권·영어권)</span><span class="hbar-num">2건<small>상담 채널 연결형</small></span></div>
+            <div class="hbar-track"><div class="hbar-fill" style="width:13%;background:#ad1457;"></div></div>
           </div>
         </div>
 
@@ -932,7 +1077,15 @@
         </div>
         <div class="status-item">
           <div class="status-dot dot-green"></div>
-          <p><strong>6월 외국인 상담은 6건 확인됐습니다.</strong> 라인 4건, 인스타그램 2건으로 저장되어 있으며 중국어권·일본어권 고객의 예약 가능 여부, 통역 가능 여부, 시술 가능 범위 확인이 중심이었습니다.</p>
+          <p><strong>6월 외국인 상담은 위챗 기록까지 포함해 22건 확인됐습니다.</strong> 위챗 16건, 라인 4건, 인스타그램 2건으로 저장되어 있으며 중국어권 고객의 예약 가능 여부, 가격표 확인, 시술 가능 범위 확인이 중심이었습니다.</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-green"></div>
+          <p><strong>위챗 상담은 예약 연결 채널로 가장 크게 작동했습니다.</strong> <strong>wuminghua9</strong>는 피부과 상담실장 아이디로, 실제 상담 중 8건은 이 계정으로 예약·상세 상담을 이어가도록 안내한 흐름입니다.</p>
+        </div>
+        <div class="status-item">
+          <div class="status-dot dot-gold"></div>
+          <p><strong>관심 시술은 울쎄라/초음파 리프팅, ONDA, 필러·눈물고랑, 리쥬란, 물광주사로 반복됐습니다.</strong> 당일 예약 문의도 일부 있었지만, 일정이 맞지 않는 경우 상담실장 연결이나 다른 날짜 제안으로 응대했습니다.</p>
         </div>
         <div class="status-item">
           <div class="status-dot dot-gold"></div>
@@ -952,6 +1105,38 @@
         <h3>당근비즈니스 광고 성과</h3>
       </div>
       <div class="section-body">
+        <div style="font-size:11px;font-weight:800;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;">광고 성과 흐름 (노출 → 반응)</div>
+        <div class="hbar-list">
+          <div>
+            <div class="hbar-top"><span class="hbar-name">노출</span><span class="hbar-num">17,691회</span></div>
+            <div class="hbar-track"><div class="hbar-fill" style="width:100%;background:#d4621a;"></div></div>
+          </div>
+          <div>
+            <div class="hbar-top"><span class="hbar-name">도달</span><span class="hbar-num">6,996명<small>노출의 39.5%</small></span></div>
+            <div class="hbar-track"><div class="hbar-fill" style="width:39.5%;background:#e0854a;"></div></div>
+          </div>
+          <div>
+            <div class="hbar-top"><span class="hbar-name">클릭</span><span class="hbar-num">257회<small>CTR 1.46% · 반응 6건</small></span></div>
+            <div class="hbar-track"><div class="hbar-fill" style="width:1.5%;background:#eba97e;"></div></div>
+          </div>
+          <div>
+            <div class="hbar-top"><span class="hbar-name">반응</span><span class="hbar-num">6건<small>단골 3명 · 관심 3개</small></span></div>
+            <div class="hbar-track"><div class="hbar-fill" style="width:0.5%;background:#f3c9ab;"></div></div>
+          </div>
+        </div>
+
+        <div style="font-size:11px;font-weight:800;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;">지역별 노출 분포</div>
+        <div class="stack-bar">
+          <div class="stack-seg" style="width:36.4%;background:#d4621a;">노형동 36%</div>
+          <div class="stack-seg" style="width:29.8%;background:#e0854a;">연동 30%</div>
+          <div class="stack-seg" style="width:33.8%;background:#c0c0c0;">기타 34%</div>
+        </div>
+        <div class="stack-legend" style="margin-bottom:18px;">
+          <span class="sl-item"><span class="legend-dot" style="background:#d4621a;"></span>노형동 6,448회</span>
+          <span class="sl-item"><span class="legend-dot" style="background:#e0854a;"></span>연동 5,263회</span>
+          <span class="sl-item"><span class="legend-dot" style="background:#c0c0c0;"></span>외도동 등 기타 5,980회</span>
+        </div>
+
         <table class="ad-table">
           <thead>
             <tr><th>지표</th><th>수치</th><th>비고</th></tr>
@@ -960,8 +1145,8 @@
             <tr><td>노출수</td><td>17,691회</td><td>노형동 6,448 · 연동 5,263 중심</td></tr>
             <tr><td>도달수</td><td>6,996명</td><td>노형·연동 중심 지역 노출</td></tr>
             <tr><td>클릭수</td><td>257회</td><td>지역 타깃 대상 홈페이지/소식 확인</td></tr>
-            <tr><td>클릭률(CTR)</td><td>1.46%</td><td>클릭당 지출 335원</td></tr>
-            <tr><td>총 지출</td><td>86,282원</td><td>6월 집행 기준</td></tr>
+            <tr><td>클릭률(CTR)</td><td>1.46%</td><td>노출 대비 클릭 흐름 확인</td></tr>
+            <tr><td>운영 소재</td><td>당근비즈니스</td><td>6월 지역 노출형 소재 운영</td></tr>
             <tr><td>반응</td><td>6건</td><td>단골 3명 · 관심 3개</td></tr>
           </tbody>
         </table>
@@ -983,14 +1168,48 @@
           <p>6월 추가 운영은 단순 제작 건수보다 신규 장비 도입 홍보, 외국인 응대 기반, 홈페이지 검색 구조, 원내 안내물 업데이트를 동시에 정비한 달로 정리할 수 있습니다.</p>
         </div>
 
-        <div class="status-item"><div class="status-dot dot-green"></div><p><strong>신규 장비·시술 도입 홍보</strong> — 써마지FLX, 울쎄라피프라임, 리투오 도입 소식을 보도자료·홈페이지·블로그·당근·카카오채널·원내 영상까지 연결해 온라인과 원내 접점에 함께 반영했습니다.</p></div>
-        <div class="status-item"><div class="status-dot dot-green"></div><p><strong>외국인 응대와 가격 안내 정비</strong> — 중국어 가격표를 리뉴얼해 위챗과 홈페이지에 반영했고, 영어 가격 안내와 영어 피부과 페이지도 보강해 외국인 상담 전 안내 흐름을 정리했습니다.</p></div>
-        <div class="status-item"><div class="status-dot dot-green"></div><p><strong>상담 효율화 기반 구축</strong> — 실시간 번역 웹앱을 네이티브 앱으로 업그레이드하고, 위챗 공식계정 자동응답을 구축해 반복 문의 응대와 외국어 상담의 초기 대응 속도를 높였습니다.</p></div>
-        <div class="status-item"><div class="status-dot dot-green"></div><p><strong>홈페이지·검색 기반 보강</strong> — 홈페이지 메인 화면과 SEO/GEO 구조를 정비하고, 주사 시술 가격표와 신규 장비 공지를 반영해 검색 유입 이후 확인해야 할 정보의 완성도를 높였습니다.</p></div>
+        <div class="ops-grid">
+          <div class="ops-card">
+            <div class="o-icon">🩺</div>
+            <h5>신규 장비·시술 도입 홍보</h5>
+            <p>써마지FLX·울쎄라피프라임·리투오 도입 소식을 보도자료, 홈페이지, 블로그, 당근, 카카오채널, 원내 영상까지 연결해 반영했습니다.</p>
+          </div>
+          <div class="ops-card">
+            <div class="o-icon">🌏</div>
+            <h5>외국인 응대·가격 안내 정비</h5>
+            <p>중국어 가격표를 리뉴얼해 위챗·홈페이지에 반영하고, 영어 가격 안내와 영어 피부과 페이지를 보강했습니다.</p>
+          </div>
+          <div class="ops-card">
+            <div class="o-icon">⚡</div>
+            <h5>상담 효율화 기반 구축</h5>
+            <p>실시간 번역 웹앱을 네이티브 앱으로 업그레이드하고, 위챗 자동응답을 구축해 초기 대응 속도를 높였습니다.</p>
+          </div>
+          <div class="ops-card">
+            <div class="o-icon">🔍</div>
+            <h5>홈페이지·검색 기반 보강</h5>
+            <p>메인 화면과 SEO/GEO 구조를 정비하고, 주사 시술 가격표와 신규 장비 공지를 반영해 정보 완성도를 높였습니다.</p>
+          </div>
+        </div>
 
         <div style="font-size:11px;font-weight:800;color:var(--muted);margin:18px 0 10px;text-transform:uppercase;letter-spacing:.5px;">7월 후속 관리</div>
         <div class="status-item"><div class="status-dot dot-gold"></div><p>시술 후 안내문은 환자에게 꼭 전달해야 할 내용을 전단지 형태로 정리하고, 기본 안내는 기존 톤을 유지해 과도한 변경 없이 개선합니다.</p></div>
         <div class="status-item"><div class="status-dot dot-gold"></div><p>네이버플레이스는 5위 이내 방어를 기준으로 리뷰·콘텐츠·플레이스 신호를 함께 관리하고, 인스타그램은 발행량을 보강해 상시 노출 채널로 다시 끌어올립니다.</p></div>
+      </div>
+    </div>
+
+    <!-- 보도자료 배포 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-blue">📰</div>
+        <h3>보도자료 배포 <span class="count-chip">6월 15일</span></h3>
+      </div>
+      <div class="section-body">
+        <div class="section-lead">
+          <strong>복합 리프팅 시술 울써마지 보도자료</strong>
+          <p>메디컬투데이에 울쎄라피 프라임과 써마지FLX를 함께 다루는 복합 리프팅 보도자료가 게재됐습니다. 피부 처짐과 탄력 저하를 단순 장비 소개가 아니라 개인 피부 상태에 맞춘 계획의 관점으로 정리해, 리프팅 시술에 대한 신뢰형 외부 노출을 확보했습니다.</p>
+        </div>
+        <div class="status-item"><div class="status-dot dot-green"></div><p>6월 운영 중 진행한 써마지FLX·울쎄라피프라임 홍보, 외국어 홈페이지 보강, 신규 장비 공지와 같은 메시지로 연결됩니다. 7월에는 리프팅 키워드 콘텐츠와 상담 전 안내 자료에서 이 보도자료를 보조 근거로 활용할 수 있습니다.</p></div>
+        <div class="status-item"><div class="status-dot dot-gold"></div><p><a href="https://www.mdtoday.co.kr/news/articleView.html?idxno=600864" target="_blank" rel="noopener" style="color:var(--blue);font-weight:800;text-decoration:none;">기사 확인</a></p></div>
       </div>
     </div>
 
@@ -999,6 +1218,20 @@
       <div class="section-header">
         <div class="icon icon-blue">📋</div>
         <h3>콘텐츠 발행 내역 <span class="count-chip" id="jun-chip">13건</span></h3>
+      </div>
+      <div class="viz-lead">
+        <div class="stack-bar">
+          <div class="stack-seg" style="width:38.5%;background:#6a1b9a;">홈페이지 5</div>
+          <div class="stack-seg" style="width:30.8%;background:#e65100;">블로그 4</div>
+          <div class="stack-seg" style="width:23.1%;background:#ad1457;">인스타 3</div>
+          <div class="stack-seg" style="width:7.6%;background:#c0c0c0;"></div>
+        </div>
+        <div class="stack-legend">
+          <span class="sl-item"><span class="legend-dot" style="background:#6a1b9a;"></span>홈페이지 5건</span>
+          <span class="sl-item"><span class="legend-dot" style="background:#e65100;"></span>블로그 4건</span>
+          <span class="sl-item"><span class="legend-dot" style="background:#ad1457;"></span>인스타그램 3건</span>
+          <span class="sl-item"><span class="legend-dot" style="background:#c0c0c0;"></span>기타 1건</span>
+        </div>
       </div>
       <div id="jun-content-area" style="overflow-x:auto;">
         <table class="content-table">

@@ -252,14 +252,172 @@
 <main class="container">
   <p class="timeline-label">보고서 목록</p>
   <div class="month-tabs">
-    <div class="month-tab active" onclick="switchTab('may',event)">2026년 5월</div>
+    <div class="month-tab active" onclick="switchTab('jun',event)">2026년 6월</div>
+    <div class="month-tab" onclick="switchTab('may',event)">2026년 5월</div>
     <div class="month-tab" onclick="switchTab('apr',event)">2026년 4월</div>
     <div class="month-tab" onclick="switchTab('mar',event)">2026년 3월</div>
     <div class="month-tab" onclick="switchTab('feb',event)">2026년 2월</div>
   </div>
 
+  <!-- ===== 6월 패널 ===== -->
+  <div class="report-panel active" id="panel-jun">
+
+    <div class="summary-band">
+      <div class="band-title">MONTHLY SUMMARY</div>
+      <div class="band-month">2026년 6월 마케팅 결과보고</div>
+      <div class="band-points">
+        <div class="band-point"><div class="dot"></div><p><strong>콘텐츠 7건 발행</strong> — 블로그 6건과 홈페이지 1건을 발행해 월 목표 4건 대비 175%를 달성했습니다.</p></div>
+        <div class="band-point"><div class="dot"></div><p><strong>소아치과·사랑니 키워드 집중</strong> — 아이 치아관리, 충치 예방, 사랑니 통증·발치 후 관리처럼 실제 검색 의도가 분명한 주제로 구성했습니다.</p></div>
+        <div class="band-point"><div class="dot"></div><p><strong>지역 검색 소재 확장</strong> — 창원·성산구·가음동 키워드를 콘텐츠에 연결해 지역 기반 검색 노출을 보강했습니다.</p></div>
+      </div>
+    </div>
+
+    <div class="performance-flow">
+      <div class="flow-node">
+        <div class="flow-kicker">월간 발행</div>
+        <div class="flow-value">7건</div>
+        <div class="flow-label">6월 전체 콘텐츠</div>
+      </div>
+      <div class="flow-node">
+        <div class="flow-kicker">블로그</div>
+        <div class="flow-value">6건</div>
+        <div class="flow-label">검색 보조 콘텐츠</div>
+      </div>
+      <div class="flow-node">
+        <div class="flow-kicker">홈페이지</div>
+        <div class="flow-value">1건</div>
+        <div class="flow-label">사이트 내 심화 콘텐츠</div>
+      </div>
+      <div class="flow-node">
+        <div class="flow-kicker">목표 달성</div>
+        <div class="flow-value">175%</div>
+        <div class="flow-label">목표 4건 대비</div>
+      </div>
+    </div>
+
+    <div class="metrics-grid">
+      <div class="metric-card highlight">
+        <div class="mc-label">콘텐츠 목표</div>
+        <div class="mc-value">7 / 4</div>
+        <div class="mc-sub">월 목표 초과 달성</div>
+      </div>
+      <div class="metric-card">
+        <div class="mc-label">소아치과 계열</div>
+        <div class="mc-value">4건</div>
+        <div class="mc-sub">아이 치아·충치·치태관리</div>
+      </div>
+      <div class="metric-card">
+        <div class="mc-label">사랑니 계열</div>
+        <div class="mc-value">3건</div>
+        <div class="mc-sub">통증·발치·어금니 영향</div>
+      </div>
+      <div class="metric-card">
+        <div class="mc-label">지역 키워드</div>
+        <div class="mc-value" style="font-size:22px;">창원·성산구·가음동</div>
+        <div class="mc-sub">지역 검색 접점 보강</div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="section-card">
+        <div class="section-header">
+          <div class="icon icon-gold">📊</div>
+          <h3>6월 콘텐츠 구성</h3>
+        </div>
+        <div class="section-body">
+          <div style="margin-bottom:12px;">
+            <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin-bottom:5px;"><span>소아치과·어린이 치아관리</span><span style="color:var(--accent);font-weight:900;">4건</span></div>
+            <div style="background:#f0f0f0;border-radius:4px;height:10px;"><div style="background:var(--accent);height:10px;border-radius:4px;width:57%;"></div></div>
+          </div>
+          <div style="margin-bottom:12px;">
+            <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin-bottom:5px;"><span>사랑니·발치 관리</span><span style="color:var(--primary);font-weight:900;">3건</span></div>
+            <div style="background:#f0f0f0;border-radius:4px;height:10px;"><div style="background:var(--primary);height:10px;border-radius:4px;width:43%;"></div></div>
+          </div>
+          <div style="margin-bottom:16px;">
+            <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin-bottom:5px;"><span>홈페이지 심화 콘텐츠</span><span style="color:var(--blue);font-weight:900;">1건</span></div>
+            <div style="background:#f0f0f0;border-radius:4px;height:10px;"><div style="background:var(--blue);height:10px;border-radius:4px;width:14%;"></div></div>
+          </div>
+          <div class="status-item">
+            <div class="status-dot dot-green"></div>
+            <p>6월은 단순 발행량보다 <strong>소아치과와 사랑니 두 축을 분명히 잡아 검색 의도를 나눈 점</strong>이 핵심입니다.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-header">
+          <div class="icon icon-blue">🔎</div>
+          <h3>검색 연결 키워드</h3>
+        </div>
+        <div class="section-body">
+          <div style="background:var(--accent-light);border:1px solid var(--accent);border-radius:12px;padding:16px 18px;">
+            <div style="font-size:12px;font-weight:800;color:#065f46;margin-bottom:12px;">6월 집중 키워드 묶음</div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;">
+              <span style="background:#fff;border:1.5px solid var(--accent);color:#065f46;font-size:12px;font-weight:700;padding:5px 12px;border-radius:8px;">창원소아치과</span>
+              <span style="background:#fff;border:1.5px solid var(--accent);color:#065f46;font-size:12px;font-weight:700;padding:5px 12px;border-radius:8px;">성산구 소아치과</span>
+              <span style="background:#fff;border:1.5px solid var(--accent);color:#065f46;font-size:12px;font-weight:700;padding:5px 12px;border-radius:8px;">가음동 소아치과</span>
+              <span style="background:#fff;border:1.5px solid var(--accent);color:#065f46;font-size:12px;font-weight:700;padding:5px 12px;border-radius:8px;">창원사랑니</span>
+              <span style="background:#fff;border:1.5px solid var(--accent);color:#065f46;font-size:12px;font-weight:700;padding:5px 12px;border-radius:8px;">성산구 사랑니</span>
+              <span style="background:#fff;border:1.5px solid var(--border);color:var(--text);font-size:12px;font-weight:600;padding:5px 12px;border-radius:8px;">어린이 치태관리</span>
+              <span style="background:#fff;border:1.5px solid var(--border);color:var(--text);font-size:12px;font-weight:600;padding:5px 12px;border-radius:8px;">불소도포</span>
+            </div>
+          </div>
+          <div class="status-item" style="margin-top:12px;">
+            <div class="status-dot dot-gold"></div>
+            <p>지역명과 진료 주제를 함께 묶어, 병원명 검색이 아닌 <strong>증상·진료 기반 탐색</strong>에서도 이고치과를 발견할 수 있도록 구성했습니다.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-header">
+        <div class="icon icon-blue">📝</div>
+        <h3>6월 발행 콘텐츠 <span class="count-chip">7건</span></h3>
+      </div>
+      <div class="section-body" style="padding:0;">
+        <table class="content-table">
+          <thead>
+            <tr>
+              <th>#</th><th>발행일</th><th>제목</th><th>채널</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td style="color:var(--muted);white-space:nowrap;">6/6</td><td>창원소아치과, 아이 치아 교환기에는 무엇을 확인해야 할까</td><td><span class="tag tag-blog">블로그</span></td></tr>
+            <tr><td>2</td><td style="color:var(--muted);white-space:nowrap;">6/6</td><td>성산구 소아치과, 유치 충치를 방치하면 안 되는 이유</td><td><span class="tag tag-blog">블로그</span></td></tr>
+            <tr><td>3</td><td style="color:var(--muted);white-space:nowrap;">6/10</td><td>창원사랑니, 사랑니 통증이 반복될 때 확인해야 할 점</td><td><span class="tag tag-blog">블로그</span></td></tr>
+            <tr><td>4</td><td style="color:var(--muted);white-space:nowrap;">6/12</td><td>성산구 사랑니, 사랑니가 앞 어금니에 영향을 줄 수 있는 경우</td><td><span class="tag tag-blog">블로그</span></td></tr>
+            <tr><td>5</td><td style="color:var(--muted);white-space:nowrap;">6/12</td><td>창원 사랑니, 발치 후 붓기와 통증 관리는 어떻게 해야 할까</td><td><span class="tag tag-blog">블로그</span></td></tr>
+            <tr><td>6</td><td style="color:var(--muted);white-space:nowrap;">6/17</td><td>가음동 소아치과, 아이 충치 예방은 언제부터 시작할까요?</td><td><span class="tag tag-blog">블로그</span></td></tr>
+            <tr><td>7</td><td style="color:var(--muted);white-space:nowrap;">6/23</td><td>성산구 소아치과 | 어린이 치태관리와 불소도포</td><td><span class="tag tag-homepage">홈페이지</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div style="background:var(--primary);border-radius:16px;padding:28px 32px;margin-bottom:28px;color:#fff;">
+      <div style="font-size:13px;color:rgba(255,255,255,0.5);font-weight:600;letter-spacing:0.5px;margin-bottom:6px;">NEXT MONTH PLAN</div>
+      <div style="font-size:20px;font-weight:800;color:var(--accent);margin-bottom:20px;">7월 중점 방향</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;">
+        <div style="display:flex;gap:10px;align-items:flex-start;">
+          <div style="width:24px;height:24px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;margin-top:1px;">1</div>
+          <p style="font-size:14px;line-height:1.6;color:rgba(255,255,255,0.85);">소아치과 콘텐츠는 충치 예방·교정 전 관리·불소도포처럼 보호자가 검색하는 세부 주제로 확장합니다.</p>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start;">
+          <div style="width:24px;height:24px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;margin-top:1px;">2</div>
+          <p style="font-size:14px;line-height:1.6;color:rgba(255,255,255,0.85);">사랑니 콘텐츠는 발치 전후 관리, 통증 구분, 내원 판단 기준으로 이어지는 구조를 유지합니다.</p>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start;">
+          <div style="width:24px;height:24px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0;margin-top:1px;">3</div>
+          <p style="font-size:14px;line-height:1.6;color:rgba(255,255,255,0.85);">홈페이지 순위작업은 발행 콘텐츠와 검색 유입 흐름을 함께 확인하며 보완합니다.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
   <!-- ===== 5월 패널 ===== -->
-  <div class="report-panel active" id="panel-may">
+  <div class="report-panel" id="panel-may">
 
     <!-- 요약 배너 -->
     <div class="summary-band">
