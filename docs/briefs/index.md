@@ -16,3 +16,9 @@
 - 새 거래처를 추가할 때는 `templates/client-brief-template.md`를 복사해 `clients/{clientId}.md`를 만든다.
 - 원본 자료를 추가하면 해당 거래처 브리프의 `자료 출처`와 `변경 이력`에 링크를 남긴다.
 - 의료/시술 거래처는 `docs/compliance/` 기준을 항상 함께 적용한다.
+
+## 거래처별 프롬프트팩
+
+| clientId | 프롬프트팩 | 용도 |
+|----------|------------|------|
+| `kyunghee` | [prompts/kyunghee-prompts.md](prompts/kyunghee-prompts.md) | 365경희부부한의원 피부클리닉 채널별 초안 작성/검수 |

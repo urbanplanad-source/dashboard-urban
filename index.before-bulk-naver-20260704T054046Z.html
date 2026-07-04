@@ -3859,8 +3859,6 @@
     const [showAdd,       setShowAdd]       = useState(false);
     const [copied,        setCopied]        = useState(null);
     const [commandCopied, setCommandCopied] = useState(null);
-    const [bulkCommandCopied, setBulkCommandCopied] = useState(false);
-    const [selectedDraftIds, setSelectedDraftIds] = useState([]);
     const [addForm,       setAddForm]       = useState({ clientId:'', channel:'홈페이지', title:'', content:'', memo:'' });
     const [publishDraft,  setPublishDraft]  = useState(null);
     const [publishForm,   setPublishForm]   = useState({ clientId:'', jobId:'', title:'', url:'', channel:'홈페이지', publishedAt:today() });
@@ -3889,7 +3887,6 @@
     function loadDrafts() {
       setLoading(true);
       setExpandedId(null);
-      setSelectedDraftIds([]);
       fetch(API_URL + '?action=draftsList')
         .then(r => r.json())
         .then(d => {
@@ -3923,16 +3920,12 @@
       acc[s] = drafts.filter(d => normalizeDraftStatus(d.status) === s).length;
       return acc;
     }, {});
-    const approvedFiltered = filtered.filter(d => normalizeDraftStatus(d.status) === 'approved');
-    const selectedDraftIdSet = new Set(selectedDraftIds);
-    const selectedApprovedDrafts = approvedFiltered.filter(d => selectedDraftIdSet.has(d.draftId));
 
     // ── 파이프라인 status 변경 (Sheets updateDraft 동기화) ──
     function changeDraftStatus(draft, status) {
       const next = normalizeDraftStatus(status);
       const prevStatus = normalizeDraftStatus(draft.status);
       setDrafts(prev => prev.map(d => d.draftId === draft.draftId ? { ...d, status: next } : d));
-      if (next !== 'approved') setSelectedDraftIds(prev => prev.filter(id => id !== draft.draftId));
       fetch(API_URL, {
         method: 'POST', redirect: 'follow',
         body: JSON.stringify({ action: 'updateDraft', draftId: draft.draftId, status: next })
@@ -4002,61 +3995,9 @@
 
     function buildNaverTempSaveCommand(draftId) {
       return [
-        `cd /d "%USERPROFILE%\\Desktop\\${'\uAC1C\uBC1C \uC791\uC5C5'}\\naver-writer"`,
+        'cd /d "%USERPROFILE%\\Desktop\\개발 작업\\naver-writer"',
         `npm.cmd run draft:dashboard -- --draft-id ${draftId}`
       ].join('\r\n');
-    }
-
-    function buildNaverBulkTempSaveCommand(draftIds) {
-      return [
-        `cd /d "%USERPROFILE%\\Desktop\\${'\uAC1C\uBC1C \uC791\uC5C5'}\\naver-writer"`,
-        `npm.cmd run drafts:dashboard -- --draft-ids ${draftIds.join(',')}`
-      ].join('\r\n');
-    }
-
-    function copyCommandText(command, onCopied) {
-      const done = () => {
-        onCopied();
-        setTimeout(() => { setCommandCopied(null); setBulkCommandCopied(false); }, 2000);
-      };
-      navigator.clipboard.writeText(command).then(done).catch(() => {
-        const el = document.createElement('textarea');
-        el.value = command; document.body.appendChild(el);
-        el.select(); document.execCommand('copy'); document.body.removeChild(el);
-        done();
-      });
-    }
-
-    function toggleDraftSelection(draftId) {
-      setSelectedDraftIds(prev => prev.includes(draftId)
-        ? prev.filter(id => id !== draftId)
-        : [...prev, draftId]);
-    }
-
-    function toggleAllApprovedSelection() {
-      const approvedIds = approvedFiltered.map(d => d.draftId);
-      const everySelected = approvedIds.length > 0 && approvedIds.every(id => selectedDraftIdSet.has(id));
-      setSelectedDraftIds(prev => {
-        const prevSet = new Set(prev);
-        if (everySelected) {
-          approvedIds.forEach(id => prevSet.delete(id));
-        } else {
-          approvedIds.forEach(id => prevSet.add(id));
-        }
-        return [...prevSet];
-      });
-    }
-
-    function copySelectedNaverCommands() {
-      const ids = selectedApprovedDrafts.map(d => d.draftId);
-      if (!ids.length) { alert('\uC120\uD0DD\uB41C \uC2B9\uC778 \uAE00\uC774 \uC5C6\uC2B5\uB2C8\uB2E4.'); return; }
-      copyCommandText(buildNaverBulkTempSaveCommand(ids), () => setBulkCommandCopied(true));
-    }
-
-    function copyApprovedNaverCommands() {
-      const ids = approvedFiltered.map(d => d.draftId);
-      if (!ids.length) { alert('\uD604\uC7AC \uD544\uD130\uC5D0 \uC2B9\uC778 \uAE00\uC774 \uC5C6\uC2B5\uB2C8\uB2E4.'); return; }
-      copyCommandText(buildNaverBulkTempSaveCommand(ids), () => setBulkCommandCopied(true));
     }
 
     function copyNaverCommand(draft) {
@@ -4065,13 +4006,21 @@
         return;
       }
       const command = buildNaverTempSaveCommand(draft.draftId);
-      copyCommandText(command, () => setCommandCopied(draft.draftId));
+      navigator.clipboard.writeText(command).then(() => {
+        setCommandCopied(draft.draftId);
+        setTimeout(() => setCommandCopied(null), 2000);
+      }).catch(() => {
+        const el = document.createElement('textarea');
+        el.value = command; document.body.appendChild(el);
+        el.select(); document.execCommand('copy'); document.body.removeChild(el);
+        setCommandCopied(draft.draftId);
+        setTimeout(() => setCommandCopied(null), 2000);
+      });
     }
 
     function handleDelete(draftId) {
       if (!confirm('이 초안을 삭제하시겠습니까?')) return;
       setDrafts(prev => prev.filter(d => d.draftId !== draftId));
-      setSelectedDraftIds(prev => prev.filter(id => id !== draftId));
       fetch(API_URL, { method:'POST', redirect:'follow',
         body: JSON.stringify({ action:'deleteDraft', draftId })
       }).catch(e => console.warn('deleteDraft 오류:', e));
@@ -4310,25 +4259,6 @@
         </div>
 
         {/* 카운트 */}
-        {/* bulk naver temp-save CMD */}
-        <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap',marginBottom:12,padding:'10px 12px',background:'var(--surface)',border:'1px solid var(--border)',borderRadius:10}}>
-          <button onClick={toggleAllApprovedSelection}
-            disabled={!approvedFiltered.length}
-            style={{display:'inline-flex',alignItems:'center',gap:5,background:approvedFiltered.length?'#f3f4f6':'var(--border-2)',color:approvedFiltered.length?'var(--ink)':'var(--text-3)',border:'1px solid var(--border)',borderRadius:7,padding:'7px 11px',fontSize:12,fontWeight:800,cursor:approvedFiltered.length?'pointer':'not-allowed',fontFamily:'inherit'}}>
-            <Icon name="check" size={12} /> {'\uD604\uC7AC \uC2B9\uC778\uAE00 \uC120\uD0DD'}
-          </button>
-          <button onClick={copySelectedNaverCommands}
-            disabled={!selectedApprovedDrafts.length}
-            style={{display:'inline-flex',alignItems:'center',gap:5,background:selectedApprovedDrafts.length?(bulkCommandCopied?'var(--green)':'var(--purple)'):'var(--border-2)',color:selectedApprovedDrafts.length?'#fff':'var(--text-3)',border:'none',borderRadius:7,padding:'7px 12px',fontSize:12,fontWeight:900,cursor:selectedApprovedDrafts.length?'pointer':'not-allowed',fontFamily:'inherit'}}>
-            <Icon name={bulkCommandCopied ? 'check' : 'copy'} size={12} /> {bulkCommandCopied ? '\uC77C\uAD04 \uBA85\uB839 \uBCF5\uC0AC\uB428' : '\uC120\uD0DD \uC77C\uAD04 CMD \uBCF5\uC0AC'}
-          </button>
-          <button onClick={copyApprovedNaverCommands}
-            disabled={!approvedFiltered.length}
-            style={{display:'inline-flex',alignItems:'center',gap:5,background:approvedFiltered.length?'var(--navy)':'var(--border-2)',color:approvedFiltered.length?'#fff':'var(--text-3)',border:'none',borderRadius:7,padding:'7px 12px',fontSize:12,fontWeight:800,cursor:approvedFiltered.length?'pointer':'not-allowed',fontFamily:'inherit'}}>
-            <Icon name="copy" size={12} /> {'\uD604\uC7AC \uC2B9\uC778\uAE00 \uC804\uCCB4 CMD \uBCF5\uC0AC'}
-          </button>
-          <span style={{fontSize:12,color:'var(--text-3)',fontWeight:700}}>{'\uC120\uD0DD '} {selectedApprovedDrafts.length}{'\uAC74 / \uD604\uC7AC \uC2B9\uC778 '} {approvedFiltered.length}{'\uAC74'}</span>
-        </div>
         <div style={{fontSize:12, color:'var(--text-3)', marginBottom:12}}>
           {loading ? '불러오는 중...' : `총 ${filtered.length}건${filterClient||filterChannel ? ' (필터 적용됨)' : ''}`}
         </div>
@@ -4361,9 +4291,6 @@
                   {/* 카드 헤더 */}
                   <div style={{display:'flex', alignItems:'center', gap:10, padding:'14px 18px', borderBottom: isExpanded ? '1px solid #f3f4f6' : 'none', cursor:'pointer'}}
                     onClick={() => toggleDraft(draft)}>
-                    <label onClick={e => e.stopPropagation()} title={canCopyNaverCommand ? '\uC77C\uAD04 \uC784\uC2DC\uC800\uC7A5 \uC120\uD0DD' : '\uC2B9\uC778 \uC0C1\uD0DC\uB9CC \uC120\uD0DD\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4'} style={{display:'inline-flex',alignItems:'center',justifyContent:'center',width:24,height:24,flexShrink:0,cursor:canCopyNaverCommand?'pointer':'not-allowed',opacity:canCopyNaverCommand?1:0.35}}>
-                      <input type="checkbox" checked={selectedDraftIds.includes(draft.draftId)} disabled={!canCopyNaverCommand} onChange={() => toggleDraftSelection(draft.draftId)} />
-                    </label>
                     <div style={{flex:1, minWidth:0}}>
                       <div style={{display:'flex', alignItems:'center', gap:8, marginBottom:4, flexWrap:'wrap'}}>
                         <span style={{background:sMeta.bg, color:sMeta.color, fontSize:11, fontWeight:800, borderRadius:6, padding:'2px 9px'}}>{sMeta.label}</span>

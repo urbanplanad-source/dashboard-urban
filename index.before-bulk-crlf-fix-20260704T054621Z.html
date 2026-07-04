@@ -4004,14 +4004,14 @@
       return [
         `cd /d "%USERPROFILE%\\Desktop\\${'\uAC1C\uBC1C \uC791\uC5C5'}\\naver-writer"`,
         `npm.cmd run draft:dashboard -- --draft-id ${draftId}`
-      ].join('\r\n');
+      ].join('\\r\\n');
     }
 
     function buildNaverBulkTempSaveCommand(draftIds) {
       return [
         `cd /d "%USERPROFILE%\\Desktop\\${'\uAC1C\uBC1C \uC791\uC5C5'}\\naver-writer"`,
         `npm.cmd run drafts:dashboard -- --draft-ids ${draftIds.join(',')}`
-      ].join('\r\n');
+      ].join('\\r\\n');
     }
 
     function copyCommandText(command, onCopied) {
