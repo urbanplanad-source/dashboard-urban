@@ -5791,23 +5791,14 @@
                   ? [...sheetSubs, ...pendingLocalSubs]
                   : localSubs;
 
-                // 2) 필수(메인): Sheets에서 서브/순위 제거 후 사용
+                // 2) 필수(메인): Sheets에서 서브/순위 제거 후 그대로 사용
+                //    월간 초기화 후 로컬 캐시의 이전 달 카운트/마감일이 되살아나지 않도록 한다.
                 const sheetsMain = hasSheetJobs
                   ? sheetJobs.filter(sj => !isSubLike(sj))
                   : null;
 
                 const mainBase = (sheetsMain && sheetsMain.length > 0)
-                  ? sheetsMain.map(sj => {
-                      const lj = (prev.monthlyJobs || []).find(j => j.jobId === sj.jobId);
-                      if (!lj) return sj;
-                      return {
-                        ...sj,
-                        dueDate:      lj.dueDate ?? sj.dueDate,
-                        currentCount: (sj.currentCount != null && lj.currentCount != null)
-                          ? Math.max(Number(sj.currentCount), Number(lj.currentCount))
-                          : sj.currentCount ?? lj.currentCount,
-                      };
-                    })
+                  ? sheetsMain
                   : (prev.monthlyJobs || []).filter(j => !isSubLike(j));
 
                 // 3) DEFAULT_DATA 메인 업무 중 Sheets/로컬 누락분 보완
