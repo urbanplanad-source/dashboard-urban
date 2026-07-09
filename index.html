@@ -391,6 +391,10 @@
       return localDateString(v);
     }
     const s = String(v).trim();
+    if(/^\d{4}-\d{2}-\d{2}T/.test(s)) {
+      const d = new Date(s);
+      if(!isNaN(d)) return localDateString(d);
+    }
     const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
     if(m) return `${m[1]}-${m[2]}-${m[3]}`;
     const d = new Date(s);
@@ -402,6 +406,12 @@
     const m = String(d || v || '').match(/^(\d{4})-(\d{2})/);
     return m ? `${m[1]}-${m[2]}` : '';
   };
+  const normalizeExpense = (e) => ({
+    ...e,
+    date: normalizeDate(e?.date),
+    amount: Number(e?.amount) || 0,
+    isRecurring: e?.isRecurring === true || e?.isRecurring === 'true' || e?.isRecurring === 'TRUE',
+  });
   const normalizePostLog = (p) => {
     const channel = p.channel || p[''] || p.Channel || p['채널'] || null;
     return {
@@ -667,11 +677,7 @@
         contractStart: normalizeDate(c.contractStart),
         contractRenew: normalizeDate(c.contractRenew),
       })),
-      expenses: (d.expenses || []).map(e => ({
-        ...e,
-        amount:      Number(e.amount) || 0,
-        isRecurring: e.isRecurring === true || e.isRecurring === 'true' || e.isRecurring === 'TRUE',
-      })),
+      expenses: (d.expenses || []).map(normalizeExpense),
       drafts: (d.drafts || []),
       consults: (d.consults || []).map(normalizeConsult),
       clientBriefs: normalizeClientBriefMap(d.clientBriefs || d.clientKnowledge || []),
@@ -869,15 +875,6 @@
       .sort((a,b) => b.blockerCount - a.blockerCount || String(a.client.clientName).localeCompare(String(b.client.clientName), 'ko'));
   }
 
-  const fixedExpenseSignature = (e) => [
-    e.category || '',
-    e.description || '',
-    String(Number(e.amount) || 0),
-    e.clientId || '',
-    e.payMethod || '',
-    e.memo || '',
-  ].join('|');
-
   function getMonthlyResetPreview(data) {
     const backupMonth = prevMonth();
     const targetMonth = nowMonth();
@@ -886,16 +883,6 @@
     const carryoverSubs = allSubs.filter(job => !isCompletedSubJob(job));
     const unmetRequired = (data.monthlyJobs || [])
       .filter(job => job.kind === '필수' && !isJobDone(job));
-    const sourceFixed = (data.expenses || [])
-      .filter(expense => normalizeMonth(expense.date) === backupMonth)
-      .filter(expense => expense.type === '고정비');
-    const targetFixedKeys = new Set(
-      (data.expenses || [])
-        .filter(expense => normalizeMonth(expense.date) === targetMonth)
-        .filter(expense => expense.type === '고정비')
-        .map(fixedExpenseSignature)
-    );
-    const fixedToCopy = sourceFixed.filter(expense => !targetFixedKeys.has(fixedExpenseSignature(expense)));
     const consultTargets = ['btskin', 'belrmon'];
     const consultBackups = consultTargets.map(clientId => {
       const raw = safeStorage.getItem('consult-v1-' + clientId);
@@ -909,8 +896,6 @@
       completedSubs,
       carryoverSubs,
       unmetRequired,
-      fixedToCopy,
-      fixedCopyTotal: fixedToCopy.reduce((sum, expense) => sum + Number(expense.amount || 0), 0),
       consultBackups,
     };
   }
@@ -1902,16 +1887,9 @@
             </div>
 
             <div style={{background:'var(--surface-2)',border:'1px solid var(--border)',borderRadius:10,padding:12}}>
-              <div style={{fontSize:12,fontWeight:900,color:'var(--ink)'}}>복사될 전월 고정비</div>
-              <div style={{display:'flex',alignItems:'baseline',gap:8,marginTop:2}}>
-                <span style={{fontSize:22,fontWeight:900,color:'var(--amber)'}}>{preview.fixedToCopy.length}건</span>
-                <span style={{fontSize:12,fontWeight:800,color:'var(--text-2)'}}>{fmtMoney(preview.fixedCopyTotal)}</span>
-              </div>
-              {sampleList(preview.fixedToCopy, expense => (
-                <div key={`${expense.date}-${expense.description}-${expense.amount}`} style={{fontSize:12,color:'var(--text)',fontWeight:700,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>
-                  {expense.description || expense.category} · {fmtMoney(expense.amount)}
-                </div>
-              ), '복사될 고정비 없음')}
+              <div style={{fontSize:12,fontWeight:900,color:'var(--ink)'}}>고정비 자동 적용</div>
+              <div style={{fontSize:22,fontWeight:900,color:'var(--text-2)',marginTop:2}}>안 함</div>
+              <div style={{fontSize:12,color:'var(--text-3)',fontWeight:700,marginTop:8}}>수동 적용 대기</div>
             </div>
 
             <div style={{background:'var(--surface-2)',border:'1px solid var(--border)',borderRadius:10,padding:12}}>
@@ -4520,7 +4498,11 @@
 
   const REV_KEY = 'rev-data-v1';
   function loadRevData() {
-    try { return JSON.parse(safeStorage.getItem(REV_KEY)) || getDefaultRevData(); } catch { return getDefaultRevData(); }
+    try {
+      const parsed = JSON.parse(safeStorage.getItem(REV_KEY));
+      const data = parsed || getDefaultRevData();
+      return { ...data, expenses: (data.expenses || []).map(normalizeExpense) };
+    } catch { return getDefaultRevData(); }
   }
   function saveRevData(d) { try { safeStorage.setItem(REV_KEY, JSON.stringify(d)); } catch {} }
 
@@ -4702,7 +4684,9 @@
       .filter(e=>e.date&&e.date.startsWith(selMonth))
       .sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')) || String(b.expenseId||'').localeCompare(String(a.expenseId||'')));
     const prevM = (()=>{ const [y,m]=selMonth.split('-').map(Number); const d=new Date(y, m-1, 1); d.setMonth(d.getMonth()-1); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; })();
+    const nextM = (()=>{ const [y,m]=selMonth.split('-').map(Number); const d=new Date(y, m-1, 1); d.setMonth(d.getMonth()+1); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; })();
     const prevExpenses = allExpenses.filter(e=>e.date&&e.date.startsWith(prevM));
+    const nextExpenses = allExpenses.filter(e=>normalizeMonth(e.date)===nextM);
     const scopeLabels = { all:'전체', client:'거래처 직접비', own:'자체 지출', recurring:'반복비' };
     const sortExpenseList = (list) => [...list].sort((a,b)=>{
       if (expenseSortMode==='amount-desc') {
@@ -4730,6 +4714,15 @@
     const visibleTotalCosts = visibleExpenses.reduce((s,e)=>s+Number(e.amount||0),0);
     const visibleFixedCosts = visibleExpenses.filter(e=>e.type==='고정비').reduce((s,e)=>s+Number(e.amount||0),0);
     const visibleVarCosts   = visibleExpenses.filter(e=>e.type==='변동비').reduce((s,e)=>s+Number(e.amount||0),0);
+    const carryoverExpenseKey = e => [
+      e.category || '',
+      String(e.description || '').trim().toLowerCase(),
+      String(Number(e.amount) || 0),
+      e.clientId || '',
+      e.payMethod || '',
+      e.memo || '',
+    ].join('|');
+    const nextFixedExpenseKeys = new Set(nextExpenses.filter(e=>e.type==='고정비').map(carryoverExpenseKey));
     const unassignedExpenses = selExpenses.filter(e=>!e.clientId);
     const unassignedCosts = unassignedExpenses.reduce((s,e)=>s+Number(e.amount||0),0);
     const sharedCosts = unassignedCosts;
@@ -4920,6 +4913,55 @@
       else safeStorage.removeItem(recurringReviewKey);
       setRecurringReviewAck(done);
     }
+    function getNextMonthExpenseDate(expense) {
+      const sourceDate = normalizeDate(expense?.date);
+      const rawDay = Number(sourceDate.split('-')[2]) || 1;
+      const [yy, mm] = nextM.split('-').map(Number);
+      const lastDay = new Date(yy, mm, 0).getDate();
+      return `${nextM}-${pad2(Math.min(Math.max(rawDay, 1), lastDay))}`;
+    }
+    function isFixedExpenseAppliedNextMonth(expense) {
+      return expense?.type === '고정비' && nextFixedExpenseKeys.has(carryoverExpenseKey(expense));
+    }
+    async function applyFixedExpenseToNextMonth(expense) {
+      if (!expense || expense.type !== '고정비') return;
+      if (isFixedExpenseAppliedNextMonth(expense)) {
+        alert(`${fmtMonth(nextM)}에 같은 고정비가 이미 있습니다.`);
+        return;
+      }
+      const label = expense.description || expense.category || '고정비';
+      if (!confirm(`${label} 항목을 ${fmtMonth(nextM)}에 적용하시겠습니까?`)) return;
+
+      const tempId = 'exp-' + Date.now().toString(36);
+      const newExp = normalizeExpense({
+        expenseId: tempId,
+        date: getNextMonthExpenseDate(expense),
+        category: expense.category || '기타비용',
+        description: expense.description || '',
+        amount: Number(expense.amount) || 0,
+        type: '고정비',
+        clientId: expense.clientId || '',
+        payMethod: expense.payMethod || '카드',
+        isRecurring: expense.isRecurring === true,
+        memo: expense.memo || '',
+      });
+
+      mutRev(prev=>({...prev, expenses:[...prev.expenses, newExp]}));
+      try {
+        const res = await fetch(API_URL, {
+          method:'POST', redirect:'follow',
+          body: JSON.stringify({ action:'addExpense', ...newExp })
+        });
+        const result = await readApiJson(res, 'addExpense');
+        if (!result.success) throw new Error(result.error || 'addExpense 실패');
+        if (result.expenseId) {
+          mutRev(prev=>({...prev, expenses:prev.expenses.map(e=>e.expenseId===tempId ? { ...newExp, expenseId:result.expenseId } : e)}));
+        }
+      } catch (e) {
+        mutRev(prev=>({...prev, expenses:prev.expenses.filter(item=>item.expenseId!==tempId)}));
+        alert(`고정비 적용에 실패했습니다.\n\n${e.message || e}`);
+      }
+    }
 
     // ── 비용 CRUD (로컬 + Sheets 동기화) ──
     function addExpense() {
@@ -4957,7 +4999,7 @@
 
     const iS = {padding:'5px 8px',border:'1px solid #dcdad4',borderRadius:6,fontSize:12,fontFamily:'inherit',outline:'none',background:'var(--surface)'};
     const profitGridCols = '1.3fr 74px 100px 110px 100px 110px 110px 1fr 92px';
-    const expGridCols = '100px 120px 1fr 120px 76px 130px 88px 58px 1fr 96px';
+    const expGridCols = '100px 120px 1fr 120px 76px 130px 88px 58px 1fr 132px';
     const diffColor = profitDiff>=0?'var(--green)':'var(--red)';
 
     return (
@@ -5428,6 +5470,8 @@
               )}
               {visibleExpenses.map((e,idx)=>{
                 const isEditing = editingEid===e.expenseId;
+                const canApplyNextMonth = e.type === '고정비';
+                const appliedNextMonth = canApplyNextMonth && isFixedExpenseAppliedNextMonth(e);
                 return (
                 <div key={e.expenseId}
                   style={{borderBottom:idx<visibleExpenses.length-1?'1px solid #f3f4f6':'none',display:'grid',gridTemplateColumns:expGridCols,gap:8,alignItems:'center',padding:'10px 20px',transition:'background 0.12s',background:isEditing?'#fffbeb':undefined}}
@@ -5474,7 +5518,14 @@
                       <span style={{fontSize:11,color:'var(--text-2)'}}>{e.payMethod}</span>
                       <span style={{fontSize:10,color:e.isRecurring?'var(--purple)':'#d1d5db',fontWeight:e.isRecurring?700:400}}>{e.isRecurring?<Icon name="refresh" size={11} />:'—'}</span>
                       <span style={{fontSize:11,color:'var(--text-3)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{e.memo||'—'}</span>
-                      <div style={{display:'flex',gap:3,justifyContent:'flex-end'}}>
+                      <div style={{display:'flex',gap:3,justifyContent:'flex-end',alignItems:'center'}}>
+                        {canApplyNextMonth&&(
+                          <button onClick={()=>applyFixedExpenseToNextMonth(e)} disabled={appliedNextMonth}
+                            title={appliedNextMonth ? `${fmtMonth(nextM)}에 같은 고정비가 있습니다.` : `${fmtMonth(nextM)}에 적용`}
+                            style={{background:appliedNextMonth?'var(--surface-2)':'#eef6ff',color:appliedNextMonth?'var(--text-3)':'var(--blue)',border:'1px solid var(--border)',borderRadius:5,padding:'4px 6px',fontSize:10,fontWeight:800,cursor:appliedNextMonth?'default':'pointer',fontFamily:'inherit',whiteSpace:'nowrap'}}>
+                            {appliedNextMonth?'적용됨':'다음달'}
+                          </button>
+                        )}
                         <button onClick={()=>startEditExp(e)} className="btn-icon" style={{fontSize:13}}>✎</button>
                         <button onClick={()=>deleteExp(e.expenseId)} className="btn-icon" style={{fontSize:13,color:'#ef4444'}}>✕</button>
                       </div>
@@ -5884,53 +5935,7 @@
         };
       };
 
-      const targetExpenseMonth = nowMonth();
-      const sourceExpenseMonth = prevMonth();
-      const copyExpenseDateToMonth = (date, targetMonth) => {
-        const [, , rawDay] = String(date || '').split('-');
-        const [yy, mm] = targetMonth.split('-').map(Number);
-        const lastDay = new Date(yy, mm, 0).getDate();
-        const day = Math.min(Math.max(Number(rawDay) || 1, 1), lastDay);
-        return `${targetMonth}-${pad2(day)}`;
-      };
-      const fixedExpenseKey = (e) => [
-        e.category || '',
-        e.description || '',
-        String(Number(e.amount) || 0),
-        e.clientId || '',
-        e.payMethod || '',
-        e.memo || '',
-      ].join('|');
-      const copyFixedExpensesToMonth = async (expenses, targetMonth) => {
-        const sourceFixed = (expenses || [])
-          .filter(e => e.date && e.date.startsWith(sourceExpenseMonth))
-          .filter(e => e.type === '고정비');
-        const targetKeys = new Set(
-          (expenses || [])
-            .filter(e => e.date && e.date.startsWith(targetMonth))
-            .filter(e => e.type === '고정비')
-            .map(fixedExpenseKey)
-        );
-        const copied = [];
-        for (const src of sourceFixed) {
-          if (targetKeys.has(fixedExpenseKey(src))) continue;
-          const newExpense = {
-            date: copyExpenseDateToMonth(src.date, targetMonth),
-            category: src.category || '기타비용',
-            description: src.description || '',
-            amount: Number(src.amount) || 0,
-            type: '고정비',
-            clientId: src.clientId || '',
-            payMethod: src.payMethod || '카드',
-            isRecurring: src.isRecurring === true || src.isRecurring === 'true' || src.isRecurring === 'TRUE',
-            memo: src.memo || '',
-          };
-          const result = await postJson({ action:'addExpense', ...newExpense });
-          copied.push({ expenseId:result.expenseId || `exp-copy-${Date.now().toString(36)}-${copied.length}`, ...newExpense });
-          targetKeys.add(fixedExpenseKey(newExpense));
-        }
-        return copied;
-      };
+      const targetMonth = nowMonth();
 
       // ── 2) Sheets 초기화 먼저 완료 확인 ──
       // 월초에 전월 보고서를 마친 뒤 누르는 전제이므로, 새 운영월은 현재 월(nowMonth)이다.
@@ -5952,8 +5957,6 @@
 
       setSyncStatus('loading');
       let afterReset = null;
-      let copiedFixedExpenses = [];
-      let fixedCopyError = null;
       try {
         const consultBodies = newHistories
           .flatMap(h => (h.records || []).map(record => consultSheetBody(h.clientId, record, h.month)))
@@ -5961,20 +5964,10 @@
         await Promise.all(consultBodies.map(body => postJson(body)));
 
         await Promise.all(completedServerSubs.map(deleteCompletedSubJob));
-        await postJson({ action: 'monthlyReset', month: targetExpenseMonth });
+        await postJson({ action: 'monthlyReset', month: targetMonth });
 
         // live monthlyReset 내부 구현이 서브업무를 건드리더라도, 미완료 서브업무는 다시 보강한다.
         afterReset = await fetchFromSheets();
-        try {
-          const expensePool = (afterReset.expenses && afterReset.expenses.length)
-            ? afterReset.expenses
-            : (data.expenses || []);
-          copiedFixedExpenses = await copyFixedExpensesToMonth(expensePool, targetExpenseMonth);
-          if (copiedFixedExpenses.length > 0) afterReset = await fetchFromSheets();
-        } catch (e) {
-          fixedCopyError = e;
-          console.error('fixedExpenseCopy 오류:', e);
-        }
 
         const afterIds = new Set((afterReset.monthlyJobs || []).map(j => j.jobId));
         const missingCarryovers = carryoverSubs.filter(j => !j.syncPending && !afterIds.has(j.jobId));
@@ -6049,7 +6042,7 @@
           })),
         expenses: (afterReset && afterReset.expenses && afterReset.expenses.length)
           ? afterReset.expenses
-          : (copiedFixedExpenses.length > 0 ? [...(prev.expenses || []), ...copiedFixedExpenses] : prev.expenses),
+          : prev.expenses,
         postLogs:         [],
         consultHistories: mergeConsultHistories(prev.consultHistories || [], newHistories),
       }));
@@ -6057,13 +6050,8 @@
       const backupMsg = newHistories.length > 0
         ? `\n\n📊 상담 내역 백업 완료:\n` + newHistories.map(h => `  • ${h.clientName}: ${h.summary.total}건`).join('\n')
         : '';
-      const fixedCopyMsg = fixedCopyError
-        ? `\n\n고정비 자동 복사에 실패했습니다. 손익 관리 > 비용 기록에서 ${targetExpenseMonth.replace('-','년 ')}월 고정비를 확인해 주세요.\n오류: ${fixedCopyError.message || fixedCopyError}`
-        : copiedFixedExpenses.length > 0
-          ? `\n\n고정비 ${copiedFixedExpenses.length}건을 ${targetExpenseMonth.replace('-','년 ')}월로 복사했습니다.`
-          : '';
       setSyncStatus('ok');
-      alert('초기화 완료!' + backupMsg + fixedCopyMsg);
+      alert('초기화 완료!' + backupMsg + '\n\n고정비는 자동 적용하지 않습니다.');
     }
 
     // ── 과거 월 라벨 교정 마이그레이션 비활성화 ──
