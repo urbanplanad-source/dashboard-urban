@@ -197,7 +197,7 @@
   <div id="root"></div>
   <script type="text/babel">
 
-  const { useState, useEffect, useMemo, useCallback } = React;
+  const { useState, useEffect, useMemo, useCallback, useRef } = React;
 
   // ═══════════════════════════════════════════════
   //  CONSTANTS
@@ -739,31 +739,35 @@
       mismatch: delta !== 0,
     };
   };
-  const copyTextToClipboard = (text) =>
-    navigator.clipboard?.writeText
-      ? navigator.clipboard.writeText(text).catch(() => {
-          const el = document.createElement('textarea');
-          el.value = text;
-          el.setAttribute('readonly', '');
-          el.style.position = 'fixed';
-          el.style.left = '-9999px';
-          document.body.appendChild(el);
-          el.select();
-          document.execCommand('copy');
-          document.body.removeChild(el);
-        })
-      : new Promise(resolve => {
-          const el = document.createElement('textarea');
-          el.value = text;
-          el.setAttribute('readonly', '');
-          el.style.position = 'fixed';
-          el.style.left = '-9999px';
-          document.body.appendChild(el);
-          el.select();
-          document.execCommand('copy');
-          document.body.removeChild(el);
-          resolve();
-        });
+  async function copyTextToClipboard(text) {
+    if (navigator.clipboard?.writeText) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch (error) {
+        console.warn('Clipboard API 실패, 호환 복사를 시도합니다:', error);
+      }
+    }
+
+    const el = document.createElement('textarea');
+    el.value = String(text ?? '');
+    el.setAttribute('readonly', '');
+    el.style.position = 'fixed';
+    el.style.left = '-9999px';
+    el.style.top = '0';
+    document.body.appendChild(el);
+    try {
+      el.focus();
+      el.select();
+      el.setSelectionRange(0, el.value.length);
+      if (document.execCommand('copy') !== true) {
+        throw new Error('브라우저가 복사 작업을 거부했습니다.');
+      }
+      return true;
+    } finally {
+      document.body.removeChild(el);
+    }
+  }
 
   function buildDailyBriefingText(data) {
     const clientsById = {};
@@ -3811,7 +3815,8 @@
   };
 
   // ── 글 보관함 파이프라인 status (Drafts 시트 status 컬럼과 1:1) ──
-  // growth-team(push) → review → [검토] → approved → naver-writer(임시저장) → staged → [수동 발행] → published
+  // growth-team(push) → review → [검토] → approved → naver-writer(임시저장 성공 후 원본 삭제)
+  // staged는 삭제를 사용하지 않는 수동/레거시 흐름을 위해 유지한다. 실제 발행은 항상 수동이다.
   const DRAFT_STATUSES = ['draft','review','approved','staged','published'];
   const DRAFT_STATUS_META = {
     draft:     { label:'초안',      color:'var(--text-2)', bg:'var(--border-2)' },
@@ -3823,6 +3828,35 @@
   const normalizeDraftStatus = (s) => {
     const v = String(s || '').trim();
     return DRAFT_STATUSES.includes(v) ? v : 'draft';
+  };
+  const SAFE_DRAFT_ID_PATTERN = /^dr-[A-Za-z0-9]+(?:[-_][A-Za-z0-9]+)*$/;
+  const NAVER_BLOG_CHANNEL_KEYS = new Set(['블로그', 'blog', 'naverblog', 'naver-blog', 'naver_blog']);
+  const isSafeDraftId = (draftId) => SAFE_DRAFT_ID_PATTERN.test(String(draftId || '').trim());
+  const isNaverBlogChannel = (channel) => NAVER_BLOG_CHANNEL_KEYS.has(String(channel || '').trim().toLowerCase().replace(/\s+/g, ''));
+  const needsComplianceReview = (draft) => String(draft?.memo || '').toLowerCase().includes('needs_compliance_review');
+  const getNaverCommandBlockReason = (draft) => {
+    if (needsComplianceReview(draft)) return '심의 검토 표시가 있는 글은 승인하거나 CMD로 보낼 수 없습니다.';
+    if (normalizeDraftStatus(draft?.status) !== 'approved') return '서버에 승인 저장이 완료된 글만 CMD로 보낼 수 있습니다.';
+    if (!isNaverBlogChannel(draft?.channel)) return '블로그 채널의 승인 글만 네이버 임시저장 대상으로 선택할 수 있습니다.';
+    if (!isSafeDraftId(draft?.draftId)) return '안전하지 않은 초안 ID라 CMD를 만들 수 없습니다.';
+    return '';
+  };
+  const isNaverCommandEligible = (draft) => !getNaverCommandBlockReason(draft);
+  const requireSafeDraftId = (draftId) => {
+    const value = String(draftId || '').trim();
+    if (!isSafeDraftId(value)) throw new Error(`안전하지 않은 초안 ID입니다: ${value || '(없음)'}`);
+    return value;
+  };
+  const assertUpdateDraftResponse = (result, expectedDraftId) => {
+    const expected = requireSafeDraftId(expectedDraftId);
+    if (!result?.success) throw new Error(result?.error || 'updateDraft 실패');
+    const confirmedDraftId = result.data?.draft?.draftId
+      ?? result.data?.draftId
+      ?? result.draft?.draftId
+      ?? result.draftId;
+    if (String(confirmedDraftId || '').trim() !== expected) {
+      throw new Error(`updateDraft 응답의 초안 ID가 일치하지 않습니다 (${confirmedDraftId || '없음'}).`);
+    }
   };
 
   function DraftsView({ data, mutate }) {
@@ -3837,8 +3871,11 @@
     const [showAdd,       setShowAdd]       = useState(false);
     const [copied,        setCopied]        = useState(null);
     const [commandCopied, setCommandCopied] = useState(null);
-    const [bulkCommandCopied, setBulkCommandCopied] = useState(false);
+    const [selectedCommandCopied, setSelectedCommandCopied] = useState(false);
+    const [allCommandCopied, setAllCommandCopied] = useState(false);
     const [selectedDraftIds, setSelectedDraftIds] = useState([]);
+    const [statusSavingIds, setStatusSavingIds] = useState([]);
+    const statusSavingRef = useRef(new Set());
     const [addForm,       setAddForm]       = useState({ clientId:'', channel:'홈페이지', title:'', content:'', memo:'' });
     const [publishDraft,  setPublishDraft]  = useState(null);
     const [publishForm,   setPublishForm]   = useState({ clientId:'', jobId:'', title:'', url:'', channel:'홈페이지', publishedAt:today() });
@@ -3901,40 +3938,80 @@
       acc[s] = drafts.filter(d => normalizeDraftStatus(d.status) === s).length;
       return acc;
     }, {});
-    const approvedFiltered = filtered.filter(d => normalizeDraftStatus(d.status) === 'approved');
+    const statusSavingSet = new Set(statusSavingIds);
+    const approvedBlogFiltered = filtered.filter(d => isNaverCommandEligible(d) && !statusSavingSet.has(d.draftId));
     const selectedDraftIdSet = new Set(selectedDraftIds);
-    const selectedApprovedDrafts = approvedFiltered.filter(d => selectedDraftIdSet.has(d.draftId));
+    const approvedBlogById = new Map(approvedBlogFiltered.map(d => [d.draftId, d]));
+    // 선택 일괄 명령은 사용자가 체크한 순서를 보존한다.
+    const selectedApprovedDrafts = selectedDraftIds.map(id => approvedBlogById.get(id)).filter(Boolean);
 
-    // ── 파이프라인 status 변경 (Sheets updateDraft 동기화) ──
-    function changeDraftStatus(draft, status) {
+    // ── 파이프라인 status 변경 (서버 확인 뒤에만 화면 반영) ──
+    async function changeDraftStatus(draft, status) {
+      const draftId = String(draft?.draftId || '').trim();
       const next = normalizeDraftStatus(status);
       const prevStatus = normalizeDraftStatus(draft.status);
-      setDrafts(prev => prev.map(d => d.draftId === draft.draftId ? { ...d, status: next } : d));
-      if (next !== 'approved') setSelectedDraftIds(prev => prev.filter(id => id !== draft.draftId));
-      fetch(API_URL, {
-        method: 'POST', redirect: 'follow',
-        body: JSON.stringify({ action: 'updateDraft', draftId: draft.draftId, status: next })
-      })
-        .then(r => r.json())
-        .then(d => { if (!d.success) throw new Error(d.error || 'updateDraft 실패'); })
-        .catch(e => {
-          setDrafts(prev => prev.map(d => d.draftId === draft.draftId ? { ...d, status: prevStatus } : d));
-          console.warn('updateDraft status 오류:', e);
-          alert('상태 변경 저장에 실패했습니다. 화면 상태를 이전 값으로 되돌렸습니다.');
+      if (next === prevStatus) return;
+      if (!isSafeDraftId(draftId)) {
+        alert('초안 ID가 안전한 형식이 아니어서 상태를 변경하지 않았습니다.');
+        return;
+      }
+      if ((next === 'approved' || next === 'published') && needsComplianceReview(draft)) {
+        alert('심의 검토가 필요한 글은 표시를 해소한 뒤 승인 또는 발행완료 처리할 수 있습니다.');
+        return;
+      }
+      if (statusSavingRef.current.has(draftId)) return;
+
+      statusSavingRef.current.add(draftId);
+      setStatusSavingIds(prev => prev.includes(draftId) ? prev : [...prev, draftId]);
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST', redirect: 'follow',
+          body: JSON.stringify({
+            action: 'updateDraft',
+            draftId,
+            status: next,
+            expectedStatus: prevStatus,
+          })
         });
+        const result = await readApiJson(response, 'updateDraft');
+        assertUpdateDraftResponse(result, draftId);
+
+        const confirmedStatusValue = result.data?.draft?.status
+          ?? result.data?.status
+          ?? result.draft?.status
+          ?? result.status;
+        if (confirmedStatusValue === undefined || confirmedStatusValue === null || String(confirmedStatusValue).trim() === '') {
+          throw new Error('updateDraft 응답에 최종 상태가 없어 변경 결과를 확인할 수 없습니다. 새로고침해 주세요.');
+        }
+        const confirmedStatus = String(confirmedStatusValue).trim();
+        if (!DRAFT_STATUSES.includes(confirmedStatus)) {
+          throw new Error(`updateDraft 응답의 최종 상태가 유효하지 않습니다 (${confirmedStatus}).`);
+        }
+        if (confirmedStatus !== next) {
+          throw new Error(`서버 확인 상태가 요청과 다릅니다 (${confirmedStatus}).`);
+        }
+        setDrafts(prev => prev.map(d => d.draftId === draftId ? { ...d, status: confirmedStatus } : d));
+        if (confirmedStatus !== 'approved') {
+          setSelectedDraftIds(prev => prev.filter(id => id !== draftId));
+        }
+      } catch (error) {
+        console.warn('updateDraft status 오류:', error);
+        alert(`상태 변경을 저장하지 못했습니다. 목록은 바뀌지 않았습니다.\n${error.message || error}`);
+      } finally {
+        statusSavingRef.current.delete(draftId);
+        setStatusSavingIds(prev => prev.filter(id => id !== draftId));
+      }
     }
 
-    function copyDraftText(text, draftId) {
-      navigator.clipboard.writeText(text).then(() => {
+    async function copyDraftText(text, draftId) {
+      try {
+        await copyTextToClipboard(text);
         setCopied(draftId);
-        setTimeout(() => setCopied(null), 2000);
-      }).catch(() => {
-        const el = document.createElement('textarea');
-        el.value = text; document.body.appendChild(el);
-        el.select(); document.execCommand('copy'); document.body.removeChild(el);
-        setCopied(draftId);
-        setTimeout(() => setCopied(null), 2000);
-      });
+        setTimeout(() => setCopied(current => current === draftId ? null : current), 2000);
+      } catch (error) {
+        console.warn('초안 본문 복사 오류:', error);
+        throw error;
+      }
     }
 
     function loadDraftContent(draft) {
@@ -3975,44 +4052,40 @@
     function handleCopy(draft) {
       loadDraftContent(draft)
         .then(text => copyDraftText(text, draft.draftId))
-        .catch(() => alert('본문을 불러오지 못했습니다. 새로고침 후 다시 시도하세요.'));
+        .catch(() => alert('본문을 불러오거나 복사하지 못했습니다. 새로고침 후 다시 시도하세요.'));
     }
 
     function buildNaverTempSaveCommand(draftId) {
-      return [
-        `cd /d "%USERPROFILE%\\Desktop\\${'\uAC1C\uBC1C \uC791\uC5C5'}\\naver-writer"`,
-        `npm.cmd run draft:dashboard -- --draft-id ${draftId}`
-      ].join('\r\n');
+      const safeId = requireSafeDraftId(draftId);
+      return `cd /d "%USERPROFILE%\\Desktop\\${'\uAC1C\uBC1C \uC791\uC5C5'}\\naver-writer" && npm.cmd run draft:dashboard -- --draft-id "${safeId}"`;
     }
 
     function buildNaverBulkTempSaveCommand(draftIds) {
-      return [
-        `cd /d "%USERPROFILE%\\Desktop\\${'\uAC1C\uBC1C \uC791\uC5C5'}\\naver-writer"`,
-        `npm.cmd run drafts:dashboard -- --draft-ids ${draftIds.join(',')}`
-      ].join('\r\n');
+      const safeIds = [...new Set((draftIds || []).map(requireSafeDraftId))];
+      if (!safeIds.length) throw new Error('복사할 안전한 초안 ID가 없습니다.');
+      return `cd /d "%USERPROFILE%\\Desktop\\${'\uAC1C\uBC1C \uC791\uC5C5'}\\naver-writer" && npm.cmd run drafts:dashboard -- --draft-ids "${safeIds.join(',')}"`;
     }
 
-    function copyCommandText(command, onCopied) {
-      const done = () => {
-        onCopied();
-        setTimeout(() => { setCommandCopied(null); setBulkCommandCopied(false); }, 2000);
-      };
-      navigator.clipboard.writeText(command).then(done).catch(() => {
-        const el = document.createElement('textarea');
-        el.value = command; document.body.appendChild(el);
-        el.select(); document.execCommand('copy'); document.body.removeChild(el);
-        done();
-      });
+    async function copyCommandText(command, onCopied, onReset) {
+      await copyTextToClipboard(command);
+      onCopied();
+      setTimeout(onReset, 2000);
     }
 
     function toggleDraftSelection(draftId) {
+      const draft = drafts.find(item => item.draftId === draftId);
+      const blockedReason = statusSavingSet.has(draftId) ? '상태 저장 중에는 선택할 수 없습니다.' : getNaverCommandBlockReason(draft);
+      if (blockedReason) {
+        alert(blockedReason);
+        return;
+      }
       setSelectedDraftIds(prev => prev.includes(draftId)
         ? prev.filter(id => id !== draftId)
         : [...prev, draftId]);
     }
 
     function toggleAllApprovedSelection() {
-      const approvedIds = approvedFiltered.map(d => d.draftId);
+      const approvedIds = approvedBlogFiltered.map(d => d.draftId);
       const everySelected = approvedIds.length > 0 && approvedIds.every(id => selectedDraftIdSet.has(id));
       setSelectedDraftIds(prev => {
         const prevSet = new Set(prev);
@@ -4025,25 +4098,53 @@
       });
     }
 
-    function copySelectedNaverCommands() {
+    async function copySelectedNaverCommands() {
       const ids = selectedApprovedDrafts.map(d => d.draftId);
-      if (!ids.length) { alert('\uC120\uD0DD\uB41C \uC2B9\uC778 \uAE00\uC774 \uC5C6\uC2B5\uB2C8\uB2E4.'); return; }
-      copyCommandText(buildNaverBulkTempSaveCommand(ids), () => setBulkCommandCopied(true));
+      if (!ids.length) { alert('선택된 실행 가능 블로그 승인 글이 없습니다.'); return; }
+      try {
+        await copyCommandText(
+          buildNaverBulkTempSaveCommand(ids),
+          () => setSelectedCommandCopied(true),
+          () => setSelectedCommandCopied(false),
+        );
+      } catch (error) {
+        console.warn('선택 CMD 복사 오류:', error);
+        alert(`선택 CMD를 복사하지 못했습니다.\n${error.message || error}`);
+      }
     }
 
-    function copyApprovedNaverCommands() {
-      const ids = approvedFiltered.map(d => d.draftId);
-      if (!ids.length) { alert('\uD604\uC7AC \uD544\uD130\uC5D0 \uC2B9\uC778 \uAE00\uC774 \uC5C6\uC2B5\uB2C8\uB2E4.'); return; }
-      copyCommandText(buildNaverBulkTempSaveCommand(ids), () => setBulkCommandCopied(true));
+    async function copyApprovedNaverCommands() {
+      const ids = approvedBlogFiltered.map(d => d.draftId);
+      if (!ids.length) { alert('현재 필터에 실행 가능한 블로그 승인 글이 없습니다.'); return; }
+      try {
+        await copyCommandText(
+          buildNaverBulkTempSaveCommand(ids),
+          () => setAllCommandCopied(true),
+          () => setAllCommandCopied(false),
+        );
+      } catch (error) {
+        console.warn('전체 CMD 복사 오류:', error);
+        alert(`전체 CMD를 복사하지 못했습니다.\n${error.message || error}`);
+      }
     }
 
-    function copyNaverCommand(draft) {
-      if (normalizeDraftStatus(draft.status) !== 'approved') {
-        alert('네이버 임시저장 명령은 승인 상태에서만 복사할 수 있습니다.');
+    async function copyNaverCommand(draft) {
+      const blockedReason = statusSavingSet.has(draft.draftId) ? '상태 저장 중에는 CMD를 복사할 수 없습니다.' : getNaverCommandBlockReason(draft);
+      if (blockedReason) {
+        alert(blockedReason);
         return;
       }
-      const command = buildNaverTempSaveCommand(draft.draftId);
-      copyCommandText(command, () => setCommandCopied(draft.draftId));
+      try {
+        const command = buildNaverTempSaveCommand(draft.draftId);
+        await copyCommandText(
+          command,
+          () => setCommandCopied(draft.draftId),
+          () => setCommandCopied(current => current === draft.draftId ? null : current),
+        );
+      } catch (error) {
+        console.warn('CMD 복사 오류:', error);
+        alert(`CMD를 복사하지 못했습니다.\n${error.message || error}`);
+      }
     }
 
     function handleDelete(draftId) {
@@ -4090,6 +4191,14 @@
     }
 
     function openPublishModal(draft) {
+      if (needsComplianceReview(draft)) {
+        alert('심의 검토 표시가 있는 글은 발행 완료로 등록할 수 없습니다.');
+        return;
+      }
+      if (!isSafeDraftId(draft?.draftId)) {
+        alert('안전하지 않은 초안 ID라 발행 완료로 등록할 수 없습니다.');
+        return;
+      }
       if (!draft.clientId) {
         alert('거래처가 없는 공통 초안은 발행 기록에 연결할 수 없습니다.');
         return;
@@ -4108,6 +4217,8 @@
 
     async function handlePublishDraft() {
       if (!publishDraft || publishSaving) return;
+      if (needsComplianceReview(publishDraft)) { alert('심의 검토 표시가 있는 글은 발행 완료로 등록할 수 없습니다.'); return; }
+      if (!isSafeDraftId(publishDraft.draftId)) { alert('안전하지 않은 초안 ID라 발행 완료로 등록할 수 없습니다.'); return; }
       if (!publishForm.clientId) { alert('거래처를 선택하세요.'); return; }
       if (!publishForm.jobId) { alert('연결할 업무를 선택하세요.'); return; }
       if (!publishForm.title.trim()) { alert('발행 제목을 입력하세요.'); return; }
@@ -4140,10 +4251,15 @@
         const draftRes = await fetch(API_URL, {
           method:'POST',
           redirect:'follow',
-          body: JSON.stringify({ action:'updateDraft', draftId: publishDraft.draftId, status:'published' })
+          body: JSON.stringify({
+            action:'updateDraft',
+            draftId: publishDraft.draftId,
+            status:'published',
+            expectedStatus: normalizeDraftStatus(publishDraft.status),
+          })
         });
         const draftResult = await readApiJson(draftRes, 'updateDraft');
-        if (!draftResult.success) throw new Error(draftResult.error || 'updateDraft 실패');
+        assertUpdateDraftResponse(draftResult, publishDraft.draftId);
       } catch (e) {
         setPublishSaving(false);
         alert(`발행 기록은 저장됐지만 초안 상태 변경에 실패했습니다.\n글 보관함에서 상태를 수동으로 발행완료로 바꿔 주세요.\n\n${e.message || e}`);
@@ -4291,21 +4407,22 @@
         {/* bulk naver temp-save CMD */}
         <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap',marginBottom:12,padding:'10px 12px',background:'var(--surface)',border:'1px solid var(--border)',borderRadius:10}}>
           <button onClick={toggleAllApprovedSelection}
-            disabled={!approvedFiltered.length}
-            style={{display:'inline-flex',alignItems:'center',gap:5,background:approvedFiltered.length?'#f3f4f6':'var(--border-2)',color:approvedFiltered.length?'var(--ink)':'var(--text-3)',border:'1px solid var(--border)',borderRadius:7,padding:'7px 11px',fontSize:12,fontWeight:800,cursor:approvedFiltered.length?'pointer':'not-allowed',fontFamily:'inherit'}}>
-            <Icon name="check" size={12} /> {'\uD604\uC7AC \uC2B9\uC778\uAE00 \uC120\uD0DD'}
+            disabled={!approvedBlogFiltered.length}
+            style={{display:'inline-flex',alignItems:'center',gap:5,background:approvedBlogFiltered.length?'#f3f4f6':'var(--border-2)',color:approvedBlogFiltered.length?'var(--ink)':'var(--text-3)',border:'1px solid var(--border)',borderRadius:7,padding:'7px 11px',fontSize:12,fontWeight:800,cursor:approvedBlogFiltered.length?'pointer':'not-allowed',fontFamily:'inherit'}}>
+            <Icon name="check" size={12} /> 현재 승인 블로그 선택
           </button>
           <button onClick={copySelectedNaverCommands}
             disabled={!selectedApprovedDrafts.length}
-            style={{display:'inline-flex',alignItems:'center',gap:5,background:selectedApprovedDrafts.length?(bulkCommandCopied?'var(--green)':'var(--purple)'):'var(--border-2)',color:selectedApprovedDrafts.length?'#fff':'var(--text-3)',border:'none',borderRadius:7,padding:'7px 12px',fontSize:12,fontWeight:900,cursor:selectedApprovedDrafts.length?'pointer':'not-allowed',fontFamily:'inherit'}}>
-            <Icon name={bulkCommandCopied ? 'check' : 'copy'} size={12} /> {bulkCommandCopied ? '\uC77C\uAD04 \uBA85\uB839 \uBCF5\uC0AC\uB428' : '\uC120\uD0DD \uC77C\uAD04 CMD \uBCF5\uC0AC'}
+            style={{display:'inline-flex',alignItems:'center',gap:5,background:selectedApprovedDrafts.length?(selectedCommandCopied?'var(--green)':'var(--purple)'):'var(--border-2)',color:selectedApprovedDrafts.length?'#fff':'var(--text-3)',border:'none',borderRadius:7,padding:'7px 12px',fontSize:12,fontWeight:900,cursor:selectedApprovedDrafts.length?'pointer':'not-allowed',fontFamily:'inherit'}}>
+            <Icon name={selectedCommandCopied ? 'check' : 'copy'} size={12} /> {selectedCommandCopied ? '선택 명령 복사됨' : '선택 일괄 CMD 복사'}
           </button>
           <button onClick={copyApprovedNaverCommands}
-            disabled={!approvedFiltered.length}
-            style={{display:'inline-flex',alignItems:'center',gap:5,background:approvedFiltered.length?'var(--navy)':'var(--border-2)',color:approvedFiltered.length?'#fff':'var(--text-3)',border:'none',borderRadius:7,padding:'7px 12px',fontSize:12,fontWeight:800,cursor:approvedFiltered.length?'pointer':'not-allowed',fontFamily:'inherit'}}>
-            <Icon name="copy" size={12} /> {'\uD604\uC7AC \uC2B9\uC778\uAE00 \uC804\uCCB4 CMD \uBCF5\uC0AC'}
+            disabled={!approvedBlogFiltered.length}
+            style={{display:'inline-flex',alignItems:'center',gap:5,background:approvedBlogFiltered.length?(allCommandCopied?'var(--green)':'var(--navy)'):'var(--border-2)',color:approvedBlogFiltered.length?'#fff':'var(--text-3)',border:'none',borderRadius:7,padding:'7px 12px',fontSize:12,fontWeight:800,cursor:approvedBlogFiltered.length?'pointer':'not-allowed',fontFamily:'inherit'}}>
+            <Icon name={allCommandCopied ? 'check' : 'copy'} size={12} /> {allCommandCopied ? '전체 명령 복사됨' : '현재 승인 블로그 전체 CMD 복사'}
           </button>
-          <span style={{fontSize:12,color:'var(--text-3)',fontWeight:700}}>{'\uC120\uD0DD '} {selectedApprovedDrafts.length}{'\uAC74 / \uD604\uC7AC \uC2B9\uC778 '} {approvedFiltered.length}{'\uAC74'}</span>
+          <span style={{fontSize:12,color:'var(--text-3)',fontWeight:700}}>선택 {selectedApprovedDrafts.length}건 / 실행 가능 승인 블로그 {approvedBlogFiltered.length}건</span>
+          <span style={{flexBasis:'100%',fontSize:11.5,color:'var(--text-3)'}}>CMD 실행 후 새로고침하면 임시저장 성공으로 삭제된 원본이 반영됩니다.</span>
         </div>
         <div style={{fontSize:12, color:'var(--text-3)', marginBottom:12}}>
           {loading ? '불러오는 중...' : `총 ${filtered.length}건${filterClient||filterChannel ? ' (필터 적용됨)' : ''}`}
@@ -4330,16 +4447,20 @@
               const isCommandCopied = commandCopied === draft.draftId;
               const dStatus = normalizeDraftStatus(draft.status);
               const sMeta = DRAFT_STATUS_META[dStatus];
-              const canApprove = dStatus === 'draft' || dStatus === 'review';
-              const canCopyNaverCommand = dStatus === 'approved';
-              const canPublish = dStatus === 'approved' || dStatus === 'staged';
-              const needsCompliance = (draft.memo||'').includes('needs_compliance_review') && (dStatus === 'draft' || dStatus === 'review');
+              const isStatusSaving = statusSavingSet.has(draft.draftId);
+              const hasSafeDraftId = isSafeDraftId(draft.draftId);
+              const needsCompliance = needsComplianceReview(draft);
+              const showApprove = dStatus === 'draft' || dStatus === 'review';
+              const canApprove = showApprove && !isStatusSaving && hasSafeDraftId && !needsCompliance;
+              const commandBlockReason = isStatusSaving ? '상태 저장 중에는 CMD를 복사할 수 없습니다.' : getNaverCommandBlockReason(draft);
+              const canCopyNaverCommand = !commandBlockReason;
+              const canPublish = !isStatusSaving && hasSafeDraftId && !needsCompliance && (dStatus === 'approved' || dStatus === 'staged');
               return (
                 <div key={draft.draftId} style={{background:'var(--surface)', border:'1px solid var(--border)', borderRadius:12, overflow:'hidden', boxShadow:'0 1px 4px rgba(0,0,0,0.05)'}}>
                   {/* 카드 헤더 */}
                   <div style={{display:'flex', alignItems:'center', gap:10, padding:'14px 18px', borderBottom: isExpanded ? '1px solid #f3f4f6' : 'none', cursor:'pointer'}}
                     onClick={() => toggleDraft(draft)}>
-                    <label onClick={e => e.stopPropagation()} title={canCopyNaverCommand ? '\uC77C\uAD04 \uC784\uC2DC\uC800\uC7A5 \uC120\uD0DD' : '\uC2B9\uC778 \uC0C1\uD0DC\uB9CC \uC120\uD0DD\uD560 \uC218 \uC788\uC2B5\uB2C8\uB2E4'} style={{display:'inline-flex',alignItems:'center',justifyContent:'center',width:24,height:24,flexShrink:0,cursor:canCopyNaverCommand?'pointer':'not-allowed',opacity:canCopyNaverCommand?1:0.35}}>
+                    <label onClick={e => e.stopPropagation()} title={canCopyNaverCommand ? '일괄 임시저장 선택' : commandBlockReason} style={{display:'inline-flex',alignItems:'center',justifyContent:'center',width:24,height:24,flexShrink:0,cursor:canCopyNaverCommand?'pointer':'not-allowed',opacity:canCopyNaverCommand?1:0.35}}>
                       <input type="checkbox" checked={selectedDraftIds.includes(draft.draftId)} disabled={!canCopyNaverCommand} onChange={() => toggleDraftSelection(draft.draftId)} />
                     </label>
                     <div style={{flex:1, minWidth:0}}>
@@ -4362,20 +4483,22 @@
                       <select
                         value={dStatus}
                         onChange={e => changeDraftStatus(draft, e.target.value)}
-                        title="파이프라인 상태 변경"
-                        style={{border:'1px solid var(--border)', borderRadius:7, padding:'6px 8px', fontSize:12, fontWeight:700, fontFamily:'inherit', color:sMeta.color, background:'var(--surface)', cursor:'pointer', outline:'none'}}>
-                        {DRAFT_STATUSES.map(s => <option key={s} value={s}>{DRAFT_STATUS_META[s].label}</option>)}
+                        disabled={isStatusSaving || !hasSafeDraftId}
+                        title={isStatusSaving ? '서버에 상태 저장 중' : (hasSafeDraftId ? '파이프라인 상태 변경' : '안전하지 않은 초안 ID라 상태를 변경할 수 없습니다')}
+                        style={{border:'1px solid var(--border)', borderRadius:7, padding:'6px 8px', fontSize:12, fontWeight:700, fontFamily:'inherit', color:sMeta.color, background:'var(--surface)', cursor:isStatusSaving||!hasSafeDraftId?'not-allowed':'pointer', opacity:isStatusSaving||!hasSafeDraftId?0.65:1, outline:'none'}}>
+                        {DRAFT_STATUSES.map(s => <option key={s} value={s} disabled={(s === 'approved' || s === 'published') && needsCompliance}>{DRAFT_STATUS_META[s].label}</option>)}
                       </select>
-                      {canApprove && (
+                      {showApprove && (
                         <button onClick={() => changeDraftStatus(draft, 'approved')}
-                          title="검토 완료 후 네이버 임시저장 가능 상태로 변경"
-                          style={{display:'inline-flex',alignItems:'center',justifyContent:'center',gap:5,background:'var(--blue)', color:'#fff', border:'none', borderRadius:7, padding:'7px 12px', fontSize:12, fontWeight:800, cursor:'pointer', fontFamily:'inherit'}}>
-                          <Icon name="check" size={12} /> 승인
+                          disabled={!canApprove}
+                          title={needsCompliance ? '심의 검토 표시를 해소해야 승인할 수 있습니다' : (hasSafeDraftId ? '서버에 승인 저장이 완료된 뒤 CMD가 활성화됩니다' : '안전하지 않은 초안 ID라 승인할 수 없습니다')}
+                          style={{display:'inline-flex',alignItems:'center',justifyContent:'center',gap:5,background:canApprove?'var(--blue)':'var(--border-2)', color:canApprove?'#fff':'var(--text-3)', border:'none', borderRadius:7, padding:'7px 12px', fontSize:12, fontWeight:800, cursor:canApprove?'pointer':'not-allowed', fontFamily:'inherit'}}>
+                          <Icon name="check" size={12} /> {isStatusSaving ? '저장 중' : '승인'}
                         </button>
                       )}
                       <button onClick={() => copyNaverCommand(draft)}
                         disabled={!canCopyNaverCommand}
-                        title={canCopyNaverCommand ? 'CMD에 붙여넣을 네이버 임시저장 명령 복사' : '승인 상태에서만 명령을 복사할 수 있습니다'}
+                        title={canCopyNaverCommand ? 'CMD에 붙여넣을 네이버 임시저장 명령 복사' : commandBlockReason}
                         style={{display:'inline-flex',alignItems:'center',justifyContent:'center',gap:5,background: canCopyNaverCommand ? (isCommandCopied ? 'var(--green)' : 'var(--purple)') : 'var(--border-2)', color: canCopyNaverCommand ? '#fff' : 'var(--text-3)', border:'none', borderRadius:7, padding:'7px 12px', fontSize:12, fontWeight:800, cursor:canCopyNaverCommand?'pointer':'not-allowed', fontFamily:'inherit'}}>
                         {isCommandCopied ? <><Icon name="check" size={12} /> 명령 복사됨</> : <><Icon name="copy" size={12} /> CMD 복사</>}
                       </button>
@@ -4390,8 +4513,9 @@
                         style={{display:'inline-flex',alignItems:'center',justifyContent:'center',gap:5,background: isCopied ? 'var(--green)' : 'var(--navy)', color:'#fff', border:'none', borderRadius:7, padding:'7px 14px', fontSize:12, fontWeight:700, cursor:'pointer', fontFamily:'inherit', minWidth:78, transition:'background 0.2s'}}>
                         {isCopied ? <><Icon name="check" size={12} /> 복사됨</> : <><Icon name="copy" size={12} /> 복사</>}
                       </button>
-                      <button onClick={() => handleDelete(draft.draftId)}
-                        style={{background:'var(--red-bg)', color:'var(--red)', border:'1px solid #fecaca', borderRadius:7, padding:'7px 10px', fontSize:12, fontWeight:700, cursor:'pointer', fontFamily:'inherit'}}>
+                      <button onClick={() => handleDelete(draft.draftId)} disabled={isStatusSaving}
+                        title={isStatusSaving ? '상태 저장이 끝난 뒤 삭제할 수 있습니다' : '초안 삭제'}
+                        style={{background:'var(--red-bg)', color:'var(--red)', border:'1px solid #fecaca', borderRadius:7, padding:'7px 10px', fontSize:12, fontWeight:700, cursor:isStatusSaving?'not-allowed':'pointer', opacity:isStatusSaving?0.55:1, fontFamily:'inherit'}}>
                         삭제
                       </button>
                     </div>

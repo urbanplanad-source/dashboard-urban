@@ -66,6 +66,7 @@ await parseJson('package.json');
 await parseJson('review-monitor.config.example.json');
 await checkDashboardReportFiles();
 await checkNoHardcodedCredentials();
+await checkNaverWriterBridge();
 await checkTextFiles(root);
 await checkScriptSyntax();
 
@@ -179,6 +180,114 @@ async function checkNoHardcodedCredentials() {
     .filter((value) => !/^[•*\s]+$/.test(value));
   if (suspicious.length > 0) {
     errors.push(`${rel}: contains hard-coded credential password literal; use credentials.local.js or localStorage`);
+  }
+}
+
+async function checkNaverWriterBridge() {
+  const indexRel = 'index.html';
+  const handoffRel = 'CODEX_HANDOFF.md';
+  let dashboard = '';
+  let handoff = '';
+  try {
+    [dashboard, handoff] = await Promise.all([
+      fs.readFile(path.join(root, indexRel), 'utf8'),
+      fs.readFile(path.join(root, handoffRel), 'utf8'),
+    ]);
+  } catch (error) {
+    errors.push(`naver-writer bridge check: cannot read required files (${error.message})`);
+    return;
+  }
+
+  const requiredDashboardInvariants = [
+    ['safe draft ID validation', 'const SAFE_DRAFT_ID_PATTERN ='],
+    ['blog-channel gate', 'const isNaverBlogChannel ='],
+    ['case-insensitive compliance gate', "const needsComplianceReview = (draft) => String(draft?.memo || '').toLowerCase().includes('needs_compliance_review');"],
+    ['update response draft correlation', 'const assertUpdateDraftResponse = (result, expectedDraftId) =>'],
+    ['per-row status state gate', 'const [statusSavingIds, setStatusSavingIds] = useState([]);'],
+    ['per-row status synchronous gate', 'const statusSavingRef = useRef(new Set());'],
+    ['compare-and-set status hint', 'expectedStatus: prevStatus'],
+    ['server-confirmed status response', "const result = await readApiJson(response, 'updateDraft');"],
+    ['top-level status response support', '?? result.status;'],
+    ['missing status fail-closed guard', 'confirmedStatusValue === undefined || confirmedStatusValue === null'],
+    ['strict confirmed status validation', 'DRAFT_STATUSES.includes(confirmedStatus)'],
+    ['approved blog-only bulk list', 'const approvedBlogFiltered = filtered.filter(d => isNaverCommandEligible(d)'],
+    ['selected click-order preservation', 'selectedDraftIds.map(id => approvedBlogById.get(id)).filter(Boolean)'],
+    ['single-line individual command', ' && npm.cmd run draft:dashboard -- --draft-id "${safeId}"'],
+    ['single-line bulk command', ' && npm.cmd run drafts:dashboard -- --draft-ids "${safeIds.join(\',\')}"'],
+    ['verified clipboard fallback', "document.execCommand('copy') !== true"],
+    ['selected-copy feedback', 'setSelectedCommandCopied'],
+    ['all-copy feedback', 'setAllCommandCopied'],
+    ['post-run refresh hint', 'CMD 실행 후 새로고침하면 임시저장 성공으로 삭제된 원본이 반영됩니다.'],
+  ];
+
+  for (const [label, marker] of requiredDashboardInvariants) {
+    if (!dashboard.includes(marker)) {
+      errors.push(`${indexRel}: missing Naver writer invariant (${label})`);
+    }
+  }
+
+  if (dashboard.includes('bulkCommandCopied')) {
+    errors.push(`${indexRel}: selected/all CMD feedback must not share bulkCommandCopied state`);
+  }
+
+  const statusStart = dashboard.indexOf('async function changeDraftStatus');
+  const statusEnd = dashboard.indexOf('async function copyDraftText', statusStart);
+  const statusSource = statusStart >= 0 && statusEnd > statusStart
+    ? dashboard.slice(statusStart, statusEnd)
+    : '';
+  const confirmationAt = statusSource.indexOf("const result = await readApiJson(response, 'updateDraft');");
+  const statusMutationAt = statusSource.indexOf('setDrafts(');
+  if (!statusSource || confirmationAt < 0 || statusMutationAt < confirmationAt) {
+    errors.push(`${indexRel}: draft status must update only after a confirmed server response`);
+  }
+  if (!statusSource.includes("(next === 'approved' || next === 'published') && needsComplianceReview(draft)")) {
+    errors.push(`${indexRel}: compliance-marked drafts must be blocked before approval/published POST`);
+  }
+  if (!statusSource.includes('assertUpdateDraftResponse(result, draftId);')) {
+    errors.push(`${indexRel}: status update response must confirm the requested draftId`);
+  }
+  if (statusSource.includes('?? next')) {
+    errors.push(`${indexRel}: status response must not fall back to the requested value`);
+  }
+  if (!statusSource.includes('?? result.status;')) {
+    errors.push(`${indexRel}: status response must accept the Apps Script top-level status field`);
+  }
+
+  const commandStart = dashboard.indexOf('function buildNaverTempSaveCommand');
+  const commandEnd = dashboard.indexOf('async function copyCommandText', commandStart);
+  const commandSource = commandStart >= 0 && commandEnd > commandStart
+    ? dashboard.slice(commandStart, commandEnd)
+    : '';
+  if (!commandSource || commandSource.includes(".join('\\r\\n')")) {
+    errors.push(`${indexRel}: copied Naver commands must remain single-line CMD commands`);
+  }
+
+  const publishStart = dashboard.indexOf('function openPublishModal');
+  const publishEnd = dashboard.indexOf('const iS =', publishStart);
+  const publishSource = publishStart >= 0 && publishEnd > publishStart
+    ? dashboard.slice(publishStart, publishEnd)
+    : '';
+  if (!publishSource.includes('if (needsComplianceReview(draft))')
+      || !publishSource.includes('if (needsComplianceReview(publishDraft))')) {
+    errors.push(`${indexRel}: manual publish registration must block compliance-marked drafts`);
+  }
+  if (!publishSource.includes('assertUpdateDraftResponse(draftResult, publishDraft.draftId);')) {
+    errors.push(`${indexRel}: publish status response must confirm the requested draftId`);
+  }
+
+  const requiredHandoffMarkers = [
+    '`C:\\Users\\user\\Desktop\\dashboard-urban`',
+    'server-confirmed `approved` blog drafts',
+    'deletes that exact source `draftId`',
+    'one line (`cd /d ... && npm.cmd ...`)',
+  ];
+  for (const marker of requiredHandoffMarkers) {
+    if (!handoff.includes(marker)) {
+      errors.push(`${handoffRel}: Naver writer handoff is missing "${marker}"`);
+    }
+  }
+  if (/successful temp-save it writes back `staged`/i.test(handoff)) {
+    errors.push(`${handoffRel}: documents obsolete automatic staged writeback`);
   }
 }
 

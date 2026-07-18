@@ -493,6 +493,84 @@ function getOrCreateDraftsSheet() {
 }
 
 /**
+ * Drafts 쓰기를 직렬화한다. 잠금을 얻지 못하면 어떤 행도 수정하지 않는다.
+ */
+function withDraftsWriteLock_(operation) {
+  var lock = LockService.getScriptLock();
+  try {
+    lock.waitLock(30000);
+  } catch (error) {
+    return { success: false, error: 'Drafts write lock timeout' };
+  }
+
+  try {
+    return operation();
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function draftString_(value) {
+  return value === undefined || value === null ? '' : String(value);
+}
+
+function normalizeDraftChannelForCompare_(value) {
+  var raw = draftString_(value).trim();
+  var key = raw.toLowerCase();
+  if (key === 'blog' || key === 'naver-blog' || key === 'naver_blog' || key === 'naverblog' || raw === '블로그') {
+    return '블로그';
+  }
+  return raw;
+}
+
+function draftSha256Hex_(value) {
+  var bytes = Utilities.computeDigest(
+    Utilities.DigestAlgorithm.SHA_256,
+    draftString_(value),
+    Utilities.Charset.UTF_8
+  );
+  return bytes.map(function(byte) {
+    var unsigned = byte < 0 ? byte + 256 : byte;
+    return ('0' + unsigned.toString(16)).slice(-2);
+  }).join('');
+}
+
+/**
+ * 반드시 현재 잠금 안에서 호출한다. 동일 ID가 둘 이상이면 어느 행도 선택하지 않는다.
+ */
+function findUniqueDraftRowLocked_(sheet, draftId) {
+  var data = sheet.getDataRange().getValues();
+  if (!data.length) return { success: false, error: 'Drafts header not found' };
+  var headers = data[0];
+  var idCol = headers.indexOf('draftId');
+  if (idCol < 0) return { success: false, error: 'Drafts draftId header not found' };
+
+  var matches = [];
+  for (var i = 1; i < data.length; i++) {
+    if (draftString_(data[i][idCol]).trim() === draftId) matches.push(i);
+  }
+  if (matches.length === 0) {
+    return { success: false, error: 'draftId not found: ' + draftId };
+  }
+  if (matches.length !== 1) {
+    return { success: false, error: 'duplicate draftId rows: ' + draftId, duplicateCount: matches.length };
+  }
+
+  return {
+    success: true,
+    data: data,
+    headers: headers,
+    rowIndex: matches[0],
+    rowNum: matches[0] + 1,
+    row: data[matches[0]]
+  };
+}
+
+function conditionalDraftMismatch_(field) {
+  return { success: false, error: 'draft conditional mismatch: ' + field };
+}
+
+/**
  * getDraftsList — 전체 초안 목록 반환 (getSummary에서 호출)
  */
 function getDraftsList() {
@@ -567,26 +645,31 @@ function getDraftDetail(draftId) {
 
   var numRows = lastRow - 1;
   var ids = sheet.getRange(2, 1, numRows, 1).getValues();
+  var matches = [];
   for (var i = 0; i < ids.length; i++) {
-    if (ids[i][0] === draftId) {
-      var row = sheet.getRange(i + 2, 1, 1, 8).getValues()[0];
-      var content = row[4] || '';
-      return {
-        success: true,
-        data: {
-          draftId: row[0] || '',
-          clientId: row[1] || '',
-          channel: row[2] || '',
-          title: row[3] || '',
-          content: content,
-          memo: row[5] || '',
-          createdAt: formatDraftDate_(row[6]),
-          status: row[7] || '',
-          preview: String(content).slice(0, 120),
-          contentLength: String(content).length
-        }
-      };
-    }
+    if (draftString_(ids[i][0]).trim() === draftId) matches.push(i);
+  }
+  if (matches.length > 1) {
+    return { success: false, error: 'duplicate draftId rows: ' + draftId, duplicateCount: matches.length };
+  }
+  if (matches.length === 1) {
+    var row = sheet.getRange(matches[0] + 2, 1, 1, 8).getValues()[0];
+    var content = row[4] || '';
+    return {
+      success: true,
+      data: {
+        draftId: row[0] || '',
+        clientId: row[1] || '',
+        channel: row[2] || '',
+        title: row[3] || '',
+        content: content,
+        memo: row[5] || '',
+        createdAt: formatDraftDate_(row[6]),
+        status: row[7] || '',
+        preview: String(content).slice(0, 120),
+        contentLength: String(content).length
+      }
+    };
   }
 
   return { success: false, error: 'draftId not found: ' + draftId };
@@ -597,72 +680,125 @@ function getDraftDetail(draftId) {
  * body: { clientId, channel, title, content, memo }
  */
 function addDraft(body) {
-  var sheet = getOrCreateDraftsSheet();
-  var draftId = 'dr-' + new Date().getTime().toString(36);
-  var now = new Date();
-  var kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-  var createdAt = Utilities.formatDate(kst, 'Asia/Seoul', 'yyyy-MM-dd');
+  body = body || {};
+  return withDraftsWriteLock_(function() {
+    var sheet = getOrCreateDraftsSheet();
+    var data = sheet.getDataRange().getValues();
+    var headers = data[0] || [];
+    var idCol = headers.indexOf('draftId');
+    if (idCol < 0) return { success: false, error: 'Drafts draftId header not found' };
 
-  sheet.appendRow([
-    draftId,
-    body.clientId || '',
-    body.channel  || '',
-    body.title    || '',
-    body.content  || '',
-    body.memo     || '',
-    createdAt,
-    'draft'
-  ]);
-  return { success: true, draftId: draftId };
+    var existing = {};
+    for (var i = 1; i < data.length; i++) {
+      existing[draftString_(data[i][idCol]).trim()] = true;
+    }
+
+    var base = new Date().getTime().toString(36);
+    var draftId = '';
+    for (var attempt = 0; attempt < 10000; attempt++) {
+      var candidate = 'dr-' + base + (attempt === 0 ? '' : '-' + attempt.toString(36));
+      if (!existing[candidate]) {
+        draftId = candidate;
+        break;
+      }
+    }
+    if (!draftId) return { success: false, error: 'Could not allocate a unique draftId' };
+
+    var now = new Date();
+    var createdAt = Utilities.formatDate(now, 'Asia/Seoul', 'yyyy-MM-dd');
+    sheet.appendRow([
+      draftId,
+      body.clientId || '',
+      body.channel  || '',
+      body.title    || '',
+      body.content  || '',
+      body.memo     || '',
+      createdAt,
+      'draft'
+    ]);
+    return { success: true, draftId: draftId };
+  });
 }
 
 /**
  * updateDraft — 초안 수정 (전달된 필드만)
- * body: { draftId, clientId?, channel?, title?, content?, memo?, status? }
+ * body: { draftId, clientId?, channel?, title?, content?, memo?, status?, expectedStatus? }
  */
 function updateDraft(body) {
+  body = body || {};
   var draftId = body.draftId;
   if (!draftId) return { success: false, error: 'draftId 필수' };
 
-  var sheet = getOrCreateDraftsSheet();
-  var data = sheet.getDataRange().getValues();
-  var headers = data[0];
-  var idCol = headers.indexOf('draftId');
+  return withDraftsWriteLock_(function() {
+    var sheet = getOrCreateDraftsSheet();
+    var found = findUniqueDraftRowLocked_(sheet, draftId);
+    if (!found.success) return found;
 
-  for (var i = 1; i < data.length; i++) {
-    if (data[i][idCol] === draftId) {
-      var rowNum = i + 1;
-      var updatable = ['clientId','channel','title','content','memo','status'];
-      updatable.forEach(function(field) {
-        if (body[field] !== undefined) {
-          var col = headers.indexOf(field);
-          if (col >= 0) sheet.getRange(rowNum, col + 1).setValue(body[field]);
-        }
-      });
-      return { success: true, draftId: draftId };
+    var statusCol = found.headers.indexOf('status');
+    if (body.expectedStatus !== undefined) {
+      if (statusCol < 0) return { success: false, error: 'Drafts status header not found' };
+      if (draftString_(found.row[statusCol]).trim() !== draftString_(body.expectedStatus).trim()) {
+        return conditionalDraftMismatch_('expectedStatus');
+      }
     }
-  }
-  return { success: false, error: 'draftId not found: ' + draftId };
+
+    var updatable = ['clientId','channel','title','content','memo','status'];
+    updatable.forEach(function(field) {
+      if (body[field] !== undefined) {
+        var col = found.headers.indexOf(field);
+        if (col >= 0) sheet.getRange(found.rowNum, col + 1).setValue(body[field]);
+      }
+    });
+    var finalStatus = statusCol >= 0
+      ? (body.status !== undefined ? body.status : found.row[statusCol])
+      : '';
+    return { success: true, draftId: draftId, status: finalStatus };
+  });
 }
 
 /**
  * deleteDraft — 초안 삭제
- * body: { draftId }
+ * body: { draftId, expectedStatus?, expectedClientId?, expectedChannel?, expectedTitle?, expectedContentHash? }
  */
 function deleteDraft(body) {
+  body = body || {};
   var draftId = body.draftId;
   if (!draftId) return { success: false, error: 'draftId 필수' };
 
-  var sheet = getOrCreateDraftsSheet();
-  var data = sheet.getDataRange().getValues();
-  var headers = data[0];
-  var idCol = headers.indexOf('draftId');
+  return withDraftsWriteLock_(function() {
+    var sheet = getOrCreateDraftsSheet();
+    var found = findUniqueDraftRowLocked_(sheet, draftId);
+    if (!found.success) return found;
 
-  for (var i = 1; i < data.length; i++) {
-    if (data[i][idCol] === draftId) {
-      sheet.deleteRow(i + 1);
-      return { success: true, draftId: draftId };
+    var expectedFields = [
+      { request: 'expectedStatus', column: 'status', normalize: function(value) { return draftString_(value).trim(); } },
+      { request: 'expectedClientId', column: 'clientId', normalize: function(value) { return draftString_(value).trim(); } },
+      { request: 'expectedChannel', column: 'channel', normalize: normalizeDraftChannelForCompare_ },
+      { request: 'expectedTitle', column: 'title', normalize: draftString_ }
+    ];
+    for (var i = 0; i < expectedFields.length; i++) {
+      var check = expectedFields[i];
+      if (body[check.request] === undefined) continue;
+      var column = found.headers.indexOf(check.column);
+      if (column < 0) return { success: false, error: 'Drafts ' + check.column + ' header not found' };
+      if (check.normalize(found.row[column]) !== check.normalize(body[check.request])) {
+        return conditionalDraftMismatch_(check.request);
+      }
     }
-  }
-  return { success: false, error: 'draftId not found: ' + draftId };
+
+    if (body.expectedContentHash !== undefined) {
+      var contentCol = found.headers.indexOf('content');
+      if (contentCol < 0) return { success: false, error: 'Drafts content header not found' };
+      var expectedHash = draftString_(body.expectedContentHash).trim().toLowerCase();
+      if (!/^[a-f0-9]{64}$/.test(expectedHash)) {
+        return { success: false, error: 'expectedContentHash must be SHA-256 hex' };
+      }
+      if (draftSha256Hex_(found.row[contentCol]) !== expectedHash) {
+        return conditionalDraftMismatch_('expectedContentHash');
+      }
+    }
+
+    sheet.deleteRow(found.rowNum);
+    return { success: true, draftId: draftId };
+  });
 }

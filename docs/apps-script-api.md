@@ -538,10 +538,12 @@ status 변경은 기존 `updateDraft` 액션으로 처리한다 (별도 액션 �
 { "action": "updateDraft", "draftId": "dr-xxxx", "status": "approved" }
 ```
 
+`addDraft`, `updateDraft`, `deleteDraft`는 Apps Script의 script lock 안에서 직렬 실행된다. 잠금을 얻은 뒤 시트 행을 다시 읽으며, 동일한 `draftId`가 둘 이상이면 어느 행도 임의로 수정하거나 삭제하지 않고 오류로 중단한다. `addDraft`의 시간 기반 ID가 이미 존재하면 잠금 안에서 suffix를 바꿔 고유 ID를 찾는다.
+
 연동 주체별 규칙:
 
 - `hospital-marketing-growth-team/scripts/push-dashboard-draft.mjs`: addDraft 후 기본적으로 `review`로 승격. `--status`, `--update --draft-id` 옵션 지원.
-- `naver-writer`: 실제 네이버 임시저장은 `approved` 상태 초안만 허용한다. 임시저장 성공 시 `staged`로 자동 갱신 (`DASHBOARD_WRITEBACK=false`로 비활성화 가능). 실패해도 임시저장 자체는 실패 처리하지 않는다.
+- `naver-writer`: 실제 네이버 임시저장은 `approved` 상태 초안만 허용한다. 현재 운영 설정은 저장 API 성공을 확인한 뒤 동일 원본 조건을 붙여 정확한 `draftId`를 삭제하며, 삭제 실패도 전체 작업 실패로 기록한다. `staged` 상태 전이는 다른 연동에서 명시적으로 `updateDraft`를 호출할 때만 적용된다.
 - 대시보드 UI: 글 보관함 상단 파이프라인 바와 카드별 상태 선택으로 변경. 상태 저장 실패 시 화면 값을 이전 상태로 되돌린다.
 - `approved` → 사람 검토 없이 자동으로 만들지 않는다 (운영 원칙).
 
@@ -579,12 +581,15 @@ const res = await fetch(API, {
   body: JSON.stringify({
     action: 'updateDraft',
     draftId: 'dr-abc123',    // 수정할 초안 ID (필수)
+    expectedStatus: 'review', // 선택: 현재 status가 다르면 아무것도 수정하지 않음
     title: '수정된 제목',     // 변경할 필드만 전달
     content: '수정된 본문'
   })
 });
-// 응답: { success: true, draftId: "dr-abc123" }
+// 응답: { success: true, draftId: "dr-abc123", status: "review" }
 ```
+
+`expectedStatus`는 선택 필드다. 생략한 기존 호출은 이전과 같은 방식으로 수정되며, 제공한 호출은 잠금을 얻은 뒤 읽은 현재 `status`가 정확히 일치할 때만 변경된다. 성공 응답의 `status`는 수정 후 최종 상태이므로 호출자가 기대 전이를 다시 확인할 수 있다.
 
 ---
 
@@ -596,11 +601,23 @@ const res = await fetch(API, {
   redirect: 'follow',
   body: JSON.stringify({
     action: 'deleteDraft',
-    draftId: 'dr-abc123'
+    draftId: 'dr-abc123',
+    expectedStatus: 'approved',
+    expectedClientId: 'kyunghee',
+    expectedChannel: 'blog',
+    expectedTitle: '삭제할 정확한 제목',
+    expectedContentHash: '64자리-sha256-hex'
   })
 });
 // 응답: { success: true, draftId: "dr-abc123" }
 ```
+
+삭제의 `expected*` 필드는 모두 선택 사항이므로 기존 `{ action, draftId }` 호출과 하위 호환된다. 제공된 조건은 script lock 안에서 다시 찾은 단 하나의 행과 모두 일치해야 한다. 하나라도 다르거나 동일 ID 행이 여러 개면 삭제하지 않는다.
+
+- `expectedStatus`, `expectedClientId`: 앞뒤 공백을 제거해 비교
+- `expectedChannel`: `blog`, `naver-blog`, `naver_blog`, `naverblog`, `블로그`를 모두 `블로그`로 정규화해 비교
+- `expectedTitle`: 원문 문자열을 정확히 비교
+- `expectedContentHash`: Sheet의 `content` 원문을 UTF-8로 SHA-256 계산한 소문자 64자리 hex와 비교
 
 > 대시보드에서 직접 삭제(발행 완료 후)도 가능하므로 Codex는 저장만 담당해도 됨.
 
@@ -665,6 +682,8 @@ const content = data.content;
 ```
 
 > 하위 호환: `summary` GET에도 `drafts` 배열이 포함될 수 있다. 대시보드 동기화처럼 본문이 필요 없는 경우 `GET ?action=summary&draftMode=light`를 사용해 `draftsList`와 같은 경량 구조를 받을 수 있다. 기존 `addDraft`, `updateDraft`, `deleteDraft` POST 구조는 변경하지 않는다.
+
+> 배포 주의: 이 저장소의 `.gs` 수정만으로 운영 Web App이 갱신되지는 않는다. Apps Script 프로젝트에 코드를 반영하고 새 버전을 수동 배포한 뒤 읽기 요청과 조건 불일치 거부를 확인해야 한다. 이 문서 변경 과정에서는 운영 배포나 실제 Drafts 쓰기를 수행하지 않는다.
 
 ---
 
