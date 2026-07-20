@@ -4450,7 +4450,7 @@
               const isStatusSaving = statusSavingSet.has(draft.draftId);
               const hasSafeDraftId = isSafeDraftId(draft.draftId);
               const needsCompliance = needsComplianceReview(draft);
-              const showApprove = dStatus === 'draft' || dStatus === 'review';
+              const showApprove = isNaverBlogChannel(draft.channel) && (dStatus === 'draft' || dStatus === 'review');
               const canApprove = showApprove && !isStatusSaving && hasSafeDraftId && !needsCompliance;
               const commandBlockReason = isStatusSaving ? '상태 저장 중에는 CMD를 복사할 수 없습니다.' : getNaverCommandBlockReason(draft);
               const canCopyNaverCommand = !commandBlockReason;
