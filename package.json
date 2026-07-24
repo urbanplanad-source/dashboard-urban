@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "check": "node scripts/ops-check.mjs",
+    "test": "node --test test/*.test.mjs",
+    "verify": "npm run check && npm test",
     "check:syntax": "node --check scripts/naver-review-monitor.mjs",
     "report:consults:check": "node scripts/check-consults-api.mjs",
     "report:context": "node scripts/fetch-report-context.mjs",

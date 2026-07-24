@@ -34,7 +34,7 @@ Codex가 이 저장소에서 항상 먼저 참고하는 작업 지시다. 이 �
 - 글 보관함 저장은 기존 `addDraft`, `updateDraft`, `deleteDraft` POST 구조를 유지한다.
 - 글 보관함 조회는 가능하면 `GET ?action=draftsList`로 본문 없는 목록을 받고, 사용자가 펼치거나 복사할 때만 `GET ?action=draftDetail&draftId=...`로 본문을 조회한다. 대시보드 전체 동기화는 `GET ?action=summary&draftMode=light`를 사용할 수 있다.
 - 날짜와 마감일 계산은 KST 로컬 날짜 기준으로 처리한다. `new Date().toISOString().slice(0, 10)` 방식으로 오늘 날짜를 만들지 않는다.
-- 공식 clientId는 `btskin`, `belrmon`, `eyecare`, `seoulup`, `echi`, `igochi`, `jejuexpress`, `kyunghee`만 사용한다.
+- 공식 clientId는 `btskin`, `belrmon`, `eyecare`, `seoulup`, `echi`, `igochi`, `jejuexpress`, `kyunghee`, `hwabuk`, `jocheon`만 사용한다. `kyunghee`는 기존 Drafts 호환을 위해 365경희부부한의원 피부클리닉에 유지하고, `hwabuk`과 `jocheon`은 지점별 글 보관함/Naver 라우팅에만 사용한다.
 - 잘못된 별칭 `bellemont`, `eyeclinic`, `igo`는 사용하지 않는다. 각각 `belrmon`, `eyecare`, `igochi`로 정정한다.
 - 발행 기록은 `postLogs`를 기준으로 하며, `publishedAt`은 `YYYY-MM-DD`, `month`는 `YYYY-MM`, `channel`은 문서의 정규화 규칙에 맞춰 처리한다.
 - API/Sheets에서 확인 가능한 정량 수치와 사용자가 제공한 외부 콘솔 수치를 구분한다. 확인되지 않은 수치는 만들지 않고 “자료 확인 필요”로 남긴다.

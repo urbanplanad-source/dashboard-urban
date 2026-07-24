@@ -19,6 +19,7 @@ const expectedPaths = [
   'scripts/check-consults-api.mjs',
   'scripts/naver-review-monitor.mjs',
   'scripts/fetch-report-context.mjs',
+  'test/draft-approval-routing.test.mjs',
   '.github/workflows/naver-review-monitor.yml',
   'review-monitor.config.example.json',
   'credentials.local.example.js',
@@ -66,6 +67,7 @@ await parseJson('package.json');
 await parseJson('review-monitor.config.example.json');
 await checkDashboardReportFiles();
 await checkNoHardcodedCredentials();
+await checkDraftClientRouting();
 await checkNaverWriterBridge();
 await checkTextFiles(root);
 await checkScriptSyntax();
@@ -183,6 +185,28 @@ async function checkNoHardcodedCredentials() {
   }
 }
 
+async function checkDraftClientRouting() {
+  const rel = 'index.html';
+  let dashboard = '';
+  try {
+    dashboard = await fs.readFile(path.join(root, rel), 'utf8');
+  } catch (error) {
+    errors.push(`${rel}: cannot read draft client routing (${error.message})`);
+    return;
+  }
+
+  const requiredRoutes = [
+    ["kyunghee:'365경희부부한의원 피부클리닉'", 'kyunghee'],
+    ["hwabuk:'365경희부부한의원 화북점'", 'hwabuk'],
+    ["jocheon:'경희부부한의원 조천점'", 'jocheon'],
+  ];
+  for (const [marker, clientId] of requiredRoutes) {
+    if (!dashboard.includes(marker)) {
+      errors.push(`${rel}: missing draft client route (${clientId})`);
+    }
+  }
+}
+
 async function checkNaverWriterBridge() {
   const indexRel = 'index.html';
   const handoffRel = 'CODEX_HANDOFF.md';
@@ -201,6 +225,8 @@ async function checkNaverWriterBridge() {
   const requiredDashboardInvariants = [
     ['safe draft ID validation', 'const SAFE_DRAFT_ID_PATTERN ='],
     ['blog-channel gate', 'const isNaverBlogChannel ='],
+    ['homepage-channel gate', 'const isHomepageChannel ='],
+    ['blog-only approval routing', 'const shouldShowApproveButton ='],
     ['case-insensitive compliance gate', "const needsComplianceReview = (draft) => String(draft?.memo || '').toLowerCase().includes('needs_compliance_review');"],
     ['update response draft correlation', 'const assertUpdateDraftResponse = (result, expectedDraftId) =>'],
     ['per-row status state gate', 'const [statusSavingIds, setStatusSavingIds] = useState([]);'],
@@ -210,6 +236,8 @@ async function checkNaverWriterBridge() {
     ['top-level status response support', '?? result.status;'],
     ['missing status fail-closed guard', 'confirmedStatusValue === undefined || confirmedStatusValue === null'],
     ['strict confirmed status validation', 'DRAFT_STATUSES.includes(confirmedStatus)'],
+    ['post-write list/detail verification', 'verifiedSnapshot = await readDraftStatusSnapshot(draftId);'],
+    ['approval button blog-only routing', 'const showApprove = shouldShowApproveButton(draft);'],
     ['approved blog-only bulk list', 'const approvedBlogFiltered = filtered.filter(d => isNaverCommandEligible(d)'],
     ['selected click-order preservation', 'selectedDraftIds.map(id => approvedBlogById.get(id)).filter(Boolean)'],
     ['single-line individual command', ' && npm.cmd run draft:dashboard -- --draft-id "${safeId}"'],
@@ -236,9 +264,10 @@ async function checkNaverWriterBridge() {
     ? dashboard.slice(statusStart, statusEnd)
     : '';
   const confirmationAt = statusSource.indexOf("const result = await readApiJson(response, 'updateDraft');");
-  const statusMutationAt = statusSource.indexOf('setDrafts(');
-  if (!statusSource || confirmationAt < 0 || statusMutationAt < confirmationAt) {
-    errors.push(`${indexRel}: draft status must update only after a confirmed server response`);
+  const verificationAt = statusSource.indexOf('verifiedSnapshot = await readDraftStatusSnapshot(draftId);');
+  const statusMutationAt = statusSource.indexOf('applyDraftStatusSnapshot(verifiedSnapshot);');
+  if (!statusSource || confirmationAt < 0 || verificationAt < confirmationAt || statusMutationAt < verificationAt) {
+    errors.push(`${indexRel}: draft status must update only after updateDraft plus draftsList/draftDetail verification`);
   }
   if (!statusSource.includes("(next === 'approved' || next === 'published') && needsComplianceReview(draft)")) {
     errors.push(`${indexRel}: compliance-marked drafts must be blocked before approval/published POST`);
@@ -251,6 +280,16 @@ async function checkNaverWriterBridge() {
   }
   if (!statusSource.includes('?? result.status;')) {
     errors.push(`${indexRel}: status response must accept the Apps Script top-level status field`);
+  }
+
+  const readbackStart = dashboard.indexOf('async function readDraftStatusSnapshot');
+  const readbackEnd = dashboard.indexOf('function applyDraftStatusSnapshot', readbackStart);
+  const readbackSource = readbackStart >= 0 && readbackEnd > readbackStart
+    ? dashboard.slice(readbackStart, readbackEnd)
+    : '';
+  if (!readbackSource.includes('await fetchDraftListSnapshot()')
+      || !readbackSource.includes('await fetchDraftDetailSnapshot(expectedDraftId)')) {
+    errors.push(`${indexRel}: status verification must re-read draftsList and draftDetail for the same draftId`);
   }
 
   const commandStart = dashboard.indexOf('function buildNaverTempSaveCommand');
@@ -304,6 +343,7 @@ async function checkScriptSyntax() {
   await checkNodeSyntax('scripts/naver-review-monitor.mjs');
   await checkNodeSyntax('scripts/fetch-report-context.mjs');
   await checkNodeSyntax('scripts/check-consults-api.mjs');
+  await checkNodeSyntax('test/draft-approval-routing.test.mjs');
 }
 
 async function checkNodeSyntax(rel) {

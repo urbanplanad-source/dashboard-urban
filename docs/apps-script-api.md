@@ -29,7 +29,11 @@ Codex의 항상 읽는 작업 지시는 저장소 루트의 `AGENTS.md`에 둔�
 | echi | 이치과 | 치과 |
 | igochi | 이고치과 | 치과 |
 | jejuexpress | 제주인익스프레스 | 이사/운송 |
-| kyunghee | 365경희부부한의원 피부센터 | 한의원 |
+| kyunghee | 365경희부부한의원 피부클리닉 | 한의원 |
+| hwabuk | 365경희부부한의원 화북점 | 한의원 |
+| jocheon | 경희부부한의원 조천점 | 한의원 |
+
+`hwabuk`, `jocheon`은 계약·매출 거래처를 분리하는 ID가 아니라 Drafts 글 보관함과 Naver 계정 라우팅을 지점별로 구분하기 위한 ID다. 기존 `kyunghee` 초안과 연동은 피부클리닉으로 유지한다.
 
 ---
 
@@ -520,6 +524,8 @@ Codex가 작성한 글을 대시보드 **글 보관함** 탭에 저장한다.
 
 `createdAt`은 Apps Script 내부에서 Date 객체나 ISO 문자열로 읽히더라도 API 응답에서는 항상 KST 기준 `YYYY-MM-DD` 문자열로 정규화한다.
 
+경희부부한의원 계열 블로그 초안은 `kyunghee`(피부클리닉), `hwabuk`(화북점), `jocheon`(조천점)을 각각 저장한다. `naver-writer`에서도 각 ID를 서로 다른 `blogId`와 브라우저 프로필에 명시적으로 매핑해야 하며, 매핑되지 않은 지점 ID는 자동화 대상으로 처리하지 않는다.
+
 ### status 파이프라인 표준 어휘
 
 글 보관함은 콘텐츠 파이프라인 허브로 동작하며, status는 아래 5개 값만 사용한다.
@@ -543,8 +549,9 @@ status 변경은 기존 `updateDraft` 액션으로 처리한다 (별도 액션 �
 연동 주체별 규칙:
 
 - `hospital-marketing-growth-team/scripts/push-dashboard-draft.mjs`: addDraft 후 기본적으로 `review`로 승격. `--status`, `--update --draft-id` 옵션 지원.
-- `naver-writer`: 실제 네이버 임시저장은 `approved` 상태 초안만 허용한다. 현재 운영 설정은 저장 API 성공을 확인한 뒤 동일 원본 조건을 붙여 정확한 `draftId`를 삭제하며, 삭제 실패도 전체 작업 실패로 기록한다. `staged` 상태 전이는 다른 연동에서 명시적으로 `updateDraft`를 호출할 때만 적용된다.
-- 대시보드 UI: 글 보관함 상단 파이프라인 바와 카드별 상태 선택으로 변경. 상태 저장 실패 시 화면 값을 이전 상태로 되돌린다.
+- `naver-writer`: `channel=블로그`, `status=approved`인 초안만 네이버 임시저장 대상으로 읽는다. 현재 운영 설정은 저장 API 성공을 확인한 뒤 동일 원본 조건을 붙여 정확한 `draftId`를 삭제하며, 삭제 실패도 전체 작업 실패로 기록한다. `staged` 상태 전이는 다른 연동에서 명시적으로 `updateDraft`를 호출할 때만 적용된다.
+- `homepage-writer`: 정확한 `clientId`, `channel=홈페이지`, `status=approved`인 초안만 아임웹 임시저장 대상으로 읽는다. 네이버 CMD와는 별도 연결이며 대시보드에서 임시저장·게시·삭제를 자동 실행하지 않는다.
+- 대시보드 UI: 글 보관함 상단 파이프라인 바와 카드별 상태 선택을 유지한다. 한 건 승인 버튼은 `draft`/`review` 상태의 블로그 카드에만 표시한다. 홈페이지 글은 승인 자동화를 사용하지 않으며 아임웹 작업을 사람이 직접 진행한 뒤 `staged`/`published` 상태만 수동 기록한다. 상태 변경은 `expectedStatus`를 포함한 기존 `updateDraft` 호출 뒤 `draftsList`와 같은 `draftId`의 `draftDetail`을 재조회해 상태가 일치할 때만 화면을 갱신한다. 쓰기 응답이 불명확해도 같은 쓰기를 반복하지 않고 읽기 재확인 결과를 반영한다.
 - `approved` → 사람 검토 없이 자동으로 만들지 않는다 (운영 원칙).
 
 ---
