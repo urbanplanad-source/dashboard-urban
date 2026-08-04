@@ -510,7 +510,7 @@
       .filter(c => c.id && c.status !== 'deleted')
       .forEach(c => byId.set(c.id, c));
     return [...byId.values()].sort((a,b) =>
-      String(b.createdAt || b.date || '').localeCompare(String(a.createdAt || a.date || ''))
+      String(b.date || b.createdAt || '').localeCompare(String(a.date || a.createdAt || ''))
     );
   };
   const fmtMonth = (m) => { const nm = normalizeMonth(m); if(!nm) return ''; const [y,mo]=nm.split('-'); return `${y}년 ${Number(mo)}월`; };
@@ -3285,7 +3285,8 @@
         writeConsults(client.clientId, fallbackList);
       }
 
-      const params = new URLSearchParams({ action:'consultsList', clientId: client.clientId, month: nowMonth() });
+      // Keep persisted consultation records visible after their calendar month ends.
+      const params = new URLSearchParams({ action:'consultsList', clientId: client.clientId });
 
       fetch(API_URL + '?' + params.toString())
         .then(r => r.json())
@@ -3298,6 +3299,14 @@
           const remoteIds = new Set(normalizedRemote.map(c => c.id));
           const currentLocal = readConsults(client.clientId);
           const baseLocal = currentLocal.length ? currentLocal : fallbackList;
+          const visibleMonths = [...normalizedRemote, ...baseLocal]
+            .map(c => normalizeMonth(c.month || c.date))
+            .filter(Boolean)
+            .sort((a, b) => b.localeCompare(a));
+          const visibleMonth = visibleMonths[0] || '';
+          const isVisibleMonth = c => !visibleMonth || normalizeMonth(c.month || c.date) === visibleMonth;
+          const visibleRemote = normalizedRemote.filter(isVisibleMonth);
+          const visibleLocal = baseLocal.filter(isVisibleMonth);
 
           if (!normalizedRemote.length) {
             baseLocal
@@ -3322,7 +3331,7 @@
           }
 
           setConsultList(() => {
-            const merged = writeConsults(client.clientId, mergeConsultLists(baseLocal, normalizedRemote));
+            const merged = writeConsults(client.clientId, mergeConsultLists(visibleLocal, visibleRemote));
 
             // Apps Script 패치 적용 후 처음 열었을 때 기존 localStorage 상담도 Sheets에 보강 저장한다.
             merged
