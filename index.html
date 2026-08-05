@@ -1232,8 +1232,9 @@
       const pct      = isCount ? Math.min(100, Math.round(((job.currentCount||0) / job.targetCount) * 100)) : 0;
       const reconciliation = isCount ? getJobPostReconciliation(job, data, nowMonth()) : null;
       // 발행 기록은 카운트 업무 + 블로그 업무 모두 표시
+      // Monthly view only: past records stay available for archived reports.
       const jobLogs  = (isCount || isBlog)
-        ? (data.postLogs||[]).filter(p => p.jobId === job.jobId)
+        ? getJobMonthPostLogs(data, job.jobId, nowMonth())
         : [];
       // 표시 제목 (매핑 적용)
       const displayTitle = TITLE_DISPLAY_MAP[job.title] || job.title;
@@ -3173,7 +3174,7 @@
 
     // 이달 발행 글 (이 거래처의 전체 postLogs, 최신순)
     const cPosts  = (data.postLogs||[])
-      .filter(p=>p.clientId===client.clientId)
+      .filter(p => p.clientId === client.clientId && postLogMonth(p) === nowMonth())
       .sort((a,b)=>b.publishedAt>a.publishedAt?1:-1);
 
     // ── 상담 내역 (btskin / belrmon 전용, localStorage) ──
@@ -6486,6 +6487,72 @@
     }, []);
 
     // 페이지 로드 시 자동 동기화 (loading 상태 즉시 표시)
+    // July 2026 report-summary correction; raw consultation records remain unchanged.
+    useEffect(() => {
+      const MIG_KEY = 'consult_2026_07_report_summary_fix_v1';
+      if (safeStorage.getItem(MIG_KEY)) return;
+
+      const corrections = {
+        btskin: {
+          clientName: '노형아름다운피부과',
+          summary: { total: 58, byChannel: { '위챗': 47, '라인': 9, '인스타': 2 } },
+        },
+        belrmon: {
+          clientName: '벨르몬성형외과',
+          summary: { total: 53, byChannel: { '라인': 29, '위챗': 19, '인스타': 5 } },
+        },
+      };
+
+      mutate(prev => {
+        const histories = [...(prev.consultHistories || [])];
+        Object.entries(corrections).forEach(([clientId, correction]) => {
+          const idx = histories.findIndex(h => h.clientId === clientId && h.month === '2026-07');
+          if (idx >= 0) {
+            histories[idx] = { ...histories[idx], summary: correction.summary, reportSummaryFixedAt: '2026-08-04' };
+            return;
+          }
+          histories.push({
+            month: '2026-07', clientId, clientName: correction.clientName,
+            savedAt: new Date().toISOString(), summaryOnly: true,
+            summary: correction.summary, records: [], reportSummaryFixedAt: '2026-08-04',
+          });
+        });
+        return { ...prev, consultHistories: histories };
+      });
+
+      safeStorage.setItem(MIG_KEY, '1');
+    }, []);
+
+    // Keep the Belrmon local Naver Blog credential aligned with the confirmed account ID.
+    useEffect(() => {
+      const MIG_KEY = 'belrmon_naver_blog_id_fix_v1';
+      if (safeStorage.getItem(MIG_KEY)) return;
+
+      mutate(prev => {
+        const credentials = { ...(prev.credentials || {}) };
+        const existing = [...(credentials.belrmon || [])];
+        const blogIndex = existing.findIndex(item => /naver\s*blog|naverblog|\uB124\uC774\uBC84.*\uBE14\uB85C\uADF8/i.test(String(item.service || '')));
+        const nextItem = {
+          username: 'bellemjeju',
+          url: 'https://blog.naver.com/bellemjeju',
+        };
+        if (blogIndex >= 0) {
+          existing[blogIndex] = { ...existing[blogIndex], ...nextItem };
+        } else {
+          existing.push({
+            credId: 'cr-belrmon-naver-blog-id-v1',
+            service: '네이버 블로그',
+            password: '',
+            ...nextItem,
+          });
+        }
+        credentials.belrmon = existing;
+        return { ...prev, credentials };
+      });
+
+      safeStorage.setItem(MIG_KEY, '1');
+    }, []);
+
     useEffect(() => { setSyncStatus('loading'); handleSync(); }, []);
 
     // ── 자동 로그 (업무 완료/카운트 시 자동 기록) ──
