@@ -1190,46 +1190,27 @@ npm.cmd run report:context -- --month YYYY-MM --all
 6. 외부 콘솔 수치가 없으면 임의로 만들지 않고, “자료 확인 필요”로 남긴 뒤 사용자에게 요청한다.
 7. 보고서 저장 후 대시보드 `Clients.reportFile` 링크가 실제 파일명과 맞는지 확인한다.
 
-### 업무 캘린더 연동 규칙
+### 예약 고객 캘린더 운영 규칙
 
-대시보드 메인 화면의 업무 캘린더는 별도 Calendar 시트를 쓰지 않는다. 아래 원본 데이터를 날짜 기준으로 모아 보여준다.
+대시보드 메인 화면의 캘린더는 병원별 예약 고객을 등록하는 용도로 사용한다. 여권 영문명, 생년월일, 국적, 성별 등 개인정보가 포함되므로 Apps Script나 Google Sheets로 전송하지 않고 현재 브라우저의 `urbanplanad_pm_v1.reservations`에만 저장한다. 구글시트 동기화 시에도 이 로컬 배열은 유지되며, 대시보드 백업 JSON에는 포함된다.
 
-| 캘린더 항목 | 원본 데이터 | 날짜 필드 | 등록/수정/삭제 action |
-|-------------|-------------|-----------|------------------------|
-| 거래처 주업무/순위/서브업무 | `MonthlyJobs` | `dueDate` | `addSubJob`, `updateSubJob`, `deleteSubJob` |
-| 내 사업 공통업무 | `CommonTasks` | `dueDate` | `commonTaskAdd`, `commonTaskUpdate`, `commonTaskDelete` |
+예약 레코드 필드는 아래와 같다.
 
-Codex가 캘린더에 거래처 업무를 등록하려면 `addSubJob`을 사용하고 `dueDate`를 반드시 포함한다.
+| 필드 | 형식 | 설명 |
+|------|------|------|
+| `reservationId` | `rv-...` | 로컬 예약 식별자 |
+| `clientId` | 공식 clientId | 예약 병원 |
+| `appointmentDate` | `YYYY-MM-DD` | 예약일 |
+| `appointmentTime` | `HH:mm` | 예약시간 |
+| `patientName` | 문자열 | 고객명 또는 여권 영문명 |
+| `birthDate` | `YYYY-MM-DD` | 생년월일. `YYYYMMDD` 입력도 화면에서 정규화 |
+| `nationality` | 문자열 | 원문 언어와 관계없이 받은 국적 정보 |
+| `gender` | `여성` / `남성` / `기타` / 빈 값 | 성별 |
+| `partySize` | 숫자 | 예약 인원 |
+| `treatment` | 문자열 | 예정 시술 및 상담 내용 |
+| `note` | 문자열 | 통역, 동행인, 요청사항 등 |
 
-```json
-{
-  "action": "addSubJob",
-  "clientId": "btskin",
-  "title": "5월 월말보고서 초안 작성",
-  "dueDate": "2026-05-28"
-}
-```
-
-Codex가 캘린더에 내 사업 공통업무를 등록하려면 `commonTaskAdd`를 사용한다.
-
-```json
-{
-  "action": "commonTaskAdd",
-  "title": "5월 보고서 전체 검수",
-  "kind": "task",
-  "parentId": null,
-  "dueDate": "2026-05-30"
-}
-```
-
-삭제는 원본 항목 삭제와 동일하게 처리한다.
-
-```json
-{ "action": "deleteSubJob", "jobId": "mj-dyn-xxx" }
-{ "action": "commonTaskDelete", "taskId": "ct-xxx" }
-```
-
-필수 업무는 캘린더에서 삭제 시 업무 자체를 삭제하지 않고 `dueDate`를 비워 캘린더에서만 제거하는 방식으로 운영한다. 필수 업무 자체 삭제는 월간 업무 구조를 흔들 수 있으므로 거래처 상세 화면 또는 Apps Script에서 별도 확인 후 처리한다.
+Codex가 사용자의 한글·영어·중국어 예약 문장을 받으면 먼저 병원의 공식 `clientId`를 확인하고, 날짜·시간·이름·생년월일·국적·성별·인원·시술/상담·추가 메모로 구조화한다. 병원이 지정되지 않았으면 등록하지 않고 병원명을 확인한다. 실제 등록은 대시보드의 `예약 고객 캘린더 > 예약 등록` 폼에서 수행하며, 외부 API POST로 우회하지 않는다.
 
 ### Apps Script 수정 시 문서 갱신 규칙
 

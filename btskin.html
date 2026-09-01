@@ -689,6 +689,7 @@
     @media(max-width:640px){.jul-topline{padding-bottom:11px;font-size:11px}.jul-topline time{display:none}.jul-hero{padding:25px 2px 20px}.jul-hero h2{font-size:34px;line-height:1.22;letter-spacing:-2px}.jul-hero-copy{font-size:14px;line-height:1.65}.jul-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.jul-kpi{padding:15px 12px 16px}.jul-kpi:nth-child(3){grid-column:1/-1;border-top:1px solid var(--line);border-left:0}.jul-kpi strong{font-size:35px}.jul-card,.jul-media,.jul-execution{padding:16px 14px;border-radius:15px}.jul-head h3,.jul-content-title h3{font-size:17px}.jul-rank-flow{gap:8px;margin:15px 0 11px}.jul-rank-step b{font-size:24px}.jul-chart,.jul-chart canvas{height:194px}.jul-note{margin-top:6px!important;font-size:12px}.jul-detail summary{padding:15px 14px;font-size:15px}.jul-detail-body{padding:0 14px 14px}.jul-row{grid-template-columns:70px minmax(45px,1fr) auto;gap:7px;font-size:12px}.jul-row b{font-size:13px}.jul-media-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.jul-media-metric{padding:11px 8px}.jul-media-metric:nth-child(n+3){border-top:1px solid #f0d5c9}.jul-media-metric:nth-child(3),.jul-media-metric:nth-child(5){border-left:0}.jul-media-metric strong{font-size:18px}.jul-task-list{grid-template-columns:1fr;gap:8px}.jul-consult{align-items:flex-start;padding:16px}.jul-consult p{max-width:155px;font-size:12px}}
 
     /* July 2026 visual report upgrade */
+    .jul-segment--other{background:#68778e}
     .jul-viz-card{padding:20px;background:#fff;border:1px solid var(--line);border-radius:18px}.jul-viz-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.jul-viz-head h3{color:var(--ink);font-size:18px;letter-spacing:-1px}.jul-viz-head p{color:#63718a;font-size:12px;font-weight:800}.jul-total-chip{display:inline-flex;align-items:center;justify-content:center;min-width:41px;padding:6px 10px;background:#173a72;color:#fff;border-radius:999px;font-size:13px;font-weight:900;white-space:nowrap}.jul-visual-label{margin-top:18px!important;color:#68778e;font-size:12px;font-weight:900}.jul-segmented{display:flex;overflow:hidden;height:42px;margin-top:10px;border-radius:12px;background:#edf1f6}.jul-segment{display:flex;align-items:center;justify-content:center;min-width:0;padding:0 8px;color:#fff;font-size:13px;font-weight:900;white-space:nowrap}.jul-segment--home{background:#6d20a8}.jul-segment--blog{background:#ec5b00}.jul-segment--wechat{background:#079a64}.jul-segment--line{background:#72a928}.jul-segment--insta{background:#b61766}.jul-legend{display:flex;flex-wrap:wrap;gap:8px 16px;margin:13px 0 0;padding:0;list-style:none}.jul-legend li{display:flex;align-items:center;gap:7px;color:#4d5d74;font-size:13px;font-weight:800}.jul-legend i{width:11px;height:11px;border-radius:50%;flex:0 0 11px}.jul-funnel{margin-top:18px}.jul-funnel-row+.jul-funnel-row{margin-top:15px}.jul-funnel-label{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:7px;color:#263754;font-size:14px;font-weight:900}.jul-funnel-label b{color:#17284a;font-size:17px;letter-spacing:-.6px;white-space:nowrap}.jul-funnel-label small{color:#77859a;font-size:12px}.jul-funnel-track{height:18px;overflow:hidden;border:1px solid #f0dcd1;border-radius:999px;background:#f9f6f3}.jul-funnel-track span{display:block;min-width:5px;height:100%;border-radius:inherit;background:#de6716}.jul-funnel-row:nth-child(2) .jul-funnel-track span{background:#e58a48}.jul-funnel-row:nth-child(3) .jul-funnel-track span{background:#efae7f}.jul-funnel-row:nth-child(4) .jul-funnel-track span{background:#f4c8ad}.jul-region-title{margin-top:24px!important;color:#68778e;font-size:12px;font-weight:900}.jul-region-bar{display:flex;overflow:hidden;height:34px;margin-top:10px;border-radius:11px;background:#e9edf2}.jul-region-bar span{display:flex;align-items:center;justify-content:center;min-width:0;padding:0 6px;color:#fff;font-size:12px;font-weight:900;white-space:nowrap}.jul-region-bar span:nth-child(1){background:#d96214}.jul-region-bar span:nth-child(2){background:#e58a48}.jul-region-bar span:nth-child(3){background:#b9bdc4}.jul-consult-card{padding:20px;background:#f4fbf8;border:1px solid #d4eadf;border-radius:18px}.jul-consult-card .jul-total-chip{background:#087f54}.jul-consult-chart{height:188px;margin-top:20px;padding:10px 0 0;border-top:1px solid #dceee5}.jul-consult-chart canvas{display:block;width:100%;height:178px}.jul-consult-note{margin-top:11px!important;color:#416553;font-size:13px;font-weight:700;line-height:1.6;word-break:keep-all}
     @media(max-width:640px){.jul-viz-card,.jul-consult-card{padding:16px 14px;border-radius:15px}.jul-viz-head h3{font-size:17px}.jul-segmented{height:38px;border-radius:10px}.jul-segment{font-size:12px}.jul-legend{gap:8px 13px}.jul-legend li{font-size:12px}.jul-funnel-label{font-size:13px}.jul-funnel-label b{font-size:15px}.jul-funnel-track{height:16px}.jul-region-bar{height:32px}.jul-region-bar span{font-size:11px}.jul-consult-chart{height:172px;margin-top:17px}.jul-consult-chart canvas{height:162px}}
   </style>
@@ -714,7 +715,8 @@
 
   <!-- MONTH TABS -->
   <div class="month-tabs">
-    <div class="month-tab active" onclick="switchTab('jul', event)">2026년 7월</div>
+    <div class="month-tab active" onclick="switchTab('aug', event)">2026년 8월</div>
+    <div class="month-tab" onclick="switchTab('jul', event)">2026년 7월</div>
     <div class="month-tab" onclick="switchTab('jun', event)">2026년 6월</div>
     <div class="month-tab" onclick="switchTab('may', event)">2026년 5월</div>
     <div class="month-tab" onclick="switchTab('apr', event)">2026년 4월</div>
@@ -723,10 +725,56 @@
   </div>
 
   <!-- ══════════════════════════════════
-       6월 보고서
+       8월 보고서
   ══════════════════════════════════ -->
 
-  <div class="report-panel active" id="panel-jul">
+  <div class="report-panel active" id="panel-aug">
+    <article class="jul-report">
+      <div class="jul-topline"><span><strong>노형아름다운피부과</strong> · 2026년 8월 마케팅 성과 리포트</span><time datetime="2026-09-01">기준일 2026.09.01</time></div>
+      <header class="jul-hero"><p class="jul-kicker">August performance brief</p><h2>8월, 유입과 위챗은 성장하고<br>검색 순위는 변동했습니다</h2><p class="jul-hero-copy">홈페이지 방문은 11,718회로 7월보다 20.9% 늘었고, 위챗은 월말 720명까지 성장했습니다. 플레이스는 최고 2위를 기록했지만 월말에는 9위로 마감했습니다.</p><div class="jul-kpis" aria-label="8월 핵심 성과"><div class="jul-kpi"><span>홈페이지 방문</span><strong>11,718<em>회</em></strong><p>방문자 5,649명</p></div><div class="jul-kpi jul-kpi--green"><span>플레이스 최고 순위</span><strong>2<em>위</em></strong><p>8/31 월말 9위</p></div><div class="jul-kpi jul-kpi--green"><span>위챗 순증</span><strong>167<em>명</em></strong><p>553명 → 720명</p></div></div></header>
+
+      <section class="jul-execution" aria-labelledby="aug-execution-title"><div class="jul-head"><h3 id="aug-execution-title">8월 종합 요약</h3></div><p class="jul-work-intro">발행 콘텐츠와 8월 운영 업무, 채널별 성과를 종합하면 홈페이지 탐색 경험 개선과 외국인 상담 채널 성장이 함께 나타난 달입니다.</p><ul class="jul-task-list"><li><strong>콘텐츠 접점 확대</strong> — 블로그 11건, 위챗 5건, 홈페이지 4건, 지역 채널 2건으로 총 22건을 발행했습니다.</li><li><strong>홈페이지 탐색 경험 개선</strong> — 플로팅 배너와 피부 고민 기반 시술·화장품 안내 서비스를 정비하고 ‘제주리프팅’ 허브 페이지를 신설했습니다.</li><li><strong>홈페이지 유입 성장</strong> — 방문은 11,718회로 7월보다 20.9% 증가했고, 방문자 5,649명이 확인됐습니다.</li><li><strong>위챗 및 상담 채널 성장</strong> — 위챗은 월말 720명으로 167명 순증했고, 외국인 상담은 99건으로 7월 58건보다 70.7% 증가했습니다. 위챗 80건을 중심으로 라인 12건과 인스타그램 7건도 확인됐습니다.</li><li><strong>브랜드·신뢰 접점 정비</strong> — 가로·세로 브랜드 영상을 제작해 홈페이지 메인에 적용하고, 위챗 가격표·공식계정과 구글 리뷰 대응을 정비했습니다.</li><li><strong>검색 순위 변동</strong> — ‘제주피부과’ 플레이스는 최고 2위, 16일간 3위 이내를 유지했으나 월말에는 9위로 마감했습니다.</li></ul></section>
+
+      <section class="jul-card" aria-labelledby="aug-rank-title"><div class="jul-head"><h3 id="aug-rank-title">네이버 플레이스 순위 추이</h3><p>제주피부과 · 8/1–8/31</p></div><div class="jul-rank-flow" aria-label="플레이스 순위 변화"><div class="jul-rank-step"><b>3위</b><span>8/1 시작</span></div><span class="jul-rank-arrow" aria-hidden="true">→</span><div class="jul-rank-step jul-rank-step--best"><b>2위</b><span>최고 순위</span></div><span class="jul-rank-arrow" aria-hidden="true">→</span><div class="jul-rank-step"><b>9위</b><span>8/31 마감</span></div></div><div class="jul-chart"><canvas id="aug-rank-chart" role="img" aria-label="8월 제주피부과 네이버 플레이스 순위 그래프"></canvas></div><p class="jul-note">8월 중 16일을 3위 이내, 27일을 5위 이내에서 유지했습니다. 8월 28일부터 순위가 내려가 월말에는 9위로 마감했습니다.</p></section>
+
+      <section class="jul-stack" aria-label="유입 및 채널 성장"><details class="jul-detail" open><summary><span>홈페이지 유입</span><small>총 방문 11,718회</small></summary><div class="jul-detail-body"><div class="jul-row"><span>네이버</span><div class="jul-bar"><span style="width:48.1%"></span></div><b>5,638 <small>48.1%</small></b></div><div class="jul-row"><span>직접 유입</span><div class="jul-bar"><span style="width:32.2%"></span></div><b>3,776 <small>32.2%</small></b></div><div class="jul-row"><span>구글</span><div class="jul-bar"><span style="width:9.7%"></span></div><b>1,137 <small>9.7%</small></b></div><div class="jul-row"><span>기타</span><div class="jul-bar"><span style="width:10%"></span></div><b>1,167 <small>10.0%</small></b></div><p class="jul-analysis"><strong>홈페이지 방문은 전월 대비 20.9%, 방문자는 28.0% 증가했습니다.</strong> 별도 기간별 분석에서도 페이지뷰 12,852회·방문자 7,535명이 확인됐습니다. ChatGPT 관련 경로는 UTM 직접 유입 147회와 chatgpt.com 30회 등 복수 항목에서 확인되어, 중복 합산하지 않고 경로별 수치로 구분했습니다.</p></div></details><details class="jul-detail jul-detail--wechat" open><summary><span>채널 성장 · 위챗</span><small>8월 신규 179명</small></summary><div class="jul-detail-body"><p class="jul-wechat-total">월초 553명 → 월말 <strong>720명</strong> · 팔로우 취소 12명</p><div class="jul-row"><span>검색</span><div class="jul-bar"><span style="width:68.72%"></span></div><b>123 <small>68.72%</small></b></div><div class="jul-row"><span>QR 스캔</span><div class="jul-bar"><span style="width:26.82%"></span></div><b>48 <small>26.82%</small></b></div><div class="jul-row"><span>게시글</span><div class="jul-bar"><span style="width:.56%"></span></div><b>1 <small>0.56%</small></b></div><div class="jul-row"><span>기타</span><div class="jul-bar"><span style="width:3.91%"></span></div><b>7 <small>3.91%</small></b></div><p class="jul-analysis"><strong>검색 유입이 신규 팔로우의 68.72%를 차지했습니다.</strong> QR 스캔에서도 48명이 유입돼 검색과 오프라인 접점이 함께 작동했고, 신규 179명에서 취소 12명을 제외한 순증은 167명입니다.</p></div></details></section>
+
+      <section class="jul-media jul-viz-card" aria-labelledby="aug-media-title"><div class="jul-viz-head"><h3 id="aug-media-title">당근비즈니스 광고 성과</h3><p>8월 · 광고 게시물 1개</p></div><p class="jul-visual-label">광고 성과 흐름 · 노출 → 반응</p><div class="jul-funnel" aria-label="당근비즈니스 광고 성과 흐름"><div class="jul-funnel-row"><div class="jul-funnel-label"><span>노출</span><b>18,322회</b></div><div class="jul-funnel-track"><span style="width:100%"></span></div></div><div class="jul-funnel-row"><div class="jul-funnel-label"><span>도달</span><b>8,646명 <small>노출의 47.2%</small></b></div><div class="jul-funnel-track"><span style="width:47.2%"></span></div></div><div class="jul-funnel-row"><div class="jul-funnel-label"><span>클릭</span><b>185회 <small>클릭률 1.01%</small></b></div><div class="jul-funnel-track"><span style="width:1.01%"></span></div></div><div class="jul-funnel-row"><div class="jul-funnel-label"><span>반응</span><b>0건</b></div><div class="jul-funnel-track"><span style="width:0%"></span></div></div></div><p class="jul-region-title">지역별 노출 분포</p><div class="jul-region-bar" role="img" aria-label="연동 36.2%, 노형동 35.0%, 기타 지역 28.8%"><span style="flex:36.2">연동 36.2%</span><span style="flex:35">노형동 35.0%</span><span style="flex:28.8">기타 28.8%</span></div><ul class="jul-legend"><li><i style="background:#d96214"></i>연동 6,636회</li><li><i style="background:#e58a48"></i>노형동 6,406회</li><li><i style="background:#b9bdc4"></i>기타 지역 5,280회</li></ul></section>
+
+      <section class="jul-content" aria-labelledby="aug-content-title"><div class="jul-viz-card"><div class="jul-viz-head"><h3 id="aug-content-title">콘텐츠 발행 내역</h3><span class="jul-total-chip">22건</span></div><p class="jul-visual-label">채널별 발행 구성</p><div class="jul-segmented" role="img" aria-label="블로그 11건, 위챗 5건, 홈페이지 4건, 기타 2건"><span class="jul-segment jul-segment--blog" style="flex:11">블로그 11</span><span class="jul-segment jul-segment--wechat" style="flex:5">위챗 5</span><span class="jul-segment jul-segment--home" style="flex:4">홈페이지 4</span><span class="jul-segment jul-segment--other" style="flex:2"></span></div><ul class="jul-legend"><li><i style="background:#ec5b00"></i>블로그 11건</li><li><i style="background:#079a64"></i>위챗 5건</li><li><i style="background:#6d20a8"></i>홈페이지 4건</li><li><i style="background:#68778e"></i>기타 2건</li></ul><p class="jul-content-summary">총 22건을 발행했습니다. 국문 콘텐츠 17건과 중국어 위챗 콘텐츠 5건으로 구성해 국내 검색 주제와 외국인 시술 안내를 함께 확장했습니다.</p></div><div id="aug-content-area" style="overflow-x:auto;"><table class="content-table"><thead><tr><th>#</th><th>제목</th><th>채널</th></tr></thead><tbody>
+        <tr><td>1</td><td>좁쌀여드름, 선크림만 바르면 트러블이 생기는 이유<span style="color:var(--muted);font-size:12px;"> 2026-08-03</span></td><td><span class="tag tag-homepage">기타</span></td></tr>
+        <tr><td>2</td><td>여드름, 압출만 반복하면 왜 다시 생길까요?<span style="color:var(--muted);font-size:12px;"> 2026-08-03</span></td><td><span class="tag tag-daangn">당근비즈니스</span></td></tr>
+        <tr><td>3</td><td>제주등드름, 여름철 등과 가슴에 트러블이 늘어나는 이유<span style="color:var(--muted);font-size:12px;"> 2026-08-04</span></td><td><span class="tag tag-blog">블로그</span></td></tr>
+        <tr><td>4</td><td>제주햇빛알레르기, 일광화상과 어떻게 구분할까요?<span style="color:var(--muted);font-size:12px;"> 2026-08-04</span></td><td><span class="tag tag-blog">블로그</span></td></tr>
+        <tr><td>5</td><td>제주피부건조, 습한 여름에도 피부가 당기고 건조한 이유<span style="color:var(--muted);font-size:12px;"> 2026-08-04</span></td><td><span class="tag tag-blog">블로그</span></td></tr>
+        <tr><td>6</td><td>제주블랙헤드, 코의 검은 점은 모두 피지일까요?<span style="color:var(--muted);font-size:12px;"> 2026-08-04</span></td><td><span class="tag tag-blog">블로그</span></td></tr>
+        <tr><td>7</td><td>제주비립종, 한관종·편평사마귀와 어떻게 다를까요?<span style="color:var(--muted);font-size:12px;"> 2026-08-04</span></td><td><span class="tag tag-blog">블로그</span></td></tr>
+        <tr><td>8</td><td>제주피부염, 바다와 수영장에 다녀온 뒤 피부가 가려운 이유<span style="color:var(--muted);font-size:12px;"> 2026-08-04</span></td><td><span class="tag tag-blog">블로그</span></td></tr>
+        <tr><td>9</td><td>제주잡티치료, 휴가 후 진해진 색소를 바로 치료해도 될까요?<span style="color:var(--muted);font-size:12px;"> 2026-08-04</span></td><td><span class="tag tag-blog">블로그</span></td></tr>
+        <tr><td>10</td><td>济州岛热玛吉｜Thermage FLX适合什么样的脸部松弛？<span style="color:var(--muted);font-size:12px;"> 2026-08-07</span></td><td><span class="tag tag-wechat">위챗</span></td></tr>
+        <tr><td>11</td><td>济州岛二代美版超声刀｜Ultherapy PRIME适合什么样的脸部松弛？<span style="color:var(--muted);font-size:12px;"> 2026-08-07</span></td><td><span class="tag tag-wechat">위챗</span></td></tr>
+        <tr><td>12</td><td>济州岛热玛吉和美版超声刀｜Thermage FLX与Ultherapy PRIME应该怎么选？<span style="color:var(--muted);font-size:12px;"> 2026-08-07</span></td><td><span class="tag tag-wechat">위챗</span></td></tr>
+        <tr><td>13</td><td>여름 자외선 노출 후 리프팅·스킨부스터, 언제 받아야 할까요?<span style="color:var(--muted);font-size:12px;"> 2026-08-13</span></td><td><span class="tag tag-blog">블로그</span></td></tr>
+        <tr><td>14</td><td>济州岛丽珠兰｜Rejuran适合干燥、细纹还是肤质问题？<span style="color:var(--muted);font-size:12px;"> 2026-08-14</span></td><td><span class="tag tag-wechat">위챗</span></td></tr>
+        <tr><td>15</td><td>济州岛Re2O｜这种ECM胶原水光和丽珠兰有什么不同？<span style="color:var(--muted);font-size:12px;"> 2026-08-14</span></td><td><span class="tag tag-wechat">위챗</span></td></tr>
+        <tr><td>16</td><td>제주 여드름 흉터 치료, 염증과 자국을 먼저 안정시킨 뒤 굴곡을 봅니다<span style="color:var(--muted);font-size:12px;"> 2026-08-14</span></td><td><span class="tag tag-homepage">홈페이지</span></td></tr>
+        <tr><td>17</td><td>제주 모공치료, 스킨케어만 반복한다고 모공이 줄어들까요? 피부과 전문의가 보는 4가지 모공 원인<span style="color:var(--muted);font-size:12px;"> 2026-08-21</span></td><td><span class="tag tag-homepage">홈페이지</span></td></tr>
+        <tr><td>18</td><td>제주 기미치료, 기미·흑자·주근깨부터 구분해야 하는 이유<span style="color:var(--muted);font-size:12px;"> 2026-08-21</span></td><td><span class="tag tag-homepage">홈페이지</span></td></tr>
+        <tr><td>19</td><td>제주 기미치료, 잡티 레이저처럼 한 번에 지우기 어려운 이유<span style="color:var(--muted);font-size:12px;"> 2026-08-24</span></td><td><span class="tag tag-blog">블로그</span></td></tr>
+        <tr><td>20</td><td>제주 모공치료, 코 모공과 볼 모공을 같은 방식으로 관리하지 마세요<span style="color:var(--muted);font-size:12px;"> 2026-08-24</span></td><td><span class="tag tag-blog">블로그</span></td></tr>
+        <tr><td>21</td><td>제주 여드름 흉터 치료, 붉은 자국과 패인 흉터부터 구분하세요<span style="color:var(--muted);font-size:12px;"> 2026-08-24</span></td><td><span class="tag tag-blog">블로그</span></td></tr>
+        <tr><td>22</td><td>제주 써마지FLX, 피부 탄력과 얼굴 볼륨을 함께 지키는 리프팅 설계<span style="color:var(--muted);font-size:12px;"> 2026-08-31</span></td><td><span class="tag tag-homepage">홈페이지</span></td></tr>
+      </tbody></table></div></section>
+
+      <section class="jul-consult-card" aria-labelledby="aug-consult-title"><div class="jul-viz-head"><h3 id="aug-consult-title">외국인 상담 현황</h3><span class="jul-total-chip">99건</span></div><p class="jul-visual-label">채널별 상담 구성</p><div class="jul-segmented" role="img" aria-label="위챗 80건, 라인 12건, 인스타그램 7건"><span class="jul-segment jul-segment--wechat" style="flex:80">위챗 80</span><span class="jul-segment jul-segment--line" style="flex:12">라인 12</span><span class="jul-segment jul-segment--insta" style="flex:7">인스타 7</span></div><ul class="jul-legend"><li><i style="background:#079a64"></i>위챗 80건 · 80.8%</li><li><i style="background:#72a928"></i>라인 12건 · 12.1%</li><li><i style="background:#b61766"></i>인스타 7건 · 7.1%</li></ul><div class="jul-consult-chart"><canvas id="aug-consult-chart" role="img" aria-label="8월 채널별 일자 상담 건수 그래프"></canvas></div><p class="jul-consult-note">8월 등록 상담은 총 99건으로 7월 58건보다 70.7% 증가했습니다. 위챗 80건(80.8%)이 가장 큰 상담 접점이었고, 라인 12건과 인스타그램 7건도 함께 집계했습니다. 상담 원문과 개인정보는 제외했습니다.</p></section>
+    </article>
+  </div><!-- /panel-aug -->
+
+  <!-- ══════════════════════════════════
+       7월 보고서
+  ══════════════════════════════════ -->
+
+  <div class="report-panel" id="panel-jul">
     <article class="jul-report">
       <div class="jul-topline"><span><strong>노형아름다운피부과</strong> · 2026년 7월 마케팅 성과 리포트</span><time datetime="2026-08-03">기준일 2026.08.03</time></div>
       <header class="jul-hero"><p class="jul-kicker">July performance brief</p><h2>7월, 상위권을 지키며<br>유입을 넓혔습니다</h2><p class="jul-hero-copy">홈페이지 방문은 9,691회로 늘었고, 네이버는 전체 유입의 45.8%를 차지했습니다. 플레이스는 월말 3위로 회복해 검색 접점을 안정적으로 유지했습니다.</p><div class="jul-kpis" aria-label="7월 핵심 성과"><div class="jul-kpi"><span>홈페이지 방문</span><strong>9,691<em>회</em></strong><p>방문자 4,414명</p></div><div class="jul-kpi jul-kpi--green"><span>플레이스 최고 순위</span><strong>2<em>위</em></strong><p>7/31 월말 3위</p></div><div class="jul-kpi jul-kpi--green"><span>위챗 순증</span><strong>118<em>명</em></strong><p>435명 → 553명</p></div></div></header>
@@ -2896,6 +2944,40 @@
   }
 
 
+  function drawAugustConsultChart() {
+    const canvas = document.getElementById('aug-consult-chart');
+    if (!canvas) return;
+    const width = Math.max(canvas.clientWidth, 280), height = Math.max(canvas.clientHeight, 150), dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(width * dpr); canvas.height = Math.round(height * dpr);
+    const ctx = canvas.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, width, height);
+    const daily = [[1,0,0],[2,2,0],[4,0,1],[0,1,0],[1,1,1],[0,0,0],[3,0,0],[1,0,0],[6,0,0],[6,0,1],[2,0,0],[3,2,0],[5,2,0],[2,0,1],[1,0,1],[2,0,0],[2,0,0],[7,0,1],[2,0,0],[1,0,0],[5,0,0],[1,0,1],[2,0,0],[3,0,0],[4,0,0],[3,1,0],[4,0,0],[1,2,0],[2,0,0],[2,0,0],[2,1,0]];
+    const colors = ['#079a64','#72a928','#b61766'];
+    const pad = {top:11,right:6,bottom:27,left:24}, cw = width - pad.left - pad.right, ch = height - pad.top - pad.bottom, max = 8;
+    const y = value => pad.top + ch - (value / max) * ch;
+    [0,4,8].forEach(value => { ctx.strokeStyle = '#dceee5'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(pad.left, y(value)); ctx.lineTo(width-pad.right, y(value)); ctx.stroke(); ctx.fillStyle = '#7a8a80'; ctx.font = '700 10px Apple SD Gothic Neo, Noto Sans KR, sans-serif'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle'; ctx.fillText(String(value), pad.left-6, y(value)); });
+    const slot = cw / daily.length, barWidth = Math.max(4, Math.min(11, slot * .62));
+    daily.forEach((values, index) => { let running = 0; values.forEach((value, series) => { if (!value) return; const x = pad.left + index * slot + (slot-barWidth)/2; const top = y(running + value); const bottom = y(running); ctx.fillStyle = colors[series]; ctx.fillRect(x, top, barWidth, Math.max(2, bottom-top)); running += value; }); });
+    ctx.fillStyle = '#718278'; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic'; ctx.font = '700 10px Apple SD Gothic Neo, Noto Sans KR, sans-serif'; [[1,0],[9,8],[17,16],[25,24],[31,30]].forEach(([label,index]) => ctx.fillText('8.' + label, pad.left + index * slot + slot/2, height-7));
+  }
+
+  function drawAugustRankChart() {
+    const canvas = document.getElementById('aug-rank-chart');
+    if (!canvas) return;
+    const width = Math.max(canvas.clientWidth, 280), height = Math.max(canvas.clientHeight, 180), dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(width * dpr); canvas.height = Math.round(height * dpr);
+    const ctx = canvas.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, width, height);
+    const ranks = [3,3,3,3,3,3,4,3,2,3,3,3,3,3,3,3,4,4,4,4,3,4,4,5,5,5,5,8,9,9,9];
+    const pad = {top:27,right:9,bottom:29,left:31}, cw = width - pad.left - pad.right, ch = height - pad.top - pad.bottom;
+    const x = i => pad.left + cw * i / (ranks.length - 1), y = rank => pad.top + ch * ((rank - 1) / 9);
+    ctx.fillStyle = '#f4fbf8'; ctx.fillRect(pad.left, y(1), cw, y(3) - y(1));
+    ctx.font = '700 11px Apple SD Gothic Neo, Noto Sans KR, sans-serif'; ctx.textBaseline = 'middle';
+    [1,3,5,7,9].forEach(rank => { ctx.strokeStyle = '#e5ecf4'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(pad.left, y(rank)); ctx.lineTo(width-pad.right, y(rank)); ctx.stroke(); ctx.fillStyle = '#7b899d'; ctx.textAlign = 'right'; ctx.fillText(String(rank) + '위', pad.left-7, y(rank)); });
+    ctx.fillStyle = '#0b9a62'; ctx.textAlign = 'left'; ctx.fillText('상위 3위권', pad.left+8, y(1)+12);
+    ctx.strokeStyle = '#1769e8'; ctx.lineWidth = 2.5; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.beginPath(); ranks.forEach((rank, i) => { if (i === 0) ctx.moveTo(x(i), y(rank)); else ctx.lineTo(x(i), y(rank)); }); ctx.stroke();
+    ranks.forEach((rank, i) => { ctx.fillStyle = rank <= 3 ? '#0b9a62' : rank >= 8 ? '#d96214' : '#1769e8'; ctx.beginPath(); ctx.arc(x(i), y(rank), rank === 2 || rank >= 8 ? 3.8 : 2.6, 0, Math.PI * 2); ctx.fill(); });
+    ctx.fillStyle = '#738197'; ctx.textAlign = 'center'; [['8.1',0],['8.11',10],['8.21',20],['8.31',30]].forEach(item => ctx.fillText(item[0], x(item[1]), height-9));
+  }
+
   function drawJulyConsultChart() {
     const canvas = document.getElementById('jul-consult-chart');
     if (!canvas) return;
@@ -2945,6 +3027,7 @@
     if (evt && evt.currentTarget) evt.currentTarget.classList.add('active');
     document.querySelectorAll('.report-panel').forEach(p => p.classList.remove('active'));
     document.getElementById('panel-' + id).classList.add('active');
+    if (id === 'aug') { drawAugustRankChart(); drawAugustConsultChart(); }
     if (id === 'jul') loadJulyContent();
     if (id === 'jun') loadJuneContent();
     if (id === 'may') loadMayContent();
@@ -2952,8 +3035,10 @@
     if (id === 'mar') loadMarchContent();
   }
 
-  // 페이지 로드 시 6월 탭이 기본이므로 즉시 로드
-  document.addEventListener('DOMContentLoaded', () => { loadJulyContent(); drawJulyRankChart(); });
+  // 페이지 로드 시 8월 탭을 기본으로 표시
+  document.addEventListener('DOMContentLoaded', () => { drawAugustRankChart(); drawAugustConsultChart(); loadJulyContent(); drawJulyRankChart(); });
+  let augustResizeTimer;
+  window.addEventListener('resize', () => { window.clearTimeout(augustResizeTimer); augustResizeTimer = window.setTimeout(() => { drawAugustRankChart(); drawAugustConsultChart(); }, 120); });
   let julyRankResizeTimer;
   window.addEventListener('resize', () => { window.clearTimeout(julyRankResizeTimer); julyRankResizeTimer = window.setTimeout(drawJulyRankChart, 120); });
 </script>

@@ -389,6 +389,14 @@
     @media(max-width:640px){.jul-viz-card,.jul-consult-card{padding:16px 14px;border-radius:15px}.jul-viz-head h3{font-size:17px}.jul-segmented{height:38px;border-radius:10px}.jul-segment{font-size:12px}.jul-legend{gap:8px 13px}.jul-legend li{font-size:12px}.jul-funnel-label{font-size:13px}.jul-funnel-label b{font-size:15px}.jul-funnel-track{height:16px}.jul-region-bar{height:32px}.jul-region-bar span{font-size:11px}.jul-consult-chart{height:172px;margin-top:17px}.jul-consult-chart canvas{height:162px}}
 
     .jul-branch{display:inline-block;margin-left:5px;color:#748198;font-size:11px;font-weight:800}
+    .aug-pause-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:#fff0ec;color:#b8472f;font-size:11px;font-weight:900;white-space:nowrap}
+    .aug-pause-chip::before{content:'';width:7px;height:7px;border-radius:50%;background:#d35c42}
+    .aug-pause-note{margin-top:14px!important;padding:13px 14px;border-left:3px solid #d35c42;background:#fff7f4;color:#70473e;font-size:13px;font-weight:700;line-height:1.65;word-break:keep-all}
+    .aug-ad-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.aug-ad-card{padding:18px;background:#fff;border:1px solid var(--line);border-radius:16px}
+    .aug-ad-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:15px}.aug-ad-head h4{color:var(--ink);font-size:16px;letter-spacing:-.5px}.aug-ad-head p{margin-top:4px;color:#6f7d91;font-size:11px;font-weight:800}
+    .aug-ad-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.aug-ad-metric{padding:11px 12px;border-radius:11px;background:#f5f7fa}.aug-ad-metric span{display:block;color:#7a8799;font-size:10px;font-weight:800}.aug-ad-metric strong{display:block;margin-top:4px;color:#17284a;font-size:18px;letter-spacing:-.5px}
+    .aug-channel-note{margin-top:12px!important;color:#53627a;font-size:12px;font-weight:700;line-height:1.6}
+    @media(max-width:640px){.aug-ad-grid{grid-template-columns:1fr}.aug-ad-card{padding:15px 13px}.aug-pause-chip{font-size:10px;padding:5px 8px}}
   </style>
 </head>
 <body>
@@ -407,7 +415,8 @@
 <main class="container">
   <p class="timeline-label">보고서 목록</p>
   <div class="month-tabs">
-    <div class="month-tab active" onclick="switchTab('jul', event)">2026년 7월</div>
+    <div class="month-tab active" onclick="switchTab('aug', event)">2026년 8월</div>
+    <div class="month-tab" onclick="switchTab('jul', event)">2026년 7월</div>
     <div class="month-tab" onclick="switchTab('jun', event)">2026년 6월</div>
     <div class="month-tab" onclick="switchTab('may', event)">2026년 5월</div>
     <div class="month-tab" onclick="switchTab('apr', event)">2026년 4월</div>
@@ -418,7 +427,59 @@
        6월 보고서
   ═══════════════════════════════════════ -->
 
-  <div class="report-panel active" id="panel-jul">
+  <!-- ═══════════════════════════════════════
+       8월 보고서
+  ═══════════════════════════════════════ -->
+  <div class="report-panel active" id="panel-aug">
+    <article class="jul-report">
+      <div class="jul-topline"><span><strong>365경희부부한의원</strong> · 2026년 8월 통합 마케팅 성과 리포트</span><time datetime="2026-09-01">기준일 2026.09.01</time></div>
+      <header class="jul-hero"><p class="jul-kicker">August performance brief</p><h2>8월, 세 지점의<br>콘텐츠 기반을 넓혔습니다</h2><p class="jul-hero-copy">피부클리닉·조천점·화북점의 블로그와 통합 홈페이지·당근에 총 29건을 발행했습니다. 홈페이지와 블로그에서 검색 유입을 확인했으며, 광고와 화북점 순위 작업은 원장님 요청에 따라 현재 중단된 상태입니다.</p><div class="jul-kpis" aria-label="8월 핵심 성과"><div class="jul-kpi"><span>홈페이지 페이지뷰</span><strong>5,534<em>회</em></strong><p>방문자 2,808명 · 세 지점 통합</p></div><div class="jul-kpi jul-kpi--green"><span>블로그 통합 조회</span><strong>2,315<em>회</em></strong><p>피부클리닉·조천점·화북점</p></div><div class="jul-kpi jul-kpi--green"><span>콘텐츠 발행</span><strong>29<em>건</em></strong><p>블로그 18 · 홈페이지 9 · 당근 2</p></div></div></header>
+
+      <section class="jul-execution" aria-labelledby="aug-execution-title"><div class="jul-head"><h3 id="aug-execution-title">8월 종합 요약</h3></div><p class="jul-work-intro">발행 콘텐츠와 8월 운영 업무, 채널별 성과를 종합하면 검색 콘텐츠 확대와 핵심 시술 정보 정비가 함께 진행된 달입니다.</p><ul class="jul-task-list"><li><strong>콘텐츠 기반 확대</strong> — 세 지점 블로그 18건, 홈페이지 9건, 당근 2건으로 총 29건을 발행했습니다.</li><li><strong>지점별 검색 주제 강화</strong> — 피부클리닉은 제모·색소·모공·흉터, 조천점은 통증·추나·감압치료, 화북점은 근골격계·교통사고·한방다이어트 주제를 보강했습니다.</li><li><strong>핵심 시술 정보 정비</strong> — 탄력·슈링크·올리지오·레이저토닝·모공 및 흉터 관련 페이지를 정리하고 치료 정보를 보강했습니다.</li><li><strong>네이버 중심 유입 확인</strong> — 홈페이지는 네이버 유입이 5,331회로 가장 컸고, 블로그 3개 채널은 총 2,315회 조회됐습니다.</li><li><strong>광고 성과 확보 후 중단</strong> — 당근과 인스타그램에서 노출·클릭·웹사이트 방문이 확인됐으나 원장님 요청으로 현재 운영을 중단했습니다.</li><li><strong>플레이스 순위 하락</strong> — 화북점 ‘제주한의원’ 순위는 작업 중단 이후 4위에서 19위로 낮아졌습니다.</li></ul></section>
+
+      <section class="jul-stack" aria-label="홈페이지 및 블로그 성과"><details class="jul-detail" open><summary><span>공식 홈페이지 성과</span><small>8월 페이지뷰 5,534회</small></summary><div class="jul-detail-body"><div class="jul-row"><span>페이지뷰</span><div class="jul-bar"><span style="width:87.7%"></span></div><b>5,534회</b></div><div class="jul-row"><span>방문자</span><div class="jul-bar"><span style="width:44.5%"></span></div><b>2,808명</b></div><div class="jul-row"><span>유입분석 방문</span><div class="jul-bar"><span style="width:100%"></span></div><b>6,310회</b></div><div class="jul-row"><span>유입분석 방문자</span><div class="jul-bar"><span style="width:47.3%"></span></div><b>2,987명</b></div><p class="jul-analysis"><strong>유입분석 기준 네이버가 5,331회로 전체 방문의 84.5%를 차지했습니다.</strong> 직접 유입은 895회(14.2%)였고, 나머지는 네이버 블로그 위젯·카카오·자사 도메인·다음·구글 등에서 유입됐습니다. 페이지뷰 화면과 유입분석 화면은 집계 기준이 달라 각각 구분해 표시했습니다.</p></div></details><details class="jul-detail jul-detail--wechat" open><summary><span>블로그 통합 조회</span><small>3개 블로그 · 2,315회</small></summary><div class="jul-detail-body"><p class="jul-wechat-total">피부클리닉 · 조천점 · 화북점 합계 <strong>2,315회</strong></p><div class="jul-row"><span>피부클리닉</span><div class="jul-bar"><span style="width:80.95%"></span></div><b>1,874 <small>81.0%</small></b></div><div class="jul-row"><span>조천점</span><div class="jul-bar"><span style="width:16.11%"></span></div><b>373 <small>16.1%</small></b></div><div class="jul-row"><span>화북점</span><div class="jul-bar"><span style="width:2.94%"></span></div><b>68 <small>2.9%</small></b></div><p class="jul-analysis"><strong>피부클리닉은 플레이스·블로그 경로, 조천점은 검색 유입, 화북점은 블로그·플레이스 경로가 중심이었습니다.</strong> 피부클리닉의 대표 검색어는 ‘제주 레이저제모’, 화북점은 ‘제주척추관협착증잘보는곳’으로 확인됐습니다. 조천점은 검색 유입 비중이 60.49%였으나 일부 비진료성 검색어가 포함돼 지속적인 키워드 정제가 필요합니다.</p></div></details></section>
+
+      <section class="jul-card" aria-labelledby="aug-rank-title"><div class="jul-head"><h3 id="aug-rank-title">네이버 플레이스 순위 추이 (화북점)</h3><p>‘제주한의원’ · 8/1–8/31</p></div><div class="jul-rank-flow" aria-label="화북점 제주한의원 키워드 순위 변화"><div class="jul-rank-step jul-rank-step--best"><b>4위</b><span>8/1 시작</span></div><span class="jul-rank-arrow" aria-hidden="true">→</span><div class="jul-rank-step"><b>8–10위</b><span>중순 구간</span></div><span class="jul-rank-arrow" aria-hidden="true">→</span><div class="jul-rank-step"><b>19위</b><span>8/31 마감</span></div></div><div class="jul-chart"><canvas id="aug-kyunghee-rank-chart" role="img" aria-label="8월 화북점 제주한의원 네이버 플레이스 순위 그래프"></canvas></div><p class="aug-pause-note"><strong>순위 작업 중단 이후 순위가 점차 하락했습니다.</strong> 8월 1일 4위에서 월 중순 8~10위권, 8월 31일 19위로 변동했습니다. 현재 해당 순위 작업은 원장님 요청으로 중단된 상태입니다.</p></section>
+
+      <section class="jul-viz-card" aria-labelledby="aug-ads-title"><div class="jul-viz-head"><h3 id="aug-ads-title">광고 운영 성과</h3><span class="aug-pause-chip">현재 중단</span></div><p class="jul-visual-label">8월 집행 성과 · 중단 전 확인 수치</p><div class="aug-ad-grid"><div class="aug-ad-card"><div class="aug-ad-head"><div><h4>당근비즈니스</h4><p>지역 광고</p></div><span class="aug-pause-chip">원장님 요청</span></div><div class="aug-ad-metrics"><div class="aug-ad-metric"><span>노출</span><strong>14,667회</strong></div><div class="aug-ad-metric"><span>도달</span><strong>5,441명</strong></div><div class="aug-ad-metric"><span>클릭</span><strong>173회</strong></div><div class="aug-ad-metric"><span>클릭률</span><strong>1.18%</strong></div></div><p class="aug-channel-note">반응 3건(쿠폰 다운로드 1·단골 1·관심 1)이 확인됐습니다. 운영 도중 원장님 요청으로 중단했습니다.</p></div><div class="aug-ad-card"><div class="aug-ad-head"><div><h4>인스타그램</h4><p>웹사이트 방문 광고</p></div><span class="aug-pause-chip">원장님 요청</span></div><div class="aug-ad-metrics"><div class="aug-ad-metric"><span>조회</span><strong>약 1.1만회</strong></div><div class="aug-ad-metric"><span>도달</span><strong>5,997명</strong></div><div class="aug-ad-metric"><span>링크 클릭</span><strong>235회</strong></div><div class="aug-ad-metric"><span>웹사이트 방문</span><strong>203회</strong></div></div><p class="aug-channel-note">프로필 방문 55회, 외부 링크 클릭 3회, 팔로우 2명, 저장 3회·좋아요 2회·공유 1회가 확인됐습니다. 현재 광고는 중단 상태입니다.</p></div></div></section>
+
+      <section class="jul-content" aria-labelledby="aug-content-title"><div class="jul-viz-card"><div class="jul-viz-head"><h3 id="aug-content-title">콘텐츠 발행 내역</h3><span class="jul-total-chip">29건</span></div><p class="jul-visual-label">채널별 발행 구성</p><div class="jul-segmented" role="img" aria-label="블로그 18건, 홈페이지 9건, 당근 2건"><span class="jul-segment jul-segment--blog" style="flex:18">블로그 18</span><span class="jul-segment jul-segment--home" style="flex:9">홈페이지 9</span><span class="jul-segment jul-segment--insta" style="flex:2">당근 2</span></div><ul class="jul-legend"><li><i style="background:#ec5b00"></i>블로그 18건</li><li><i style="background:#6d20a8"></i>홈페이지 9건</li><li><i style="background:#b61766"></i>당근 2건</li></ul><p class="jul-content-summary">피부클리닉 블로그 6건, 조천점 블로그 7건, 화북점 블로그 5건과 홈페이지 칼럼 9건, 당근비즈니스 게시물 2건을 발행했습니다.</p></div><div id="aug-content-area" style="overflow-x:auto"><table class="content-table"><thead><tr><th>#</th><th>일자</th><th>제목</th><th>채널 / 지점</th></tr></thead><tbody>
+            <tr><td>1</td><td>8/4</td><td>삼화지구 한의원, 어깨부터 팔과 손까지 저린 목디스크 증상이 있다면</td><td><span class="tag tag-blog">블로그</span><span class="jul-branch">화북점</span></td></tr>
+            <tr><td>2</td><td>8/5</td><td>8월 진료일정 안내</td><td><span class="tag tag-blog">블로그</span><span class="jul-branch">피부클리닉</span></td></tr>
+            <tr><td>3</td><td>8/5</td><td>제주 흉터치료, 새살침은 패인 여드름흉터에 어떻게 접근할까요?</td><td><span class="tag tag-homepage">홈페이지</span><span class="jul-branch">피부클리닉</span></td></tr>
+            <tr><td>4</td><td>8/6</td><td>제주 레이저제모, 한 번에 끝나지 않는 이유와 시술 간격</td><td><span class="tag tag-blog">블로그</span><span class="jul-branch">피부클리닉</span></td></tr>
+            <tr><td>5</td><td>8/6</td><td>제주 목통증, 스마트폰을 본 뒤 목과 어깨가 뻐근해지는 이유</td><td><span class="tag tag-blog">블로그</span><span class="jul-branch">조천점</span></td></tr>
+            <tr><td>6</td><td>8/6</td><td>제주 여드름흉터, 패인 모양에 따라 관리 방법이 달라지는 이유</td><td><span class="tag tag-homepage">홈페이지</span><span class="jul-branch">피부클리닉</span></td></tr>
+            <tr><td>7</td><td>8/6</td><td>제주 척추관협착증, 조금만 걸어도 다리가 아프고 쉬면 괜찮아지는 이유</td><td><span class="tag tag-blog">블로그</span><span class="jul-branch">화북점</span></td></tr>
+            <tr><td>8</td><td>8/7</td><td>제주 어깨통증, 목에서 시작된 통증과 어깨질환은 어떻게 다를까요?</td><td><span class="tag tag-blog">블로그</span><span class="jul-branch">조천점</span></td></tr>
+            <tr><td>9</td><td>8/8</td><td>제주 급성요통, 허리를 삐끗했을 때 피해야 할 행동</td><td><span class="tag tag-blog">블로그</span><span class="jul-branch">조천점</span></td></tr>
+            <tr><td>10</td><td>8/8</td><td>제주 모공치료, CO2 프락셀과 툴리움 레이저의 차이</td><td><span class="tag tag-homepage">홈페이지</span><span class="jul-branch">피부클리닉</span></td></tr>
+            <tr><td>11</td><td>8/10</td><td>제주 교통사고 후유증, 사고 직후 괜찮아도 통증이 늦게 나타나는 이유</td><td><span class="tag tag-blog">블로그</span><span class="jul-branch">조천점</span></td></tr>
+            <tr><td>12</td><td>8/10</td><td>제주 모공관리, 피지형·탄력형·흉터형 모공의 차이</td><td><span class="tag tag-blog">블로그</span><span class="jul-branch">피부클리닉</span></td></tr>
+            <tr><td>13</td><td>8/10</td><td>제주 편평사마귀, 좁쌀처럼 보여도 같은 피부문제는 아닐 수 있습니다</td><td><span class="tag tag-homepage">홈페이지</span><span class="jul-branch">피부클리닉</span></td></tr>
+            <tr><td>14</td><td>8/10</td><td>화북 한의원, 운동을 쉬어도 러닝 후 무릎통증이 다시 나타나는 이유</td><td><span class="tag tag-blog">블로그</span><span class="jul-branch">화북점</span></td></tr>
+            <tr><td>15</td><td>8/12</td><td>제주 허리통증, 오래 앉았다 일어날 때 허리가 아픈 이유</td><td><span class="tag tag-blog">블로그</span><span class="jul-branch">조천점</span></td></tr>
+            <tr><td>16</td><td>8/13</td><td>삼화지구 레이저제모, 몇 번 받아야 할까요?</td><td><span class="tag tag-done">당근</span><span class="jul-branch">피부클리닉</span></td></tr>
+            <tr><td>17</td><td>8/13</td><td>제주 기미, 잡티·흑자와 어떻게 다를까요?</td><td><span class="tag tag-blog">블로그</span><span class="jul-branch">피부클리닉</span></td></tr>
+            <tr><td>18</td><td>8/13</td><td>제주 여드름 흉터, 염증·붉은 자국·패인 흉터는 관리 순서가 다릅니다</td><td><span class="tag tag-homepage">홈페이지</span><span class="jul-branch">피부클리닉</span></td></tr>
+            <tr><td>19</td><td>8/14</td><td>제주 추나요법, 목·허리 통증이 있을 때 먼저 확인해야 할 것</td><td><span class="tag tag-blog">블로그</span><span class="jul-branch">조천점</span></td></tr>
+            <tr><td>20</td><td>8/14</td><td>제주 화북 기미·잡티, 햇빛이 강한 여름 뒤 확인할 점</td><td><span class="tag tag-done">당근</span><span class="jul-branch">피부클리닉</span></td></tr>
+            <tr><td>21</td><td>8/17</td><td>제주 척추 감압치료, 키네트랙 맥킨지는 어떻게 활용될까요?</td><td><span class="tag tag-blog">블로그</span><span class="jul-branch">조천점</span></td></tr>
+            <tr><td>22</td><td>8/21</td><td>삼화지구 한방피부과, 여드름 압출이 필요한 경우와 피해야 할 때</td><td><span class="tag tag-blog">블로그</span><span class="jul-branch">피부클리닉</span></td></tr>
+            <tr><td>23</td><td>8/21</td><td>제주 흑자 제거, 기미·잡티와 다른 점부터 확인해야 하는 이유</td><td><span class="tag tag-homepage">홈페이지</span><span class="jul-branch">피부클리닉</span></td></tr>
+            <tr><td>24</td><td>8/24</td><td>제주 남자 레이저제모, 면도 자극이 반복될 때 확인할 점</td><td><span class="tag tag-blog">블로그</span><span class="jul-branch">피부클리닉</span></td></tr>
+            <tr><td>25</td><td>8/24</td><td>화북 교통사고 한의원, 통증이 사고 며칠 뒤 나타날 수 있는 이유</td><td><span class="tag tag-blog">블로그</span><span class="jul-branch">화북점</span></td></tr>
+            <tr><td>26</td><td>8/26</td><td>제주 피부관리, 모공·각질이 함께 신경 쓰인다면? 뉴알라딘필 알아보기</td><td><span class="tag tag-homepage">홈페이지</span><span class="jul-branch">피부클리닉</span></td></tr>
+            <tr><td>27</td><td>8/31</td><td>제주 365경희부부한의원 주차안내</td><td><span class="tag tag-homepage">홈페이지</span><span class="jul-branch">통합</span></td></tr>
+            <tr><td>28</td><td>8/31</td><td>제주 한방다이어트, 식욕과 생활습관을 함께 살펴야 하는 이유</td><td><span class="tag tag-blog">블로그</span><span class="jul-branch">화북점</span></td></tr>
+            <tr><td>29</td><td>8/31</td><td>제주시 피부과 찾기 전 알아두세요｜피부결 개선, 거칠음·모공·흉터는 어떻게 다를까요?</td><td><span class="tag tag-homepage">홈페이지</span><span class="jul-branch">피부클리닉</span></td></tr>
+          </tbody></table></div></section>
+
+      <div class="next-band"><h3>9월 운영 참고사항</h3><div class="next-item"><div class="n-num">1</div><p>광고와 ‘제주한의원’ 순위 작업은 원장님 요청으로 중단 상태를 유지하며, 재개 요청 전에는 별도 집행하지 않습니다.</p></div><div class="next-item"><div class="n-num">2</div><p>블로그와 홈페이지는 8월 검색 유입 키워드를 바탕으로 피부클리닉·조천점·화북점별 정보 콘텐츠를 계속 축적합니다.</p></div><div class="next-item"><div class="n-num">3</div><p>화북점 순위는 작업 중단 이후 하락 흐름이 확인된 만큼, 재개 시에는 플레이스 정보·콘텐츠·리뷰 신호를 함께 점검합니다.</p></div></div>
+    </article>
+  </div><!-- /panel-aug -->
+
+  <div class="report-panel" id="panel-jul">
     <article class="jul-report">
       <div class="jul-topline"><span><strong>365경희부부한의원</strong> · 2026년 7월 통합 마케팅 성과 리포트</span><time datetime="2026-08-03">기준일 2026.08.03</time></div>
       <header class="jul-hero"><p class="jul-kicker">July performance brief</p><h2>7월, 세 지점의<br>검색 접점을 넓혔습니다</h2><p class="jul-hero-copy">화북점·피부클리닉·조천점의 온라인 정보를 정비하고, 공식 홈페이지와 블로그를 통해 각 지점의 검색 접점을 확장했습니다. 화북점 플레이스는 월말 3위로 회복했습니다.</p><div class="jul-kpis" aria-label="7월 핵심 성과"><div class="jul-kpi"><span>공식 홈페이지 방문</span><strong>6,415<em>회</em></strong><p>방문자 2,934명 · 세 지점 통합</p></div><div class="jul-kpi jul-kpi--green"><span>블로그 통합 조회</span><strong>2,661<em>회</em></strong><p>피부클리닉·조천점·화북점</p></div><div class="jul-kpi jul-kpi--green"><span>화북점 플레이스</span><strong>3<em>위</em></strong><p>7/31 월말 순위</p></div></div></header>
@@ -2296,10 +2357,12 @@
     if (event && event.currentTarget) event.currentTarget.classList.add('active');
     document.querySelectorAll('.report-panel').forEach(p => p.classList.remove('active'));
     document.getElementById('panel-' + id).classList.add('active');
+    requestAnimationFrame(() => { drawKyungheeRank(); drawAugustKyungheeRank(); });
   }
 
   function drawKyungheeRank(){ const c=document.getElementById('jul-kyunghee-rank-chart'); if(!c)return; const d=[6,6,6,6,7,4,4,8,8,8,9,8,8,9,9,9,9,9,9,9,9,8,10,9,10,10,4,4,4,3,3], r=c.getBoundingClientRect(), q=window.devicePixelRatio||1, w=Math.max(280,r.width),h=Math.max(170,r.height); c.width=w*q;c.height=h*q;const x=c.getContext('2d');x.scale(q,q);x.clearRect(0,0,w,h);const l=28,t=16,rr=12,b=28,p=v=>t+(v-1)/10*(h-t-b);x.strokeStyle='#e4ebf3';x.lineWidth=1;[1,3,5,7,9,11].forEach(v=>{x.beginPath();x.moveTo(l,p(v));x.lineTo(w-rr,p(v));x.stroke();x.fillStyle='#8390a5';x.font='11px sans-serif';x.fillText(v+'위',1,p(v)+4)});x.strokeStyle='#1769e8';x.lineWidth=3;x.beginPath();d.forEach((v,i)=>{const px=l+i*(w-l-rr)/(d.length-1),py=p(v);i?x.lineTo(px,py):x.moveTo(px,py)});x.stroke();d.forEach((v,i)=>{const px=l+i*(w-l-rr)/(d.length-1),py=p(v);x.fillStyle='#1769e8';x.beginPath();x.arc(px,py,3.5,0,Math.PI*2);x.fill()});x.fillStyle='#758298';x.font='11px sans-serif';x.fillText('7/1',l,h-6);x.fillText('7/31',w-rr-27,h-6)}
-  drawKyungheeRank(); window.addEventListener('resize',drawKyungheeRank);
+  function drawAugustKyungheeRank(){ const c=document.getElementById('aug-kyunghee-rank-chart'); if(!c)return; const d=[4,5,6,7,7,6,6,6,5,9,9,9,9,8,8,8,9,9,9,9,10,9,9,10,11,12,14,14,17,18,19], r=c.getBoundingClientRect(), q=window.devicePixelRatio||1, w=Math.max(280,r.width),h=Math.max(170,r.height); c.width=w*q;c.height=h*q;const x=c.getContext('2d');x.scale(q,q);x.clearRect(0,0,w,h);const l=32,t=16,rr=12,b=28,p=v=>t+(v-1)/20*(h-t-b);x.strokeStyle='#e4ebf3';x.lineWidth=1;[1,5,9,13,17,21].forEach(v=>{x.beginPath();x.moveTo(l,p(v));x.lineTo(w-rr,p(v));x.stroke();x.fillStyle='#8390a5';x.font='11px sans-serif';x.fillText(v+'위',1,p(v)+4)});x.strokeStyle='#d35c42';x.lineWidth=3;x.beginPath();d.forEach((v,i)=>{const px=l+i*(w-l-rr)/(d.length-1),py=p(v);i?x.lineTo(px,py):x.moveTo(px,py)});x.stroke();d.forEach((v,i)=>{const px=l+i*(w-l-rr)/(d.length-1),py=p(v);x.fillStyle='#d35c42';x.beginPath();x.arc(px,py,3.5,0,Math.PI*2);x.fill()});x.fillStyle='#758298';x.font='11px sans-serif';x.fillText('8/1',l,h-6);x.fillText('8/31',w-rr-27,h-6)}
+  drawKyungheeRank(); drawAugustKyungheeRank(); window.addEventListener('resize',()=>{drawKyungheeRank();drawAugustKyungheeRank()});
 </script>
 </body>
 </html>
