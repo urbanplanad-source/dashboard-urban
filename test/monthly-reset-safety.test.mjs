@@ -319,10 +319,10 @@ test('미리보기 삭제 예고는 서버가 실제로 지우는 서브 업무�
   const block = dashboard.slice(start, start + 1400);
   assert.match(block, /const allSubs = \(data\.monthlyJobs \|\| \[\]\)\.filter\(isDeletableSubJob\);/);
 
-  // 순위 업무는 별도 버킷(카운트 초기화)으로 안내해야 한다.
+  // 순위 업무는 별도 버킷(카운트 초기화 대상)으로 분리해 안내해야 한다.
   assert.match(block, /countResetJobs/);
-  assert.match(dashboard, /카운트가 0으로 초기화될 업무/);
-  assert.doesNotMatch(dashboard, /삭제될 완료 서브·순위 업무/, 'delete card must not promise 순위 deletion');
+  assert.match(dashboard, /카운트 초기화 대상/);
+  assert.doesNotMatch(dashboard, /삭제될 완료 서브·순위 업무/, 'delete card must not lump 순위 with 삭제');
 });
 
 test('미리보기 판정이 서버 패치의 kind 조건과 일치한다', async () => {
@@ -353,4 +353,86 @@ test('runMonthlyReset이 예외로 탈출해도 버튼이 영구히 잠기지 �
   // 예외 안내는 재초기화를 권하면 안 된다.
   const alertText = block.slice(block.indexOf('alert('), block.indexOf('return;'));
   assert.match(alertText, /다시 초기화하지 마시고/);
+});
+
+// ── 서버 구현을 가정하지 않는다 (라이브 Apps Script 버전 불명) ───────────
+
+function outcomeHarness() {
+  const start = dashboard.indexOf('  function summarizeResetOutcome(');
+  const end = dashboard.indexOf('  // 순수 오케스트레이션', start);
+  assert.ok(start >= 0 && end > start, 'summarizeResetOutcome must exist');
+  const context = vm.createContext({});
+  vm.runInContext(`${dashboard.slice(start, end)}
+    ;globalThis.__o = { summarizeResetOutcome, formatResetOutcome };`, context);
+  return context.__o;
+}
+
+test('초기화 결과는 예측이 아니라 before/after 비교로 보고한다', () => {
+  const { summarizeResetOutcome } = outcomeHarness();
+
+  const before = [
+    { jobId: 'a', kind: '서브', note: '완료', currentCount: 0 },
+    { jobId: 'b', kind: '필수', note: '', currentCount: 5, targetCount: 5 },
+    { jobId: 'c', kind: '순위', note: '완료 (3위)', currentCount: 2, targetCount: 4 },
+    { jobId: 'd', kind: '서브', note: '진행중', currentCount: 0 },
+  ];
+  const after = [
+    { jobId: 'b', kind: '필수', note: '', currentCount: 0, targetCount: 5 },
+    { jobId: 'c', kind: '순위', note: '', currentCount: 0, targetCount: 4 },
+    { jobId: 'd', kind: '서브', note: '진행중', currentCount: 0 },
+  ];
+
+  const out = summarizeResetOutcome(before, after, { deletedCompletedSubJobs: 1, resetJobs: 2 });
+
+  assert.deepEqual(out.removed.map(j => j.jobId), ['a'], '사라진 업무만 삭제로 본다');
+  assert.deepEqual(out.countReset.map(j => j.jobId), ['b', 'c'], '카운트가 0이 된 업무');
+  assert.deepEqual(out.noteCleared.map(j => j.jobId), ['c'], '메모가 비워진 업무');
+  assert.equal(out.reported.deletedCompletedSubJobs, 1, '서버 보고 값도 함께 전달');
+});
+
+test('서버가 처리 건수를 응답하지 않아도 결과 보고가 동작한다', () => {
+  const { summarizeResetOutcome, formatResetOutcome } = outcomeHarness();
+
+  // 라이브 버전이 v16과 달라 응답 필드가 없을 수 있다.
+  const out = summarizeResetOutcome(
+    [{ jobId: 'a', kind: '서브', note: '완료', currentCount: 0 }],
+    [],
+    null,
+  );
+  assert.deepEqual(out.removed.map(j => j.jobId), ['a']);
+  assert.deepEqual(Object.keys(out.reported), [], 'no server counters is fine');
+
+  const text = formatResetOutcome(out);
+  assert.match(text, /삭제된 업무: 1건/);
+  assert.doesNotMatch(text, /서버 보고 삭제/, 'absent counters must not be printed');
+});
+
+test('서버가 예상과 다르게 동작해도 결과 보고가 사실을 그대로 전한다', () => {
+  const { summarizeResetOutcome } = outcomeHarness();
+
+  // v16과 달리 라이브가 완료 순위 업무까지 지웠다고 가정한다.
+  const before = [
+    { jobId: 'sub', kind: '서브', note: '완료' },
+    { jobId: 'rank', kind: '순위', note: '완료', targetCount: 3, currentCount: 3 },
+  ];
+  const out = summarizeResetOutcome(before, [], null);
+
+  assert.deepEqual(out.removed.map(j => j.jobId), ['sub', 'rank'],
+    '프런트 예측과 무관하게 실제로 사라진 것을 그대로 보고해야 한다');
+});
+
+test('미리보기는 서버 동작을 단정하지 않는다', () => {
+  assert.match(dashboard, /실제로 무엇이 삭제·초기화되는지는 서버가 결정하며/);
+  // 확정적 표현이 되살아나면 안 된다.
+  assert.doesNotMatch(dashboard, />삭제될 완료 서브/);
+  assert.doesNotMatch(dashboard, />이월될 미완료 서브/);
+  assert.doesNotMatch(dashboard, />카운트가 0으로 초기화될 업무</);
+});
+
+test('초기화 완료 안내에 실제 처리 결과가 포함된다', () => {
+  const start = dashboard.indexOf('      // ── 정상 완료: 서버 응답을 source of truth로 반영한다 ──');
+  const block = dashboard.slice(start, start + 1200);
+  assert.match(block, /summarizeResetOutcome\(\s*jobsBeforeReset,/);
+  assert.match(block, /formatResetOutcome\(resetOutcome\)/);
+  assert.match(dashboard, /const jobsBeforeReset = data\.monthlyJobs \|\| \[\];/);
 });
