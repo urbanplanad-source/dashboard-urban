@@ -68,7 +68,7 @@ Codex가 이 저장소에서 항상 먼저 참고하는 작업 지시다. 이 �
 - 현재 자동 모니터링 대상은 `btskin`, `belrmon`, `kyunghee`다.
 - `check_failed` 상황에서는 `ReviewTargets.savedVisitorReviewCount`를 변경하지 않는다.
 - 리뷰 수가 증가했으나 본문 확인이 막힌 경우에도 증가 사실은 `increased_but_blocked`로 기록하고 기준 리뷰 수는 현재 확인값으로 갱신한다.
-- 텔레그램 설정이 없으면 스크립트는 `[codex-notice]` 로그로 요약을 남긴다.
+- 리뷰 변동 알림은 `[notice]` 콘솔 로그로만 남긴다. 외부 메신저 연동은 2026-09에 제거했다. 알림 채널을 다시 붙일 경우 토큰은 환경변수로만 받고 저장소에 커밋하지 않는다.
 - 실제 운영 데이터 갱신 전에는 가능하면 `review:monitor:dry-run`을 먼저 실행한다.
 
 ## Commands

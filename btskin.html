@@ -2932,15 +2932,17 @@
       '</table></div>';
   }
 
-  // ── 공통 API 로더 (summary 엔드포인트 사용) ──
+  // ── 공통 API 로더 (postLogs 엔드포인트 사용) ──
+  // 이 보고서는 공개 페이지다. summary 응답에는 상담 원문·거래처 브리프·계약·비용이
+  // 함께 들어 있어 발행 목록만 필요한 여기서는 절대 사용하지 않는다.
   let summaryCache = null;
   function loadSummary() {
     if (summaryCache) return Promise.resolve(summaryCache);
-    return fetch(API_URL + '?action=summary')
+    return fetch(API_URL + '?action=postLogs')
       .then(r => r.json())
       .then(res => {
         if (!res.success) throw new Error(res.error || 'API 오류');
-        summaryCache = (res.data.postLogs || []).map(normalizePostLog);
+        summaryCache = (res.data || []).map(normalizePostLog);
         return summaryCache;
       });
   }

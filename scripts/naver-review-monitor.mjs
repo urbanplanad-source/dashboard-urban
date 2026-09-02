@@ -80,7 +80,6 @@ async function processTarget(target, config) {
       detectedReviewCount: 0,
       newReviewsSummary: '',
       newReviewsJson: '[]',
-      telegramSent: false,
       errorMessage: pageError || '방문자 리뷰 수 확인 실패',
     };
     await postReviewLog(apiUrl, payload);
@@ -122,7 +121,6 @@ async function processTarget(target, config) {
 
   return handleDecrease({
     apiUrl,
-    config,
     target,
     previous,
     current,
@@ -149,20 +147,17 @@ async function handleIncrease({
     ? summarizeReviews(detectedReviews.slice(0, diff))
     : `방문자 리뷰가 ${diff}개 증가했으나 신규 리뷰 본문 확인 실패.\n사유: 네이버 접근 제한 또는 리뷰 목록 로딩 실패`;
 
-  const telegramMessage = buildTelegramMessage({
-    clientName: target.clientName,
-    previous,
-    current,
-    diff,
-    status,
-    summary,
-  });
-  const telegramResult = await sendTelegram(config, telegramMessage);
-  const errorMessage = hasAllNewReviews
-    ? telegramResult.errorMessage
-    : ['네이버 접근 제한 또는 리뷰 목록 로딩 실패', telegramResult.errorMessage]
-        .filter(Boolean)
-        .join(' / ');
+  notifyReviewChange(
+    buildNotice({
+      clientName: target.clientName,
+      previous,
+      current,
+      diff,
+      status,
+      summary,
+    }),
+  );
+  const errorMessage = hasAllNewReviews ? '' : '네이버 접근 제한 또는 리뷰 목록 로딩 실패';
 
   await postReviewLog(apiUrl, {
     action: 'addReviewLog',
@@ -174,7 +169,6 @@ async function handleIncrease({
     detectedReviewCount: detectedReviews.length,
     newReviewsSummary: summary,
     newReviewsJson: JSON.stringify(detectedReviews.slice(0, diff)),
-    telegramSent: telegramResult.sent,
     errorMessage,
   });
 
@@ -193,14 +187,12 @@ async function handleIncrease({
     diff,
     status,
     detectedReviewCount: detectedReviews.length,
-    telegramSent: telegramResult.sent,
     errorMessage,
   };
 }
 
 async function handleDecrease({
   apiUrl,
-  config,
   target,
   previous,
   current,
@@ -208,15 +200,16 @@ async function handleDecrease({
   newRecentFingerprints,
 }) {
   const summary = '삭제 또는 비공개 처리된 리뷰가 있을 수 있음.';
-  const telegramMessage = buildTelegramMessage({
-    clientName: target.clientName,
-    previous,
-    current,
-    diff,
-    status: 'decreased',
-    summary,
-  });
-  const telegramResult = await sendTelegram(config, telegramMessage);
+  notifyReviewChange(
+    buildNotice({
+      clientName: target.clientName,
+      previous,
+      current,
+      diff,
+      status: 'decreased',
+      summary,
+    }),
+  );
 
   await postReviewLog(apiUrl, {
     action: 'addReviewLog',
@@ -228,8 +221,7 @@ async function handleDecrease({
     detectedReviewCount: 0,
     newReviewsSummary: summary,
     newReviewsJson: '[]',
-    telegramSent: telegramResult.sent,
-    errorMessage: telegramResult.errorMessage,
+    errorMessage: '',
   });
 
   await updateReviewTarget(apiUrl, {
@@ -246,8 +238,7 @@ async function handleDecrease({
     current,
     diff,
     status: 'decreased',
-    telegramSent: telegramResult.sent,
-    errorMessage: telegramResult.errorMessage,
+    errorMessage: '',
   };
 }
 
@@ -473,7 +464,7 @@ function summarizeReviews(reviews) {
     .join('\n');
 }
 
-function buildTelegramMessage({ clientName, previous, current, diff, status, summary }) {
+function buildNotice({ clientName, previous, current, diff, status, summary }) {
   const sign = diff > 0 ? `+${diff}` : `${diff}`;
   const lines = [
     `[${clientName}] 방문자리뷰 ${sign}`,
@@ -492,46 +483,13 @@ function buildTelegramMessage({ clientName, previous, current, diff, status, sum
   return lines.join('\n');
 }
 
-async function sendTelegram(config, text) {
-  const token = config.telegramBotToken || process.env.TELEGRAM_BOT_TOKEN || '';
-  const chatId = config.telegramChatId || process.env.TELEGRAM_CHAT_ID || '';
-  const messageThreadId = config.telegramMessageThreadId || process.env.TELEGRAM_MESSAGE_THREAD_ID || '';
-
-  if (!token || !chatId) {
-    console.log('[codex-notice] Review change detected:');
-    console.log(text);
-    return {
-      sent: false,
-      errorMessage: '',
-    };
-  }
-
-  if (options.dryRun) {
-    console.log('[dry-run] Telegram message:');
-    console.log(text);
-    return { sent: false, errorMessage: 'dry-run' };
-  }
-
-  const body = {
-    chat_id: chatId,
-    text,
-    disable_web_page_preview: true,
-  };
-  if (messageThreadId) body.message_thread_id = Number(messageThreadId);
-
-  try {
-    const json = await fetchJson(`https://api.telegram.org/bot${token}/sendMessage`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-    if (json.ok !== true) {
-      return { sent: false, errorMessage: `Telegram API failed: ${JSON.stringify(json)}` };
-    }
-    return { sent: true, errorMessage: '' };
-  } catch (error) {
-    return { sent: false, errorMessage: errorMessage(error) };
-  }
+// 리뷰 변동 알림은 콘솔 출력으로만 처리한다.
+// 외부 메신저 연동은 2026-09에 제거했다. 알림 채널을 다시 붙일 경우
+// 토큰은 반드시 환경변수로만 받고 저장소에 커밋하지 않는다.
+function notifyReviewChange(text) {
+  const prefix = options.dryRun ? '[dry-run]' : '[notice]';
+  console.log(`${prefix} Review change detected:`);
+  console.log(text);
 }
 
 async function postReviewLog(apiUrl, payload) {
@@ -655,11 +613,9 @@ function printSummary(results) {
   for (const result of results) {
     const countText =
       result.current == null ? '' : ` previous=${result.previous} current=${result.current} diff=${result.diff}`;
-    const telegramText =
-      result.telegramSent == null ? '' : ` telegramSent=${result.telegramSent ? 'true' : 'false'}`;
     const errorText = result.errorMessage ? ` error="${result.errorMessage}"` : '';
     console.log(
-      `- ${result.clientId} (${result.clientName || ''}): ${result.status}${countText}${telegramText}${errorText}`,
+      `- ${result.clientId} (${result.clientName || ''}): ${result.status}${countText}${errorText}`,
     );
   }
 }

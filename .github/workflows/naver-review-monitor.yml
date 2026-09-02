@@ -24,6 +24,4 @@ jobs:
       - name: Run visitor review monitor
         run: node scripts/naver-review-monitor.mjs
         env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          TELEGRAM_MESSAGE_THREAD_ID: ${{ secrets.TELEGRAM_MESSAGE_THREAD_ID }}
+          REVIEW_MONITOR_API_URL: ${{ secrets.REVIEW_MONITOR_API_URL }}

@@ -53,7 +53,7 @@ npm run review:monitor
 
 The workflow also supports manual execution from the GitHub Actions tab.
 
-Telegram is optional and not required. When review changes are detected without Telegram credentials, the script prints a `[codex-notice]` summary in the run output.
+Review changes are reported as a `[notice]` summary in the run output. External messenger delivery was removed in 2026-09; read the results in the GitHub Actions run log or the local console.
 
 ## Optional Local Config
 

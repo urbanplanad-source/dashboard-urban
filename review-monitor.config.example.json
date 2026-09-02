@@ -1,6 +1,3 @@
 {
-  "apiUrl": "https://script.google.com/macros/s/AKfycbwUsy5dDEG-t4FszWRCj-f0-FLIOY4SPMatiNsm55xM7bFXzaAEFS6McQdvmXT85dT0/exec",
-  "telegramBotToken": "",
-  "telegramChatId": "",
-  "telegramMessageThreadId": ""
+  "apiUrl": "https://script.google.com/macros/s/YOUR_APPS_SCRIPT_DEPLOYMENT_ID/exec"
 }
