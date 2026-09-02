@@ -372,7 +372,9 @@
     commonTasks: [],
     contracts: [],
     consults: [],
-    consultHistories: [],  // 채널별 상담 내역 월별 백업 (다음달 초기화 시 자동 저장)
+    // 브라우저 로컬 보조 이력이다. Sheets의 Consults 원본을 대체하는 영구 백업이 아니다.
+    consultHistories: [],
+    reviewTargets: [],
     clientBriefs: {},
   };
 
@@ -386,6 +388,18 @@
   const today   = () => localDateString();
   const nowMonth = () => localMonthString();
   const prevMonth= () => { const n=new Date(); const y=n.getMonth()===0?n.getFullYear()-1:n.getFullYear(); const m=n.getMonth()===0?12:n.getMonth(); return `${y}-${String(m).padStart(2,'0')}`; };
+  // 'YYYY-MM'을 delta개월 이동한다. KST 로컬 기준으로만 계산하고 UTC를 섞지 않는다.
+  const monthShift = (month, delta) => {
+    const m = String(month || '').match(/^(\d{4})-(\d{2})$/);
+    if (!m) return '';
+    const d = new Date(Number(m[1]), Number(m[2]) - 1 + Number(delta || 0), 1);
+    return localMonthString(d);
+  };
+  // 최근 월 목록 (최신순). 마감월 선택지로 사용한다.
+  const recentMonths = (count, fromMonth) => {
+    const base = fromMonth || nowMonth();
+    return Array.from({ length: Math.max(1, count) }, (_, i) => monthShift(base, -i)).filter(Boolean);
+  };
   const normalizeDate = (v) => {
     if(!v) return '';
     if(v instanceof Date && !isNaN(v)) {
@@ -578,11 +592,42 @@
           contracts:        s.contracts        ?? [],
           consults:         s.consults         ?? [],
           consultHistories: s.consultHistories ?? [],
+          // 거래처 카드가 읽는 값이다. 복원하지 않으면 새로고침할 때마다
+          // 동기화가 끝날 때까지 방문자 리뷰 수가 비어 보인다.
+          reviewTargets:    s.reviewTargets    ?? [],
           clientBriefs:     normalizeClientBriefMap(s.clientBriefs),
         };
       }
     } catch(e) {}
     return { ...DEFAULT_DATA, credentials: DEFAULT_CREDENTIALS };
+  }
+
+  // ── 로컬 자동 백업 ──
+  // 예전에는 키가 월 단위(urbanplanad_backup_YYYY-MM)라 같은 달 동기화마다 덮어써졌다.
+  // 월간 초기화 직후 동기화가 한 번만 일어나도 초기화 직전 스냅샷이 사라졌다.
+  // 이제 분 단위 세대 키로 남기고 최근 것만 보관한다.
+  const BACKUP_KEY_PREFIX = 'urbanplanad_backup_';
+  const BACKUP_KEEP = 12;
+
+  const backupStamp = (d = new Date()) =>
+    `${localDateString(d)}_${pad2(d.getHours())}${pad2(d.getMinutes())}`;
+
+  function listDashboardBackupKeys() {
+    const keys = [];
+    for (let i = 0; i < safeStorage.length; i++) {
+      const key = safeStorage.key(i);
+      if (key && key.startsWith(BACKUP_KEY_PREFIX)) keys.push(key);
+    }
+    return keys.sort().reverse();
+  }
+
+  function writeDashboardAutoBackup() {
+    const currentRaw = safeStorage.getItem(STORAGE_KEY);
+    if (!currentRaw) return null;
+    const key = BACKUP_KEY_PREFIX + backupStamp();
+    safeStorage.setItem(key, currentRaw);
+    listDashboardBackupKeys().slice(BACKUP_KEEP).forEach(old => safeStorage.removeItem(old));
+    return key;
   }
 
   function saveData(data) {
@@ -863,9 +908,9 @@
   // 동일하게 맞춰야 미리보기에 없는 업무가 조용히 초기화되는 일이 없다.
   const isSubLikeJob = (job) => job?.kind === '서브' || job?.kind === '순위';
 
-  function getMonthlyResetPreview(data, remoteConsultBackups = null) {
-    const backupMonth = prevMonth();
-    const targetMonth = nowMonth();
+  function getMonthlyResetPreview(data, remoteConsultBackups = null, selectedBackupMonth = null) {
+    const backupMonth = selectedBackupMonth || prevMonth();
+    const targetMonth = monthShift(backupMonth, 1) || nowMonth();
     const allSubs = (data.monthlyJobs || []).filter(isSubLikeJob);
     const completedSubs = allSubs.filter(isCompletedSubJob);
     const carryoverSubs = allSubs.filter(job => !isCompletedSubJob(job));
@@ -874,7 +919,10 @@
     const consultTargets = ['btskin', 'belrmon'];
     const localConsultBackups = consultTargets.map(clientId => {
       const raw = safeStorage.getItem('consult-v1-' + clientId);
-      const records = raw ? (() => { try { return JSON.parse(raw); } catch { return []; } })() : [];
+      const all = raw ? (() => { try { return JSON.parse(raw); } catch { return []; } })() : [];
+      // 원격 조회 전 임시 표시값도 선택한 마감월 기준으로 맞춘다.
+      const records = (Array.isArray(all) ? all : [])
+        .filter(item => normalizeMonth(item?.month || item?.date) === backupMonth);
       const clientName = (data.clients || []).find(client => client.clientId === clientId)?.clientName || clientId;
       return { clientId, clientName, records };
     });
@@ -914,6 +962,30 @@
     [MONTHLY_RESET_STAGE.RESET_APPLIED_REFRESH_FAILED]:
       'Sheets 초기화는 완료되었습니다.\n다시 초기화하지 마세요.\n\n화면 갱신에만 실패했으므로 동기화 버튼을 눌러 최신 상태를 불러와 주세요.',
   };
+
+  // 마감월을 prevMonth()로 암묵 고정하지 않는다. 사용자가 미리보기에서 확인·선택하고,
+  // 새 운영월은 마감월의 다음 달로 계산한다. 월말에 눌러 이번 달 자료를 통째로
+  // 건너뛰거나, 이미 처리한 월을 다시 마감하는 실수를 막는다.
+  function planMonthlyReset({ backupMonth, currentMonth, processedMonths = [] }) {
+    const valid = /^\d{4}-\d{2}$/.test(String(backupMonth || ''));
+    const targetMonth = valid ? monthShift(backupMonth, 1) : '';
+    const warnings = [];
+    let blocked = false;
+
+    if (!valid) {
+      return { targetMonth: '', warnings: ['마감월 형식이 올바르지 않습니다.'], blocked: true };
+    }
+    if (backupMonth > currentMonth) {
+      warnings.push('아직 오지 않은 달은 마감할 수 없습니다.');
+      blocked = true;
+    } else if (backupMonth === currentMonth) {
+      warnings.push(`${fmtMonth(backupMonth)}은 아직 진행 중입니다. 이번 달 자료가 확정된 뒤 마감하세요.`);
+    }
+    if (processedMonths.includes(backupMonth)) {
+      warnings.push(`${fmtMonth(backupMonth)}은 이미 백업 이력이 있습니다. 중복 마감이 아닌지 확인하세요.`);
+    }
+    return { targetMonth, warnings, blocked };
+  }
 
   // 순수 오케스트레이션. React와 분리해 두어야 모의 fetch로 단계별 검증이 가능하다.
   // 반환값의 stage로 호출측이 로컬 상태 반영 여부를 결정한다.
@@ -1937,16 +2009,28 @@
   }
 
   function MonthlyResetPreviewModal({ data, onClose, onConfirm }) {
-    const backupMonth = prevMonth();
+    const [backupMonth, setBackupMonth] = useState(() => prevMonth());
     const [remoteConsultBackups, setRemoteConsultBackups] = useState(null);
     const [consultBackupError, setConsultBackupError] = useState('');
+    const monthOptions = useMemo(() => recentMonths(6), []);
+    const processedMonths = useMemo(
+      () => [...new Set((data.consultHistories || []).map(h => h.month).filter(Boolean))],
+      [data.consultHistories]
+    );
+    const plan = useMemo(
+      () => planMonthlyReset({ backupMonth, currentMonth: nowMonth(), processedMonths }),
+      [backupMonth, processedMonths]
+    );
     const preview = useMemo(
-      () => getMonthlyResetPreview(data, remoteConsultBackups),
-      [data, remoteConsultBackups]
+      () => getMonthlyResetPreview(data, remoteConsultBackups, backupMonth),
+      [data, remoteConsultBackups, backupMonth]
     );
     useEffect(() => {
       let cancelled = false;
       const targets = ['btskin', 'belrmon'];
+      // 마감월이 바뀌면 이전 조회 결과를 그대로 보여주지 않는다.
+      setRemoteConsultBackups(null);
+      setConsultBackupError('');
       Promise.all(targets.map(async clientId => {
         const result = await window.dashboardAPI.consultsList(clientId, backupMonth);
         const records = result.data?.consults || result.consults || [];
@@ -1955,7 +2039,9 @@
         return {
           clientId,
           clientName,
-          records: records.map(item => ({ ...normalizeConsult(item), clientId: item.clientId || clientId })).filter(item => item.id),
+          records: records
+            .map(item => ({ ...normalizeConsult(item), clientId: item.clientId || clientId }))
+            .filter(item => item.id && normalizeMonth(item.month || item.date) === backupMonth),
         };
       }))
         .then(items => { if (!cancelled) setRemoteConsultBackups(items); })
@@ -1979,12 +2065,26 @@
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:12,marginBottom:16}}>
             <div>
               <h2 style={{fontSize:17,fontWeight:900,color:'var(--ink)',margin:0}}>다음 달 초기화 미리보기</h2>
-              <p style={{fontSize:12,color:'var(--text-3)',margin:'4px 0 0'}}>
-                {fmtMonth(preview.backupMonth)} 마감 후 {fmtMonth(preview.targetMonth)} 운영월 기준으로 정리합니다.
-              </p>
+              <div style={{display:'flex',alignItems:'center',gap:8,margin:'8px 0 0',flexWrap:'wrap'}}>
+                <label htmlFor="reset-backup-month" style={{fontSize:12,color:'var(--text-3)',fontWeight:700}}>마감월</label>
+                <select id="reset-backup-month" aria-label="마감월 선택" value={backupMonth}
+                  onChange={e=>setBackupMonth(e.target.value)}
+                  style={{padding:'5px 9px',border:'1px solid var(--border)',borderRadius:7,fontSize:12,fontWeight:800,color:'var(--text)',background:'var(--surface)',fontFamily:'inherit'}}>
+                  {monthOptions.map(month => <option key={month} value={month}>{fmtMonth(month)}</option>)}
+                </select>
+                <span style={{fontSize:12,color:'var(--text-3)',fontWeight:700}}>
+                  마감 후 <b style={{color:'var(--text)'}}>{fmtMonth(plan.targetMonth)}</b> 운영월 기준으로 정리합니다.
+                </span>
+              </div>
             </div>
             <button className="btn-icon" onClick={onClose}>✕</button>
           </div>
+
+          {plan.warnings.map((warning, i) => (
+            <div key={i} style={{background: plan.blocked ? 'var(--red-bg)' : '#fff7ed',border:`1px solid ${plan.blocked ? '#fecaca' : '#fed7aa'}`,borderRadius:10,padding:'10px 12px',marginBottom:12}}>
+              <div style={{fontSize:12,fontWeight:900,color: plan.blocked ? 'var(--red)' : '#c2410c'}}>{warning}</div>
+            </div>
+          ))}
 
           {preview.unmetRequired.length > 0 && (
             <div style={{background:'var(--red-bg)',border:'1px solid #fecaca',borderRadius:10,padding:'10px 12px',marginBottom:12}}>
@@ -2037,7 +2137,9 @@
 
           <div style={{display:'flex',justifyContent:'flex-end',gap:8,marginTop:18}}>
             <button className="btn-ghost" onClick={onClose}>취소</button>
-            <button className="btn-primary" disabled={!remoteConsultBackups || !!consultBackupError} onClick={onConfirm}>초기화 실행</button>
+            <button className="btn-primary"
+              disabled={!remoteConsultBackups || !!consultBackupError || plan.blocked}
+              onClick={()=>onConfirm(backupMonth)}>초기화 실행</button>
           </div>
         </div>
       </div>
@@ -3462,6 +3564,16 @@
       .map(item => normalizeMonth(item.month || item.date))
       .filter(Boolean))]
       .sort((a, b) => b.localeCompare(a));
+
+    // 선택된 월이 옵션에 없으면 select의 표시값과 실제 상태가 어긋나 "자료 없음"만 보인다.
+    // 기본값이 전월인데 전월 상담이 0건이거나, 거래처를 바꿔 월 구성이 달라질 때 발생한다.
+    // 가장 최근 유효 월로 보정한다. 옵션이 하나도 없으면 사용자의 선택을 유지한다.
+    useEffect(() => {
+      if (!consultMonths.length) return;
+      if (consultMonths.includes(consultMonth)) return;
+      setConsultMonth(consultMonths[0]);
+    }, [consultMonths.join(','), consultMonth]);
+
     const monthConsultList = consultList.filter(item => normalizeMonth(item.month || item.date) === consultMonth);
 
     // 발행 글 인라인 편집 상태
@@ -3803,6 +3915,10 @@
           return (
             <div style={{marginBottom:24}}>
               <div className="section-title"><Icon name="chart" size={12} /> 채널별 상담 통계 (월별 백업)</div>
+              <div style={{fontSize:11,color:'var(--text-3)',fontWeight:700,margin:'-4px 0 10px',lineHeight:1.6}}>
+                이 브라우저에만 저장되는 보조 이력입니다. 상담 원본은 Sheets의 Consults에 있으며,
+                다른 브라우저나 저장소 초기화 시에는 표시되지 않습니다.
+              </div>
               <div style={{display:'flex',flexDirection:'column',gap:10}}>
                 {myHistories.map(h => {
                   const total = h.summary?.total || 0;
@@ -6099,7 +6215,8 @@
               logs:        safeArr(sheetsData.logs, prev.logs),
 
               // 비용: Sheets 우선, 비어있으면 로컬 유지
-              expenses:    safeArr(sheetsData.expenses, prev.expenses),
+              // 비용은 손익 관리 화면이 rev-data-v1 키로 따로 보관한다.
+              // App 레벨 data.expenses를 읽는 UI가 없어 여기서는 쓰지 않는다.
 
               // 글 보관함: Sheets 우선, 비어있으면 로컬 유지
               drafts:      safeArr(sheetsData.drafts, prev.drafts),
@@ -6170,12 +6287,8 @@
             };
           });
 
-          // ── 동기화 완료 시 로컬 자동 백업 (IndexedDB) ──
-          try {
-            const backupKey = 'urbanplanad_backup_' + nowMonth();
-            const currentRaw = safeStorage.getItem(STORAGE_KEY);
-            if (currentRaw) safeStorage.setItem(backupKey, currentRaw);
-          } catch(e) {}
+          // ── 동기화 완료 시 로컬 자동 백업 ──
+          try { writeDashboardAutoBackup(); } catch(e) {}
 
           setSyncStatus('ok');
         })
@@ -6199,13 +6312,23 @@
       || resetStage === MONTHLY_RESET_STAGE.RESET_POSTING
       || resetStage === MONTHLY_RESET_STAGE.RESET_APPLIED_REFRESHING;
 
-    async function handleMonthlyReset() {
+    async function handleMonthlyReset(selectedBackupMonth) {
       if (resetInFlight.current) return;
-      resetInFlight.current = true;
 
-      // 초기화는 이번 달 업무를 닫는 작업이므로 백업 월 = 이전 달 (전달 데이터 보존)
-      const backupMonth = prevMonth();
-      const targetMonth = nowMonth();
+      // 마감월은 미리보기에서 사용자가 확인·선택한 값을 그대로 쓴다.
+      const backupMonth = selectedBackupMonth || prevMonth();
+      const plan = planMonthlyReset({
+        backupMonth,
+        currentMonth: nowMonth(),
+        processedMonths: (data.consultHistories || []).map(h => h.month).filter(Boolean),
+      });
+      if (plan.blocked) {
+        alert(`초기화를 진행할 수 없습니다.\n\n${plan.warnings.join('\n')}`);
+        return;
+      }
+      const targetMonth = plan.targetMonth;
+
+      resetInFlight.current = true;
       const CONSULT_TARGETS = ['btskin', 'belrmon'];
 
       const postJson = async (body) => {
@@ -6304,7 +6427,6 @@
       mutate(prev => ({
         ...prev,
         monthlyJobs: afterReset.monthlyJobs,
-        expenses: (afterReset.expenses && afterReset.expenses.length) ? afterReset.expenses : prev.expenses,
         postLogs: (afterReset.postLogs && afterReset.postLogs.length) ? afterReset.postLogs : prev.postLogs,
         consultHistories: mergeConsultHistories(prev.consultHistories || [], newHistories),
       }));
@@ -6990,7 +7112,7 @@
           <MonthlyResetPreviewModal
             data={data}
             onClose={() => setResetPreviewOpen(false)}
-            onConfirm={() => { setResetPreviewOpen(false); handleMonthlyReset(); }}
+            onConfirm={(backupMonth) => { setResetPreviewOpen(false); handleMonthlyReset(backupMonth); }}
           />
         )}
 
@@ -7021,19 +7143,14 @@
               <button
                 style={{display:'flex',alignItems:'center',gap:7,background:'var(--surface-2)',color:'var(--text)',border:'1px solid var(--border)',borderRadius:8,padding:'8px 12px',fontSize:12,fontWeight:800,cursor:'pointer',fontFamily:'inherit',textAlign:'left'}}
                 onClick={()=>{
-                  // 이전 달 백업 목록 표시
-                  const backups = [];
-                  for(let i=0;i<safeStorage.length;i++){
-                    const k=safeStorage.key(i);
-                    if(k && k.startsWith('urbanplanad_backup_')) backups.push(k);
-                  }
-                  backups.sort().reverse();
+                  // 자동 백업 세대 목록 (최신순)
+                  const backups = listDashboardBackupKeys();
                   if(backups.length===0){ alert('저장된 자동 백업이 없습니다.\n동기화가 한 번 이상 완료된 후 자동 백업이 생성됩니다.'); return; }
-                  const list = backups.map((k,i)=>`${i+1}. ${k.replace('urbanplanad_backup_','')}`).join('\n');
+                  const list = backups.map((k,i)=>`${i+1}. ${k.replace(BACKUP_KEY_PREFIX,'')}`).join('\n');
                   const choice = prompt(`복원할 백업을 선택하세요 (번호 입력):\n\n${list}`);
                   const idx = parseInt(choice)-1;
                   if(isNaN(idx)||idx<0||idx>=backups.length){ alert('취소되었습니다.'); return; }
-                  if(!confirm(`[${backups[idx].replace('urbanplanad_backup_','')}] 백업으로 복원합니까?\n현재 데이터가 덮어씌워집니다.`)) return;
+                  if(!confirm(`[${backups[idx].replace(BACKUP_KEY_PREFIX,'')}] 백업으로 복원합니까?\n현재 데이터가 덮어씌워집니다.`)) return;
                   const raw=safeStorage.getItem(backups[idx]);
                   if(!raw){ alert('백업 데이터를 읽을 수 없습니다.'); return; }
                   safeStorage.setItem(STORAGE_KEY, raw);
