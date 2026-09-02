@@ -4,12 +4,12 @@ Codex가 이 저장소에서 항상 먼저 참고하는 작업 지시다. 이 �
 
 ## Project Map
 
-- `index.html`: 메인 정적 대시보드. 로컬 폴더에서 직접 열어 쓰는 1차 운영 파일이며, GitHub Pages도 같은 파일을 루트에서 서빙한다.
+- `index.html`: 메인 정적 대시보드. 로컬 폴더에서 직접 열어 쓰는 1차 운영 파일이다. 의도적으로 배포하지 않는다. 외부에서 쓸 때는 노트북에 파일을 두고 직접 연다. 공개 배포(Vercel)는 `.vercelignore` allow-list로 거래처 보고서 HTML만 서빙한다.
 - `btskin.html`, `belrmon.html`, `gyunghee.html`, `eyecare.html`, `igochi.html`, `echi.html`, `seoulup.html`, `jejuexpress.html`: 거래처별 월말보고서 HTML.
 - `scripts/naver-review-monitor.mjs`: 네이버플레이스 방문자 리뷰 모니터링 자동화.
 - `scripts/fetch-report-context.mjs`: 월말보고서 작성 전 Apps Script 데이터를 조회해 `.report-context/YYYY-MM/*.json` 스냅샷을 만드는 조회 전용 스크립트.
 - `scripts/ops-check.mjs`: Codex 운영 점검 스크립트. 이전 도구명, 오래된 파일명, JSON 오류, 보고서 링크 파일 존재 여부, UTC 날짜 슬라이싱, 리뷰 모니터 문법 오류를 확인한다.
-- `.github/workflows/naver-review-monitor.yml`: 리뷰 모니터 정기 실행 워크플로.
+- `.github/workflows/naver-review-monitor.yml`: 리뷰 모니터 워크플로. 현재 `workflow_dispatch` 수동 실행 전용이며 `schedule`이 없다. 정기 실행이 필요하면 사용자 승인 후 cron을 추가한다.
 - `apps-script/*.gs`: Google Apps Script에 수동 반영할 패치/헬퍼 코드. 배포된 라이브 코드 자체가 아니라 적용용 스니펫이다.
 - `docs/apps-script-api.md`: Apps Script API, Google Sheets 구조, 대시보드 운영 규칙의 상세 기준 문서.
 - `docs/briefs/`: 거래처별 상세 브리프 위키. 대시보드 `ClientBriefs`보다 긴 맥락, 원본 자료 링크, 작성 기준을 보관한다.
@@ -18,8 +18,8 @@ Codex가 이 저장소에서 항상 먼저 참고하는 작업 지시다. 이 �
 
 ## Operating Principles
 
-- 이 프로젝트는 로컬 폴더의 `index.html` 직접 사용과 GitHub Pages 배포를 동시에 지원하는 정적 HTML 대시보드다. 사용자가 명시하지 않으면 번들러, 로컬 서버, 프레임워크 마이그레이션, 빌드 산출물 구조를 추가하지 않는다.
-- 로컬과 GitHub Pages는 같은 루트 파일을 사용해야 한다. 로컬 전용 경로, PC 절대경로, GitHub 전용 절대 URL을 대시보드 내부 링크로 넣지 않는다.
+- 이 프로젝트는 로컬 폴더의 `index.html` 직접 사용을 전제로 하는 정적 HTML 대시보드다. 대시보드 자체는 배포하지 않는다. 사용자가 명시하지 않으면 번들러, 로컬 서버, 프레임워크 마이그레이션, 빌드 산출물 구조를 추가하지 않는다.
+- 로컬과 공개 배포는 같은 루트 파일을 사용해야 한다. 로컬 전용 경로, PC 절대경로, 호스팅 전용 절대 URL을 대시보드 내부 링크로 넣지 않는다.
 - 기존 단일 HTML 구조를 존중한다. 대규모 재작성보다 필요한 영역만 좁게 수정한다.
 - 한국어 문구, 거래처명, 의료/마케팅 리포트 문맥은 의미가 바뀌지 않도록 보존한다.
 - 파일은 UTF-8 기준으로 다룬다. 한글이 깨져 보이면 먼저 출력 인코딩 문제인지 확인한다.
@@ -48,13 +48,14 @@ Codex가 이 저장소에서 항상 먼저 참고하는 작업 지시다. 이 �
 - 거래처 카드, 손익, 비용, 글 보관함, 캘린더는 Apps Script `summary` 응답과 연결되어 있다. 관련 데이터 구조를 바꾸면 `docs/apps-script-api.md`를 확인하고 함께 수정한다.
 - 서브/순위 업무의 `진행중/완료` 상태는 Sheets `MonthlyJobs.note`를 기준으로 동기화한다. `localStorage`는 화면 즉시 반영과 API 응답 전 임시 항목 보존용으로만 사용한다.
 - 월간 초기화는 자동 실행하지 않는다. 월말보고서 작성을 끝낸 뒤 대시보드 `다음 달 초기화` 버튼으로만 실행하며, 버튼은 Sheets 처리 성공을 확인한 후 로컬 상태를 초기화해야 한다.
-- `reportFile` 값은 `btskin.html` 같은 루트의 상대 HTML 파일명으로 둔다. `https://...`, `file://...`, `/absolute/path` 형식은 로컬/Pages 동기화를 깨뜨리므로 사용하지 않는다.
-- UI 변경이 있으면 로컬 `index.html` 직접 열기 기준을 먼저 고려하고, 외부 접속 검증이 필요할 때 GitHub Pages 배포 화면을 확인한다.
+- `reportFile` 값은 `btskin.html` 같은 루트의 상대 HTML 파일명으로 둔다. `https://...`, `file://...`, `/absolute/path` 형식은 로컬/공개 배포 동기화를 깨뜨리므로 사용하지 않는다.
+- UI 변경은 로컬 `index.html` 직접 열기 기준으로 검증한다. 대시보드는 배포하지 않으므로 외부 배포 화면으로 확인하지 않는다.
 
 ## Report Rules
 
 - 거래처별 보고서 HTML은 기존 월별 탭을 누적하는 방식으로 관리한다.
 - 새 월 보고서는 기존 최신 월 탭 위에 추가하고, 새 월을 기본 active 탭으로 둔다.
+- **새 거래처 보고서 HTML을 추가하면 `.vercelignore` allow-list에도 파일명을 추가한다.** allow-list 방식이라 등록하지 않으면 공개 배포에서 404가 된다.
 - 기존 월 보고서 내용은 삭제하지 않는다.
 - 발행 내역은 API/Sheets `postLogs`를 기준으로 하되, 보고월의 `YYYY-MM` 필터를 적용한다.
 - 월말보고서 작성 전 `npm.cmd run report:context -- --month YYYY-MM --client CLIENT_ID` 또는 `--all`을 실행해 보고서용 컨텍스트를 먼저 생성한다.

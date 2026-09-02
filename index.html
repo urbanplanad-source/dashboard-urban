@@ -389,8 +389,11 @@
   const nowMonth = () => localMonthString();
   const prevMonth= () => { const n=new Date(); const y=n.getMonth()===0?n.getFullYear()-1:n.getFullYear(); const m=n.getMonth()===0?12:n.getMonth(); return `${y}-${String(m).padStart(2,'0')}`; };
   // 'YYYY-MM'을 delta개월 이동한다. KST 로컬 기준으로만 계산하고 UTC를 섞지 않는다.
+  // 월은 01~12만 허용한다. \d{2}로 두면 '2026-13'이 Date 롤오버로 조용히
+  // '2027-02'가 되어 잘못된 운영월이 계산된다.
+  const MONTH_RE = /^(\d{4})-(0[1-9]|1[0-2])$/;
   const monthShift = (month, delta) => {
-    const m = String(month || '').match(/^(\d{4})-(\d{2})$/);
+    const m = String(month || '').match(MONTH_RE);
     if (!m) return '';
     const d = new Date(Number(m[1]), Number(m[2]) - 1 + Number(delta || 0), 1);
     return localMonthString(d);
@@ -904,16 +907,26 @@
     return lines.join('\n');
   }
 
-  // 서브 업무와 순위 업무는 화면 전반에서 함께 다룬다. 초기화 미리보기와 집계도
-  // 동일하게 맞춰야 미리보기에 없는 업무가 조용히 초기화되는 일이 없다.
-  const isSubLikeJob = (job) => job?.kind === '서브' || job?.kind === '순위';
+  // 미리보기는 서버 monthlyReset이 실제로 하는 일과 정확히 일치해야 한다.
+  // apps-script/monthly_reset_patch_v16.gs 기준:
+  //   - 삭제: kind === '서브' 이면서 note가 '완료'로 시작하는 행만
+  //   - 이월: kind === '서브' 이면서 미완료인 행 (서버는 건드리지 않고 넘김)
+  //   - 카운트 초기화: kind === '필수' 이거나 targetCount가 있는 행 (순위 업무 포함)
+  // 순위 업무는 삭제 대상이 아니다. 삭제된다고 예고하면 사용자가 다음 달에
+  // 되살아난 순위 업무를 보고 혼란을 겪는다.
+  const isDeletableSubJob = (job) => job?.kind === '서브';
+  const hasJobTarget = (job) => job?.targetCount != null && String(job.targetCount).trim() !== '';
+  const isCountResetJob = (job) => job?.kind === '필수' || hasJobTarget(job);
 
   function getMonthlyResetPreview(data, remoteConsultBackups = null, selectedBackupMonth = null) {
     const backupMonth = selectedBackupMonth || prevMonth();
     const targetMonth = monthShift(backupMonth, 1) || nowMonth();
-    const allSubs = (data.monthlyJobs || []).filter(isSubLikeJob);
+    const allSubs = (data.monthlyJobs || []).filter(isDeletableSubJob);
     const completedSubs = allSubs.filter(isCompletedSubJob);
     const carryoverSubs = allSubs.filter(job => !isCompletedSubJob(job));
+    // 순위 업무를 포함해 카운트가 0으로 되돌아가는 업무. 삭제되지는 않는다.
+    const countResetJobs = (data.monthlyJobs || [])
+      .filter(job => !isDeletableSubJob(job) && isCountResetJob(job));
     const unmetRequired = (data.monthlyJobs || [])
       .filter(job => job.kind === '필수' && !isJobDone(job));
     const consultTargets = ['btskin', 'belrmon'];
@@ -931,6 +944,7 @@
       targetMonth,
       completedSubs,
       carryoverSubs,
+      countResetJobs,
       unmetRequired,
       consultBackups: remoteConsultBackups || localConsultBackups,
     };
@@ -967,7 +981,7 @@
   // 새 운영월은 마감월의 다음 달로 계산한다. 월말에 눌러 이번 달 자료를 통째로
   // 건너뛰거나, 이미 처리한 월을 다시 마감하는 실수를 막는다.
   function planMonthlyReset({ backupMonth, currentMonth, processedMonths = [] }) {
-    const valid = /^\d{4}-\d{2}$/.test(String(backupMonth || ''));
+    const valid = MONTH_RE.test(String(backupMonth || ''));
     const targetMonth = valid ? monthShift(backupMonth, 1) : '';
     const warnings = [];
     let blocked = false;
@@ -2095,19 +2109,28 @@
 
           <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(240px,1fr))',gap:12}}>
             <div style={{background:'var(--surface-2)',border:'1px solid var(--border)',borderRadius:10,padding:12}}>
-              <div style={{fontSize:12,fontWeight:900,color:'var(--ink)'}}>삭제될 완료 서브·순위 업무</div>
+              <div style={{fontSize:12,fontWeight:900,color:'var(--ink)'}}>삭제될 완료 서브업무</div>
               <div style={{fontSize:22,fontWeight:900,color:'var(--green)',marginTop:2}}>{preview.completedSubs.length}건</div>
               {sampleList(preview.completedSubs, job => (
                 <div key={job.jobId} style={{fontSize:12,color:'var(--text)',fontWeight:700,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{job.title}</div>
-              ), '삭제될 완료 서브·순위 업무 없음')}
+              ), '삭제될 완료 서브업무 없음')}
             </div>
 
             <div style={{background:'var(--surface-2)',border:'1px solid var(--border)',borderRadius:10,padding:12}}>
-              <div style={{fontSize:12,fontWeight:900,color:'var(--ink)'}}>이월될 미완료 서브·순위 업무</div>
+              <div style={{fontSize:12,fontWeight:900,color:'var(--ink)'}}>이월될 미완료 서브업무</div>
               <div style={{fontSize:22,fontWeight:900,color:'var(--blue)',marginTop:2}}>{preview.carryoverSubs.length}건</div>
               {sampleList(preview.carryoverSubs, job => (
                 <div key={job.jobId} style={{fontSize:12,color:'var(--text)',fontWeight:700,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{job.title}</div>
-              ), '이월될 서브·순위 업무 없음')}
+              ), '이월될 서브업무 없음')}
+            </div>
+
+            <div style={{background:'var(--surface-2)',border:'1px solid var(--border)',borderRadius:10,padding:12}}>
+              <div style={{fontSize:12,fontWeight:900,color:'var(--ink)'}}>카운트가 0으로 초기화될 업무</div>
+              <div style={{fontSize:22,fontWeight:900,color:'var(--gold)',marginTop:2}}>{preview.countResetJobs.length}건</div>
+              <div style={{fontSize:11,color:'var(--text-3)',fontWeight:700,marginTop:4}}>필수·순위 업무. 삭제되지 않고 카운트만 되돌아갑니다.</div>
+              {sampleList(preview.countResetJobs, job => (
+                <div key={job.jobId} style={{fontSize:12,color:'var(--text)',fontWeight:700,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{job.title}</div>
+              ), '카운트 초기화 대상 없음')}
             </div>
 
             <div style={{background:'var(--surface-2)',border:'1px solid var(--border)',borderRadius:10,padding:12}}>
@@ -6219,7 +6242,8 @@
               // App 레벨 data.expenses를 읽는 UI가 없어 여기서는 쓰지 않는다.
 
               // 글 보관함: Sheets 우선, 비어있으면 로컬 유지
-              drafts:      safeArr(sheetsData.drafts, prev.drafts),
+              // 글 보관함은 DraftsView가 자체 state와 draftsList API로 다룬다.
+              // App 레벨 data.drafts를 읽는 UI가 없어 여기서는 쓰지 않는다. (expenses와 동일)
 
               // 상담내역: Sheets 우선, 비어있으면 로컬 유지
               consults:    safeArr(sheetsData.consults, prev.consults),
@@ -6357,6 +6381,21 @@
           fetchSummary: fetchFromSheets,
           onStage: setResetStage,
         });
+      } catch (error) {
+        // runMonthlyReset은 단계마다 try/catch가 있어 예외가 새기 어렵지만,
+        // 새면 outcome이 undefined가 되어 아래에서 TypeError가 나고 stage가
+        // 진행 중 값에 고정되어 초기화 버튼이 새로고침 전까지 영구히 잠긴다.
+        // 서버 반영 여부를 알 수 없는 상황이므로 재실행을 권하지 않는다.
+        console.error('monthlyReset 예외:', error);
+        setResetStage(MONTHLY_RESET_STAGE.IDLE);
+        setSyncStatus('error');
+        alert(
+          '초기화 처리 중 예상치 못한 오류가 발생했습니다.\n' +
+          'Sheets 반영 여부를 확인할 수 없으니 다시 초기화하지 마시고,\n' +
+          '동기화 후 이번 달 업무 상태를 먼저 확인해 주세요.\n\n' +
+          `오류: ${error?.message || error}`
+        );
+        return;
       } finally {
         resetInFlight.current = false;
       }
@@ -6401,10 +6440,12 @@
         return next;
       };
 
-      // 상담 원본은 Sheets에 남아 있으므로 로컬 캐시만 비운다.
-      CONSULT_TARGETS.forEach(cid => {
-        safeStorage.setItem('consult-v1-' + cid, '[]');
-      });
+      // 로컬 상담 캐시를 비우지 않는다.
+      // 예전에는 초기화 성공 후 consult-v1-*를 '[]'로 덮었다. 그런데 백업 이력에는
+      // 원격 조회분만 담기므로, Sheets에 아직 없는 로컬 전용 상담(화면에
+      // "Sheets에 없는 로컬 상담 N건"으로 표시되던 건)이 어디에도 남지 않고 사라졌다.
+      // -lastgood 폴백도 키가 null일 때만 동작해 '[]' 상태에서는 복원되지 않았다.
+      // 상담 화면은 월 선택으로 과거 월을 보여주므로 캐시를 비울 이유도 없다.
 
       const backupMsg = newHistories.length > 0
         ? `\n\n📊 상담 내역 백업 완료:\n` + newHistories.map(h => `  • ${h.clientName}: ${h.summary.total}건`).join('\n')

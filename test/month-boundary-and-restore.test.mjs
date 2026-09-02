@@ -28,12 +28,13 @@ function planHelper() {
   const end = dashboard.indexOf('  // 순수 오케스트레이션', start);
   assert.ok(start >= 0 && end > start, 'planMonthlyReset must exist before runMonthlyReset');
 
-  const helpers = monthHelpers();
+  // 헬퍼는 복사하지 않고 실제 소스 구간을 그대로 실행한다.
+  // 복사하면 MONTH_RE 같은 새 의존성이 생겼을 때 조용히 어긋난다.
+  const hStart = dashboard.indexOf('  const pad2    =');
+  const hEnd = dashboard.indexOf('  const normalizeDate = (v) =>', hStart);
   const context = vm.createContext({});
   vm.runInContext(`
-    const monthShift = ${helpers.monthShift.toString()};
-    const localMonthString = ${helpers.localMonthString.toString()};
-    const pad2 = ${helpers.pad2.toString()};
+    ${dashboard.slice(hStart, hEnd)}
     const fmtMonth = (m) => { const x = String(m||'').match(/^(\\d{4})-(\\d{2})$/); return x ? \`\${x[1]}년 \${Number(x[2])}월\` : ''; };
     ${dashboard.slice(start, end)}
     ;globalThis.__plan = planMonthlyReset;
@@ -59,14 +60,47 @@ test('recentMonths는 기준월부터 최신순으로 준다', () => {
 
 // ── 마감월 계산: 8/31, 9/1, 9/2 ───────────────────────────
 
-test('마감월 기본값은 실행일의 전월이다 (8/31, 9/1, 9/2)', () => {
-  const { localMonthString } = monthHelpers();
-  const prevOf = (y, m, d) => localMonthString(new Date(y, m - 1, d - 0, 0, 0, 0)) &&
-    localMonthString(new Date(y, m - 1 - 1, 1));
+// production prevMonth()를 고정된 "오늘"로 실제 실행한다.
+// prevMonth는 내부에서 new Date()를 쓰므로, vm 컨텍스트의 Date를 고정 날짜로
+// 바꿔치기해 주입한다. 이렇게 해야 prevMonth가 망가졌을 때 테스트가 실패한다.
+function prevMonthAt(year, month, day) {
+  const start = dashboard.indexOf('  const pad2    =');
+  const end = dashboard.indexOf('  const normalizeDate = (v) =>', start);
+  const RealDate = Date;
+  const fixed = new RealDate(year, month - 1, day, 12, 0, 0);
 
-  assert.equal(prevOf(2026, 8, 31), '2026-07', '8월 31일에는 기본 마감월이 7월');
-  assert.equal(prevOf(2026, 9, 1), '2026-08', '9월 1일에는 기본 마감월이 8월');
-  assert.equal(prevOf(2026, 9, 2), '2026-08', '9월 2일에도 기본 마감월이 8월');
+  class FrozenDate extends RealDate {
+    constructor(...args) {
+      if (args.length === 0) super(fixed.getTime());
+      else super(...args);
+    }
+    static now() { return fixed.getTime(); }
+  }
+
+  const context = vm.createContext({ Date: FrozenDate });
+  vm.runInContext(`
+    ${dashboard.slice(start, end)}
+    ;globalThis.__r = { prevMonth: prevMonth(), nowMonth: nowMonth() };
+  `, context);
+  return context.__r;
+}
+
+test('prevMonth가 실행일 기준 전월을 반환한다 (8/31, 9/1, 9/2)', () => {
+  assert.equal(prevMonthAt(2026, 8, 31).prevMonth, '2026-07', '8월 31일에는 기본 마감월이 7월');
+  assert.equal(prevMonthAt(2026, 9, 1).prevMonth, '2026-08', '9월 1일에는 기본 마감월이 8월');
+  assert.equal(prevMonthAt(2026, 9, 2).prevMonth, '2026-08', '9월 2일에도 기본 마감월이 8월');
+});
+
+test('prevMonth가 1월에 전년 12월로 넘어간다', () => {
+  const r = prevMonthAt(2027, 1, 15);
+  assert.equal(r.prevMonth, '2026-12', '1월의 전월은 전년 12월이어야 한다');
+  assert.equal(r.nowMonth, '2027-01');
+});
+
+test('prevMonth는 월말 31일에도 오버플로하지 않는다', () => {
+  // new Date(y, m-1, 31)로 월을 빼면 2월 같은 짧은 달에서 날짜가 넘친다.
+  assert.equal(prevMonthAt(2026, 3, 31).prevMonth, '2026-02', '3월 31일의 전월은 2월');
+  assert.equal(prevMonthAt(2026, 5, 31).prevMonth, '2026-04', '5월 31일의 전월은 4월');
 });
 
 test('8월 31일에 8월을 마감하려 하면 진행 중이라고 경고한다', () => {
@@ -113,10 +147,19 @@ test('연말 마감은 다음 해 1월을 새 운영월로 계산한다', () => 
 
 test('형식이 잘못된 마감월은 차단한다', () => {
   const planMonthlyReset = planHelper();
-  for (const bad of ['', '2026', '2026-13-01', null]) {
+  // '2026-13'과 '2026-00'은 \d{2} 정규식이던 시절 통과해서 Date 롤오버로
+  // 조용히 엉뚱한 운영월을 만들었다. 반드시 차단되어야 한다.
+  for (const bad of ['', '2026', '2026-13', '2026-00', '2026-1', '2026-13-01', null]) {
     const plan = planMonthlyReset({ backupMonth: bad, currentMonth: '2026-09', processedMonths: [] });
     assert.equal(plan.blocked, true, `${bad} must be blocked`);
   }
+});
+
+test('monthShift도 월 13이나 00을 거부한다', () => {
+  const { monthShift } = monthHelpers();
+  assert.equal(monthShift('2026-13', 1), '', '월 13은 롤오버되지 않고 거부되어야 한다');
+  assert.equal(monthShift('2026-00', 1), '');
+  assert.equal(monthShift('2026-12', 1), '2027-01', '정상 연말 이동은 유지');
 });
 
 // ── 소스 수준 보증 ─────────────────────────────────────────

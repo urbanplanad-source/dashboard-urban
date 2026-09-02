@@ -276,9 +276,81 @@ test('초기화 후 로컬 monthlyJobs는 서버 응답을 그대로 사용한�
   assert.doesNotMatch(block, /prev\.monthlyJobs/, 'local reconstruction must not come back');
 });
 
-test('미리보기 집계는 순위 업무를 포함한다', () => {
-  assert.match(dashboard, /const isSubLikeJob = \(job\) => job\?\.kind === '서브' \|\| job\?\.kind === '순위';/);
+test('미리보기가 순위 업무의 카운트 초기화를 별도로 알린다', () => {
+  // 순위 업무는 서버가 삭제하지 않고 카운트만 0으로 되돌린다.
+  // Phase 1에서는 이를 "삭제될 서브·순위 업무"로 묶어 잘못 예고했다.
   const start = dashboard.indexOf('  function getMonthlyResetPreview(');
-  const block = dashboard.slice(start, start + 500);
-  assert.match(block, /\.filter\(isSubLikeJob\)/);
+  const block = dashboard.slice(start, start + 1400);
+
+  assert.match(block, /const countResetJobs = \(data\.monthlyJobs \|\| \[\]\)/);
+  assert.match(block, /\.filter\(job => !isDeletableSubJob\(job\) && isCountResetJob\(job\)\)/);
+  assert.doesNotMatch(dashboard, /isSubLikeJob/, 'the merged 서브/순위 predicate must be gone');
+});
+
+// ── Kimi 감사 지적 반영분 회귀 방지 ─────────────────────────
+
+test('초기화 성공 후 로컬 상담 캐시를 통째로 비우지 않는다', () => {
+  // 예전에는 consult-v1-*를 '[]'로 덮어 Sheets에 없는 로컬 전용 상담이 사라졌다.
+  // 백업 이력에는 원격 조회분만 담기므로 그 건들은 어디에도 남지 않았다.
+  assert.doesNotMatch(
+    dashboard,
+    /safeStorage\.setItem\('consult-v1-' \+ cid, '\[\]'\)/,
+    'the reset path must not wipe the local consult cache',
+  );
+
+  const start = dashboard.indexOf('      // ── 여기부터 서버는 이미 초기화됨');
+  const end = dashboard.indexOf('      // ── 정상 완료: 서버 응답을 source of truth로 반영한다 ──', start);
+  assert.ok(start >= 0 && end > start, 'the post-reset block must exist');
+
+  // 주석에는 과거 동작 설명이 남으므로 코드만 남기고 검사한다.
+  const code = dashboard.slice(start, end)
+    .split('\n')
+    .filter((line) => !line.trim().startsWith('//'))
+    .join('\n');
+  assert.doesNotMatch(code, /safeStorage\.(setItem|removeItem)\([^)]*consult-v1-/, 'no consult cache mutation after reset');
+});
+
+test('미리보기 삭제 예고는 서버가 실제로 지우는 서브 업무만 대상으로 한다', () => {
+  // 서버(monthly_reset_patch_v16.gs)는 kind === '서브'만 삭제한다.
+  // 순위 업무를 삭제 대상으로 예고하면 다음 달에 되살아나 사용자를 혼란시킨다.
+  assert.match(dashboard, /const isDeletableSubJob = \(job\) => job\?\.kind === '서브';/);
+
+  const start = dashboard.indexOf('  function getMonthlyResetPreview(');
+  const block = dashboard.slice(start, start + 1400);
+  assert.match(block, /const allSubs = \(data\.monthlyJobs \|\| \[\]\)\.filter\(isDeletableSubJob\);/);
+
+  // 순위 업무는 별도 버킷(카운트 초기화)으로 안내해야 한다.
+  assert.match(block, /countResetJobs/);
+  assert.match(dashboard, /카운트가 0으로 초기화될 업무/);
+  assert.doesNotMatch(dashboard, /삭제될 완료 서브·순위 업무/, 'delete card must not promise 순위 deletion');
+});
+
+test('미리보기 판정이 서버 패치의 kind 조건과 일치한다', async () => {
+  const patch = await fs.readFile(path.join(root, 'apps-script/monthly_reset_patch_v16.gs'), 'utf8');
+
+  // 서버 삭제 조건
+  assert.match(patch, /if \(kind === '서브' && note\.indexOf\('완료'\) === 0\)/);
+  // 서버 이월 조건
+  assert.match(patch, /if \(kind === '서브'\) \{\s*\n\s*carryoverSubJobs\+\+;/);
+  // 서버 카운트 초기화 조건
+  assert.match(patch, /if \(kind === '필수' \|\| hasTarget\) \{/);
+
+  // 클라이언트가 같은 집합을 쓰는지
+  assert.match(dashboard, /const isCountResetJob = \(job\) => job\?\.kind === '필수' \|\| hasJobTarget\(job\);/);
+});
+
+test('runMonthlyReset이 예외로 탈출해도 버튼이 영구히 잠기지 않는다', () => {
+  const start = dashboard.indexOf('      let outcome;');
+  const end = dashboard.indexOf('      // ── 서버 미반영 단계', start);
+  assert.ok(start >= 0 && end > start, 'the orchestration call site must exist');
+  const block = dashboard.slice(start, end);
+
+  assert.match(block, /\} catch \(error\) \{/, 'the call site must catch escaping exceptions');
+  assert.match(block, /setResetStage\(MONTHLY_RESET_STAGE\.IDLE\)/, 'stage must return to IDLE so the button unlocks');
+  assert.match(block, /return;/, 'it must not fall through to outcome access');
+  assert.match(block, /resetInFlight\.current = false;/, 'the ref must still be released');
+
+  // 예외 안내는 재초기화를 권하면 안 된다.
+  const alertText = block.slice(block.indexOf('alert('), block.indexOf('return;'));
+  assert.match(alertText, /다시 초기화하지 마시고/);
 });

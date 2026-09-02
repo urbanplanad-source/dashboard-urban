@@ -10,13 +10,14 @@ Urbanplanad client report dashboard and Naver Place visitor review monitor.
 - Detailed Apps Script API reference: `docs/apps-script-api.md`
 - Apps Script patch snippets: `apps-script/`
 
-This project is a static HTML dashboard. The primary working file is the local `index.html`; GitHub Pages serves the same repository root for remote access.
+This project is a static HTML dashboard. The primary working file is the local `index.html`. It is deliberately **not** deployed anywhere — see "Using The Dashboard Away From The Main PC" below. The public Vercel deployment serves only the client report pages, enforced by `.vercelignore`.
 
 ## Operating Modes
 
 - Local: open `index.html` directly from this folder.
-- Remote: use the GitHub Pages deployment of the same root files.
-- Keep dashboard links relative, such as `btskin.html`, so local file use and GitHub Pages stay in sync.
+- Remote: keep a copy of `index.html` on the other machine and open it there. The dashboard is not published to Vercel or GitHub Pages.
+- Public: only the client report pages (`btskin.html` and the other seven) are published, through Vercel.
+- Keep dashboard links relative, such as `btskin.html`, so local file use and the public deployment stay in sync.
 - Before uploading changes, run `npm run check` or `npm.cmd run check`.
 
 ## Visitor Review Monitor
@@ -45,13 +46,9 @@ npm run review:monitor
 
 ## GitHub Actions
 
-`.github/workflows/naver-review-monitor.yml` runs the review monitor:
+`.github/workflows/naver-review-monitor.yml` runs the review monitor.
 
-- 09:00 KST
-- 13:00 KST
-- 17:00 KST
-
-The workflow also supports manual execution from the GitHub Actions tab.
+**Manual trigger only.** The workflow declares `workflow_dispatch` and no `schedule`, so nothing runs on its own — start it from the GitHub Actions tab. A previous version of this file documented a 09:00 / 13:00 / 17:00 KST cron that the workflow does not have; do not rely on automatic monitoring until a `schedule` block is added deliberately.
 
 Review changes are reported as a `[notice]` summary in the run output. External messenger delivery was removed in 2026-09; read the results in the GitHub Actions run log or the local console.
 
@@ -59,7 +56,7 @@ Review changes are reported as a `[notice]` summary in the run output. External 
 
 `review-monitor.config.example.json` shows the optional config shape. The real local config file name is `review-monitor.config.json`, and it is ignored by Git.
 
-For local-only account notes, copy `credentials.local.example.js` to `credentials.local.js`. The real `credentials.local.js` file is ignored by Git and must not be uploaded to GitHub Pages.
+For local-only account notes, copy `credentials.local.example.js` to `credentials.local.js`. The real `credentials.local.js` file is ignored by Git and must not be published.
 
 ## Using The Dashboard Away From The Main PC
 
