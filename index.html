@@ -859,10 +859,14 @@
     return lines.join('\n');
   }
 
+  // 서브 업무와 순위 업무는 화면 전반에서 함께 다룬다. 초기화 미리보기와 집계도
+  // 동일하게 맞춰야 미리보기에 없는 업무가 조용히 초기화되는 일이 없다.
+  const isSubLikeJob = (job) => job?.kind === '서브' || job?.kind === '순위';
+
   function getMonthlyResetPreview(data, remoteConsultBackups = null) {
     const backupMonth = prevMonth();
     const targetMonth = nowMonth();
-    const allSubs = (data.monthlyJobs || []).filter(job => job.kind === '서브');
+    const allSubs = (data.monthlyJobs || []).filter(isSubLikeJob);
     const completedSubs = allSubs.filter(isCompletedSubJob);
     const carryoverSubs = allSubs.filter(job => !isCompletedSubJob(job));
     const unmetRequired = (data.monthlyJobs || [])
@@ -882,6 +886,117 @@
       unmetRequired,
       consultBackups: remoteConsultBackups || localConsultBackups,
     };
+  }
+
+  // ═══════════════════════════════════════════════
+  //  MONTHLY RESET — 단계 분리
+  //  서버 반영 여부와 화면 갱신 여부를 반드시 구분한다.
+  //  monthlyReset POST가 성공한 뒤 summary 조회가 실패해도 그것은 "초기화 실패"가
+  //  아니다. 재실행을 유도하면 중복 처리 위험이 생긴다.
+  // ═══════════════════════════════════════════════
+  const MONTHLY_RESET_STAGE = {
+    IDLE: 'idle',
+    PREFLIGHT_LOADING: 'preflight_loading',
+    RESET_POSTING: 'reset_posting',
+    RESET_APPLIED_REFRESHING: 'reset_applied_refreshing',
+    COMPLETE: 'complete',
+    PREFLIGHT_FAILED: 'preflight_failed',
+    RESET_FAILED: 'reset_failed',
+    RESET_APPLIED_REFRESH_FAILED: 'reset_applied_refresh_failed',
+  };
+
+  // 서버 반영이 끝난 뒤의 단계에서는 절대 재실행을 안내하지 않는다.
+  const MONTHLY_RESET_MESSAGE = {
+    [MONTHLY_RESET_STAGE.PREFLIGHT_FAILED]:
+      '상담 자료를 확인하지 못해 초기화를 시작하지 않았습니다.\nSheets와 로컬 모두 변경되지 않았습니다.\n잠시 후 다시 시도해 주세요.',
+    [MONTHLY_RESET_STAGE.RESET_FAILED]:
+      '초기화 요청이 실패했습니다.\nSheets 반영이 확인되지 않아 로컬 화면도 초기화하지 않았습니다.\n잠시 후 다시 시도해 주세요.',
+    [MONTHLY_RESET_STAGE.RESET_APPLIED_REFRESH_FAILED]:
+      'Sheets 초기화는 완료되었습니다.\n다시 초기화하지 마세요.\n\n화면 갱신에만 실패했으므로 동기화 버튼을 눌러 최신 상태를 불러와 주세요.',
+  };
+
+  // 순수 오케스트레이션. React와 분리해 두어야 모의 fetch로 단계별 검증이 가능하다.
+  // 반환값의 stage로 호출측이 로컬 상태 반영 여부를 결정한다.
+  async function runMonthlyReset({
+    backupMonth,
+    targetMonth,
+    consultTargets,
+    clients,
+    consultsList,
+    postJson,
+    fetchSummary,
+    onStage,
+  }) {
+    const setStage = (stage) => { if (onStage) onStage(stage); return stage; };
+    const result = {
+      stage: MONTHLY_RESET_STAGE.IDLE,
+      serverResetSucceeded: false,
+      histories: [],
+      afterReset: null,
+      error: null,
+    };
+
+    // ── 1) preflight: 전월 상담을 원격에서 확인한다. 여기서는 아무것도 쓰지 않는다.
+    setStage(MONTHLY_RESET_STAGE.PREFLIGHT_LOADING);
+    try {
+      const histories = await Promise.all(consultTargets.map(async (clientId) => {
+        const response = await consultsList(clientId, backupMonth);
+        const records = response?.data?.consults || response?.consults || [];
+        if (!response?.success || !Array.isArray(records)) {
+          throw new Error(response?.error || `${clientId} ${backupMonth} 상담 조회 실패`);
+        }
+        const normalized = records
+          .map(record => ({ ...normalizeConsult(record), clientId: record.clientId || clientId }))
+          .filter(record => record.id && normalizeMonth(record.month || record.date) === backupMonth);
+        const byChannel = {};
+        normalized.forEach(record => { byChannel[record.channel] = (byChannel[record.channel] || 0) + 1; });
+        const clientName = (clients || []).find(item => item.clientId === clientId)?.clientName || clientId;
+        return {
+          month: backupMonth,
+          clientId,
+          clientName,
+          records: normalized,
+          savedAt: new Date().toISOString(),
+          summary: { total: normalized.length, byChannel },
+        };
+      }));
+      result.histories = histories.filter(history => history.records.length > 0);
+    } catch (error) {
+      result.stage = setStage(MONTHLY_RESET_STAGE.PREFLIGHT_FAILED);
+      result.error = error;
+      return result;
+    }
+
+    // ── 2) 서버 초기화 요청 1회. 완료 서브업무 삭제/카운트 초기화/새 달 구성은 서버가 처리한다.
+    setStage(MONTHLY_RESET_STAGE.RESET_POSTING);
+    try {
+      await postJson({ action: 'monthlyReset', month: targetMonth });
+    } catch (error) {
+      result.stage = setStage(MONTHLY_RESET_STAGE.RESET_FAILED);
+      result.error = error;
+      return result;
+    }
+
+    // 여기를 지난 시점부터 서버는 이미 초기화된 상태다.
+    result.serverResetSucceeded = true;
+
+    // ── 3) 화면 갱신용 재조회. 실패해도 서버 반영은 되돌리지 않는다.
+    setStage(MONTHLY_RESET_STAGE.RESET_APPLIED_REFRESHING);
+    try {
+      const afterReset = await fetchSummary();
+      if (!afterReset || !Array.isArray(afterReset.monthlyJobs) || afterReset.monthlyJobs.length === 0) {
+        // 빈 응답을 정상으로 취급하면 이월 업무가 사라진 것으로 오인하게 된다.
+        // 과거에는 이 지점에서 addSubJob으로 자동 재생성해 Sheets에 중복을 만들었다.
+        // 이제는 자동 보강하지 않고 수동 확인 대상으로 남긴다.
+        throw new Error('초기화 후 업무 목록을 확인하지 못했습니다.');
+      }
+      result.afterReset = afterReset;
+      result.stage = setStage(MONTHLY_RESET_STAGE.COMPLETE);
+    } catch (error) {
+      result.stage = setStage(MONTHLY_RESET_STAGE.RESET_APPLIED_REFRESH_FAILED);
+      result.error = error;
+    }
+    return result;
   }
 
   const isWaitingJob = (job) =>
@@ -1880,19 +1995,19 @@
 
           <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(240px,1fr))',gap:12}}>
             <div style={{background:'var(--surface-2)',border:'1px solid var(--border)',borderRadius:10,padding:12}}>
-              <div style={{fontSize:12,fontWeight:900,color:'var(--ink)'}}>삭제될 완료 서브업무</div>
+              <div style={{fontSize:12,fontWeight:900,color:'var(--ink)'}}>삭제될 완료 서브·순위 업무</div>
               <div style={{fontSize:22,fontWeight:900,color:'var(--green)',marginTop:2}}>{preview.completedSubs.length}건</div>
               {sampleList(preview.completedSubs, job => (
                 <div key={job.jobId} style={{fontSize:12,color:'var(--text)',fontWeight:700,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{job.title}</div>
-              ), '삭제될 완료 서브업무 없음')}
+              ), '삭제될 완료 서브·순위 업무 없음')}
             </div>
 
             <div style={{background:'var(--surface-2)',border:'1px solid var(--border)',borderRadius:10,padding:12}}>
-              <div style={{fontSize:12,fontWeight:900,color:'var(--ink)'}}>이월될 미완료 서브업무</div>
+              <div style={{fontSize:12,fontWeight:900,color:'var(--ink)'}}>이월될 미완료 서브·순위 업무</div>
               <div style={{fontSize:22,fontWeight:900,color:'var(--blue)',marginTop:2}}>{preview.carryoverSubs.length}건</div>
               {sampleList(preview.carryoverSubs, job => (
                 <div key={job.jobId} style={{fontSize:12,color:'var(--text)',fontWeight:700,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{job.title}</div>
-              ), '이월될 서브업무 없음')}
+              ), '이월될 서브·순위 업무 없음')}
             </div>
 
             <div style={{background:'var(--surface-2)',border:'1px solid var(--border)',borderRadius:10,padding:12}}>
@@ -3224,6 +3339,9 @@
       return readConsults(client.clientId);
     });
     const [consultMonth,   setConsultMonth]   = useState(() => prevMonth());
+    // Sheets에 아직 없는 로컬 상담 건수. 화면 진입 시 자동 전송하지 않으므로
+    // 사용자가 보강이 필요한 상태임을 알 수 있도록 표시만 한다.
+    const [unsyncedConsultCount, setUnsyncedConsultCount] = useState(0);
     const [consultFilter,  setConsultFilter]  = useState('');
     const [consultExpId,   setConsultExpId]   = useState(null);
     const [showConsultAdd, setShowConsultAdd] = useState(false);
@@ -3317,51 +3435,21 @@
           const currentLocal = readConsults(client.clientId);
           const baseLocal = currentLocal.length ? currentLocal : fallbackList;
 
+          // 화면을 여는 것만으로는 절대 Sheets에 쓰지 않는다.
+          // 과거에는 원격이 비었을 때 로컬 전체를, 원격에 없는 항목은 개별로
+          // addConsult POST 했다. 수백 건이 동시 전송되어 Failed to fetch와
+          // Apps Script 경합을 일으켰고, 사용자에게는 아무 표시도 남지 않았다.
+          // 저장은 상담 추가/삭제 같은 명시적 사용자 행동에서만 수행한다.
+          // 원격에 없는 로컬 항목은 삭제하지 않고 병합해 계속 표시하며,
+          // Sheets 보강이 필요하면 scripts/consult-backfill.mjs로 처리한다.
           if (!normalizedRemote.length) {
-            baseLocal
-              .filter(c => c.id)
-              .forEach(c => {
-                fetch(API_URL, {
-                  method: 'POST', redirect: 'follow',
-                  body: JSON.stringify({
-                    action: 'addConsult',
-                    clientId: client.clientId,
-                    consultId: c.id,
-                    date: c.date,
-                    month: c.month || normalizeMonth(c.date),
-                    channel: c.channel,
-                    nickname: c.nickname,
-                    content: c.content,
-                    createdAt: c.createdAt,
-                  })
-                }).catch(e => console.warn('consult backfill Sheets 오류:', e));
-              });
+            setUnsyncedConsultCount(baseLocal.filter(c => c.id).length);
             return;
           }
 
           setConsultList(() => {
             const merged = writeConsults(client.clientId, mergeConsultLists(baseLocal, normalizedRemote));
-
-            // Apps Script 패치 적용 후 처음 열었을 때 기존 localStorage 상담도 Sheets에 보강 저장한다.
-            merged
-              .filter(c => c.id && !remoteIds.has(c.id))
-              .forEach(c => {
-                fetch(API_URL, {
-                  method: 'POST', redirect: 'follow',
-                  body: JSON.stringify({
-                    action: 'addConsult',
-                    clientId: client.clientId,
-                    consultId: c.id,
-                    date: c.date,
-                    month: c.month || normalizeMonth(c.date),
-                    channel: c.channel,
-                    nickname: c.nickname,
-                    content: c.content,
-                    createdAt: c.createdAt,
-                  })
-                }).catch(e => console.warn('consult backfill Sheets 오류:', e));
-              });
-
+            setUnsyncedConsultCount(merged.filter(c => c.id && !remoteIds.has(c.id)).length);
             return merged;
           });
         })
@@ -3633,6 +3721,13 @@
                   <button onClick={addConsult}
                     style={{padding:'7px 18px',background:'#6366f1',border:'none',borderRadius:6,fontSize:12,fontWeight:700,color:'#fff',cursor:'pointer',fontFamily:'inherit'}}>저장</button>
                 </div>
+              </div>
+            )}
+
+            {/* Sheets 미반영 안내 — 화면 진입만으로 자동 전송하지 않으므로 상태만 알린다 */}
+            {unsyncedConsultCount > 0 && (
+              <div style={{background:'var(--surface-2)',border:'1px solid var(--border)',borderRadius:8,padding:'8px 10px',marginBottom:10,fontSize:11,fontWeight:700,color:'var(--text-2)'}}>
+                Sheets에 없는 로컬 상담 {unsyncedConsultCount}건이 있습니다. 화면에는 계속 표시되며 자동 전송하지 않습니다.
               </div>
             )}
 
@@ -6096,26 +6191,22 @@
     }, []);
 
     // ── 수동 월별 초기화 함수 (설정 탭 버튼에서 호출) ──
+    // ── 재진입 방지 ──
+    // state는 다음 렌더에서야 반영되므로 즉시 동작하는 ref로 막는다.
+    const resetInFlight = useRef(false);
+    const [resetStage, setResetStage] = useState(MONTHLY_RESET_STAGE.IDLE);
+    const resetRunning = resetStage === MONTHLY_RESET_STAGE.PREFLIGHT_LOADING
+      || resetStage === MONTHLY_RESET_STAGE.RESET_POSTING
+      || resetStage === MONTHLY_RESET_STAGE.RESET_APPLIED_REFRESHING;
+
     async function handleMonthlyReset() {
-      // ── 1) 채널별 상담 내역 백업 (btskin / belrmon) ──
+      if (resetInFlight.current) return;
+      resetInFlight.current = true;
+
       // 초기화는 이번 달 업무를 닫는 작업이므로 백업 월 = 이전 달 (전달 데이터 보존)
       const backupMonth = prevMonth();
+      const targetMonth = nowMonth();
       const CONSULT_TARGETS = ['btskin', 'belrmon'];
-      let newHistories = CONSULT_TARGETS.map(cid => {
-        const raw     = safeStorage.getItem('consult-v1-' + cid);
-        const records = raw ? (() => { try { return JSON.parse(raw); } catch { return []; } })() : [];
-        const byChannel = {};
-        records.forEach(r => { byChannel[r.channel] = (byChannel[r.channel] || 0) + 1; });
-        const clientName = (data.clients || []).find(c => c.clientId === cid)?.clientName || cid;
-        return {
-          month:      backupMonth,
-          clientId:   cid,
-          clientName,
-          records,
-          savedAt:    new Date().toISOString(),
-          summary:    { total: records.length, byChannel },
-        };
-      }).filter(h => h.records.length > 0);  // 데이터 없으면 백업 항목 생성 안 함
 
       const postJson = async (body) => {
         const res = await fetch(API_URL, {
@@ -6128,76 +6219,35 @@
         if (!result.success) throw new Error(`${action} 실패: ${result.error || 'API 오류'}`);
         return result;
       };
-      const targetMonth = nowMonth();
 
-      // ── 2) Sheets 초기화 먼저 완료 확인 ──
-      // 월초에 전월 보고서를 마친 뒤 누르는 전제이므로, 새 운영월은 현재 월(nowMonth)이다.
-      const isCompletedSubJob = (job) => String(job.note || '').trim().startsWith('완료');
-      const allSubs = (data.monthlyJobs || []).filter(j => j.kind === '서브');
-      const carryoverSubs = allSubs.filter(j => !isCompletedSubJob(j));
       setSyncStatus('loading');
-      let afterReset = null;
+
+      let outcome;
       try {
-        newHistories = await Promise.all(CONSULT_TARGETS.map(async cid => {
-          const result = await window.dashboardAPI.consultsList(cid, backupMonth);
-          const records = result.data?.consults || result.consults || [];
-          if (!result.success || !Array.isArray(records)) throw new Error(result.error || `${cid} ${backupMonth} 상담 조회 실패`);
-          const normalized = records
-            .map(record => ({ ...normalizeConsult(record), clientId: record.clientId || cid }))
-            .filter(record => record.id && normalizeMonth(record.month || record.date) === backupMonth);
-          const byChannel = {};
-          normalized.forEach(record => { byChannel[record.channel] = (byChannel[record.channel] || 0) + 1; });
-          const clientName = (data.clients || []).find(client => client.clientId === cid)?.clientName || cid;
-          return {
-            month: backupMonth,
-            clientId: cid,
-            clientName,
-            records: normalized,
-            savedAt: new Date().toISOString(),
-            summary: { total: normalized.length, byChannel },
-          };
-        }));
-        newHistories = newHistories.filter(history => history.records.length > 0);
+        outcome = await runMonthlyReset({
+          backupMonth,
+          targetMonth,
+          consultTargets: CONSULT_TARGETS,
+          clients: data.clients,
+          consultsList: (clientId, month) => window.dashboardAPI.consultsList(clientId, month),
+          postJson,
+          fetchSummary: fetchFromSheets,
+          onStage: setResetStage,
+        });
+      } finally {
+        resetInFlight.current = false;
+      }
 
-        // consultsList에서 읽은 원격 상담은 이미 Sheets에 있으므로 다시 addConsult 하지 않는다.
-        // 여기서는 월별 백업 이력용 newHistories만 만들고, 실제 초기화 요청 수를 최소화한다.
-
-        await postJson({ action: 'monthlyReset', month: targetMonth });
-
-        // live monthlyReset 내부 구현이 서브업무를 건드리더라도, 미완료 서브업무는 다시 보강한다.
-        afterReset = await fetchFromSheets();
-
-        const afterIds = new Set((afterReset.monthlyJobs || []).map(j => j.jobId));
-        const missingCarryovers = carryoverSubs.filter(j => !j.syncPending && !afterIds.has(j.jobId));
-
-        await Promise.all(missingCarryovers.map(async (job) => {
-          const added = await postJson({
-            action: 'addSubJob',
-            clientId: job.clientId,
-            title: job.title,
-            dueDate: job.dueDate || null,
-          });
-          if ((job.note || job.dueDate) && added.jobId) {
-            await postJson({
-              action: 'updateSubJob',
-              jobId: added.jobId,
-              title: job.title,
-              note: job.note || '',
-              dueDate: job.dueDate || null,
-            });
-          }
-        }));
-      } catch (e) {
-        console.error('monthlyReset 오류:', e);
+      // ── 서버 미반영 단계: 로컬을 건드리지 않는다 ──
+      if (!outcome.serverResetSucceeded) {
+        console.error('monthlyReset 오류:', outcome.error);
         setSyncStatus('error');
-        alert(`초기화에 실패했습니다.\n\nSheets 반영이 확인되지 않아 로컬 화면도 초기화하지 않았습니다.\n잠시 후 다시 시도해 주세요.\n\n오류: ${e.message || e}`);
+        alert(`${MONTHLY_RESET_MESSAGE[outcome.stage]}\n\n오류: ${outcome.error?.message || outcome.error}`);
         return;
       }
 
-      // ── 3) 상담 localStorage 초기화 ──
-      CONSULT_TARGETS.forEach(cid => {
-        safeStorage.setItem('consult-v1-' + cid, '[]');
-      });
+      // ── 여기부터 서버는 이미 초기화됨. 재실행을 안내하지 않는다. ──
+      const newHistories = outcome.histories;
 
       const mergeConsultHistories = (existing, additions) => {
         const next = [...(existing || [])];
@@ -6228,26 +6278,37 @@
         return next;
       };
 
-      // ── 4) 상태 업데이트 (완료된 서브업무만 제거 + 백업 저장) ──
-      mutate(prev => ({
-        ...prev,
-        monthlyJobs: prev.monthlyJobs
-          .filter(j => j.kind !== '서브' || !isCompletedSubJob(j))
-          .map(j => ({
-            ...j,
-            currentCount: j.targetCount != null ? 0 : j.currentCount,
-            note:         j.note === '완료' ? '' : j.note,
-          })),
-        expenses: (afterReset && afterReset.expenses && afterReset.expenses.length)
-          ? afterReset.expenses
-          : prev.expenses,
-        postLogs:         [],
-        consultHistories: mergeConsultHistories(prev.consultHistories || [], newHistories),
-      }));
+      // 상담 원본은 Sheets에 남아 있으므로 로컬 캐시만 비운다.
+      CONSULT_TARGETS.forEach(cid => {
+        safeStorage.setItem('consult-v1-' + cid, '[]');
+      });
 
       const backupMsg = newHistories.length > 0
         ? `\n\n📊 상담 내역 백업 완료:\n` + newHistories.map(h => `  • ${h.clientName}: ${h.summary.total}건`).join('\n')
         : '';
+
+      // ── 화면 갱신 실패: 서버 반영은 유지하고 백업 이력만 보존한다 ──
+      if (outcome.stage === MONTHLY_RESET_STAGE.RESET_APPLIED_REFRESH_FAILED) {
+        console.error('monthlyReset 갱신 오류:', outcome.error);
+        mutate(prev => ({
+          ...prev,
+          consultHistories: mergeConsultHistories(prev.consultHistories || [], newHistories),
+        }));
+        setSyncStatus('error');
+        alert(`${MONTHLY_RESET_MESSAGE[outcome.stage]}${backupMsg}\n\n오류: ${outcome.error?.message || outcome.error}`);
+        return;
+      }
+
+      // ── 정상 완료: 서버 응답을 source of truth로 반영한다 ──
+      const afterReset = outcome.afterReset;
+      mutate(prev => ({
+        ...prev,
+        monthlyJobs: afterReset.monthlyJobs,
+        expenses: (afterReset.expenses && afterReset.expenses.length) ? afterReset.expenses : prev.expenses,
+        postLogs: (afterReset.postLogs && afterReset.postLogs.length) ? afterReset.postLogs : prev.postLogs,
+        consultHistories: mergeConsultHistories(prev.consultHistories || [], newHistories),
+      }));
+
       setSyncStatus('ok');
       alert('초기화 완료!' + backupMsg + '\n\n고정비는 자동 적용하지 않습니다.');
     }
@@ -6940,9 +7001,10 @@
               {view==='main' && (
                 <>
                   <button
-                    style={{display:'flex',alignItems:'center',gap:7,background:'var(--purple)',color:'#fff',border:'none',borderRadius:8,padding:'8px 12px',fontSize:12,fontWeight:800,cursor:'pointer',fontFamily:'inherit',textAlign:'left'}}
-                    onClick={()=>{ setAdminOpen(false); setResetPreviewOpen(true); }}>
-                    <Icon name="calendar" size={13} /> 다음 달 초기화
+                    disabled={resetRunning}
+                    style={{display:'flex',alignItems:'center',gap:7,background: resetRunning ? 'var(--surface-2)' : 'var(--purple)',color: resetRunning ? 'var(--text-3)' : '#fff',border:'none',borderRadius:8,padding:'8px 12px',fontSize:12,fontWeight:800,cursor: resetRunning ? 'not-allowed' : 'pointer',fontFamily:'inherit',textAlign:'left'}}
+                    onClick={()=>{ if (resetRunning) return; setAdminOpen(false); setResetPreviewOpen(true); }}>
+                    <Icon name="calendar" size={13} /> {resetRunning ? '초기화 진행 중...' : '다음 달 초기화'}
                   </button>
                   <button
                     style={{display:'flex',alignItems:'center',gap:7,background:'var(--surface-2)',color:'var(--text)',border:'1px solid var(--border)',borderRadius:8,padding:'8px 12px',fontSize:12,fontWeight:800,cursor:'pointer',fontFamily:'inherit',textAlign:'left'}}
