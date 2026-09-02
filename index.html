@@ -859,7 +859,7 @@
     return lines.join('\n');
   }
 
-  function getMonthlyResetPreview(data) {
+  function getMonthlyResetPreview(data, remoteConsultBackups = null) {
     const backupMonth = prevMonth();
     const targetMonth = nowMonth();
     const allSubs = (data.monthlyJobs || []).filter(job => job.kind === '서브');
@@ -868,7 +868,7 @@
     const unmetRequired = (data.monthlyJobs || [])
       .filter(job => job.kind === '필수' && !isJobDone(job));
     const consultTargets = ['btskin', 'belrmon'];
-    const consultBackups = consultTargets.map(clientId => {
+    const localConsultBackups = consultTargets.map(clientId => {
       const raw = safeStorage.getItem('consult-v1-' + clientId);
       const records = raw ? (() => { try { return JSON.parse(raw); } catch { return []; } })() : [];
       const clientName = (data.clients || []).find(client => client.clientId === clientId)?.clientName || clientId;
@@ -880,7 +880,7 @@
       completedSubs,
       carryoverSubs,
       unmetRequired,
-      consultBackups,
+      consultBackups: remoteConsultBackups || localConsultBackups,
     };
   }
 
@@ -1822,7 +1822,31 @@
   }
 
   function MonthlyResetPreviewModal({ data, onClose, onConfirm }) {
-    const preview = useMemo(() => getMonthlyResetPreview(data), [data]);
+    const backupMonth = prevMonth();
+    const [remoteConsultBackups, setRemoteConsultBackups] = useState(null);
+    const [consultBackupError, setConsultBackupError] = useState('');
+    const preview = useMemo(
+      () => getMonthlyResetPreview(data, remoteConsultBackups),
+      [data, remoteConsultBackups]
+    );
+    useEffect(() => {
+      let cancelled = false;
+      const targets = ['btskin', 'belrmon'];
+      Promise.all(targets.map(async clientId => {
+        const result = await window.dashboardAPI.consultsList(clientId, backupMonth);
+        const records = result.data?.consults || result.consults || [];
+        if (!result.success || !Array.isArray(records)) throw new Error(result.error || `${clientId} 상담 조회 실패`);
+        const clientName = (data.clients || []).find(client => client.clientId === clientId)?.clientName || clientId;
+        return {
+          clientId,
+          clientName,
+          records: records.map(item => ({ ...normalizeConsult(item), clientId: item.clientId || clientId })).filter(item => item.id),
+        };
+      }))
+        .then(items => { if (!cancelled) setRemoteConsultBackups(items); })
+        .catch(error => { if (!cancelled) setConsultBackupError(error.message || String(error)); });
+      return () => { cancelled = true; };
+    }, [backupMonth, data.clients]);
     const sampleList = (items, render, emptyText) => (
       <div style={{display:'flex',flexDirection:'column',gap:5,marginTop:8}}>
         {items.length > 0 ? items.slice(0, 5).map(render) : (
@@ -1879,8 +1903,14 @@
 
             <div style={{background:'var(--surface-2)',border:'1px solid var(--border)',borderRadius:10,padding:12}}>
               <div style={{fontSize:12,fontWeight:900,color:'var(--ink)'}}>상담 백업 대상</div>
+              {!remoteConsultBackups && !consultBackupError && (
+                <div style={{fontSize:11,color:'var(--text-3)',fontWeight:700,marginTop:6}}>Sheets의 {fmtMonth(backupMonth)} 상담을 확인하는 중...</div>
+              )}
+              {consultBackupError && (
+                <div style={{fontSize:11,color:'var(--red)',fontWeight:700,marginTop:6}}>상담 조회 실패: {consultBackupError}</div>
+              )}
               <div style={{display:'flex',flexDirection:'column',gap:6,marginTop:10}}>
-                {preview.consultBackups.map(item => (
+                {remoteConsultBackups && preview.consultBackups.map(item => (
                   <div key={item.clientId} style={{display:'flex',justifyContent:'space-between',gap:8,fontSize:12,fontWeight:800}}>
                     <span style={{color:'var(--text)'}}>{item.clientName}</span>
                     <span style={{color:item.records.length ? 'var(--green)' : 'var(--text-3)'}}>{item.records.length}건</span>
@@ -1892,7 +1922,7 @@
 
           <div style={{display:'flex',justifyContent:'flex-end',gap:8,marginTop:18}}>
             <button className="btn-ghost" onClick={onClose}>취소</button>
-            <button className="btn-primary" onClick={onConfirm}>초기화 실행</button>
+            <button className="btn-primary" disabled={!remoteConsultBackups || !!consultBackupError} onClick={onConfirm}>초기화 실행</button>
           </div>
         </div>
       </div>
@@ -3193,6 +3223,7 @@
     const [consultList,    setConsultList]    = useState(() => {
       return readConsults(client.clientId);
     });
+    const [consultMonth,   setConsultMonth]   = useState(() => prevMonth());
     const [consultFilter,  setConsultFilter]  = useState('');
     const [consultExpId,   setConsultExpId]   = useState(null);
     const [showConsultAdd, setShowConsultAdd] = useState(false);
@@ -3211,6 +3242,7 @@
       const id = 'cs-' + Date.now().toString(36);
       const entry = { ...consultForm, id, consultId: id, clientId: client.clientId, createdAt: new Date().toISOString() };
       saveConsults([entry, ...consultList]);
+      setConsultMonth(normalizeMonth(entry.month || entry.date));
       fetch(API_URL, {
         method: 'POST', redirect: 'follow',
         body: JSON.stringify({
@@ -3284,14 +3316,6 @@
           const remoteIds = new Set(normalizedRemote.map(c => c.id));
           const currentLocal = readConsults(client.clientId);
           const baseLocal = currentLocal.length ? currentLocal : fallbackList;
-          const visibleMonths = [...normalizedRemote, ...baseLocal]
-            .map(c => normalizeMonth(c.month || c.date))
-            .filter(Boolean)
-            .sort((a, b) => b.localeCompare(a));
-          const visibleMonth = visibleMonths[0] || '';
-          const isVisibleMonth = c => !visibleMonth || normalizeMonth(c.month || c.date) === visibleMonth;
-          const visibleRemote = normalizedRemote.filter(isVisibleMonth);
-          const visibleLocal = baseLocal.filter(isVisibleMonth);
 
           if (!normalizedRemote.length) {
             baseLocal
@@ -3316,7 +3340,7 @@
           }
 
           setConsultList(() => {
-            const merged = writeConsults(client.clientId, mergeConsultLists(visibleLocal, visibleRemote));
+            const merged = writeConsults(client.clientId, mergeConsultLists(baseLocal, normalizedRemote));
 
             // Apps Script 패치 적용 후 처음 열었을 때 기존 localStorage 상담도 Sheets에 보강 저장한다.
             merged
@@ -3345,6 +3369,12 @@
 
       return () => { cancelled = true; };
     }, [client.clientId]);
+
+    const consultMonths = [...new Set(consultList
+      .map(item => normalizeMonth(item.month || item.date))
+      .filter(Boolean))]
+      .sort((a, b) => b.localeCompare(a));
+    const monthConsultList = consultList.filter(item => normalizeMonth(item.month || item.date) === consultMonth);
 
     // 발행 글 인라인 편집 상태
     const [editingPost,    setEditingPost]    = useState(null);
@@ -3555,10 +3585,16 @@
             {/* 섹션 헤더 */}
             <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12}}>
               <div className="section-title" style={{margin:0}}><Icon name="message" size={12} /> 채널별 상담 내역</div>
-              <button onClick={()=>setShowConsultAdd(v=>!v)}
-                style={{background: showConsultAdd?'#6366f1':'rgba(99,102,241,0.1)', color: showConsultAdd?'#fff':'#6366f1', border:'1px solid rgba(99,102,241,0.3)', borderRadius:7, padding:'5px 14px', fontSize:12, fontWeight:700, cursor:'pointer', fontFamily:'inherit'}}>
-                {showConsultAdd ? '✕ 닫기' : '+ 추가'}
-              </button>
+              <div style={{display:'flex',alignItems:'center',gap:8}}>
+                <select value={consultMonth} onChange={e=>{setConsultMonth(e.target.value);setConsultFilter('');}}
+                  style={{padding:'5px 9px',border:'1px solid var(--border)',borderRadius:7,fontSize:12,fontWeight:700,color:'var(--text)',background:'var(--surface)',fontFamily:'inherit'}}>
+                  {consultMonths.map(month => <option key={month} value={month}>{fmtMonth(month)}</option>)}
+                </select>
+                <button onClick={()=>setShowConsultAdd(v=>!v)}
+                  style={{background: showConsultAdd?'#6366f1':'rgba(99,102,241,0.1)', color: showConsultAdd?'#fff':'#6366f1', border:'1px solid rgba(99,102,241,0.3)', borderRadius:7, padding:'5px 14px', fontSize:12,fontWeight:700,cursor:'pointer',fontFamily:'inherit'}}>
+                  {showConsultAdd ? '✕ 닫기' : '+ 추가'}
+                </button>
+              </div>
             </div>
 
             {/* 추가 폼 */}
@@ -3601,14 +3637,14 @@
             )}
 
             {/* 채널 필터 */}
-            {consultList.length > 0 && (
+            {monthConsultList.length > 0 && (
               <div style={{display:'flex',gap:6,marginBottom:10,flexWrap:'wrap'}}>
                 <button onClick={()=>setConsultFilter('')}
                   style={{background:consultFilter===''?'#1a1a2e':'#f3f4f6', color:consultFilter===''?'#fff':'#6b7280', border:'none', borderRadius:20, padding:'4px 12px', fontSize:11, fontWeight:600, cursor:'pointer', fontFamily:'inherit'}}>
-                  전체 {consultList.length}
+                  전체 {monthConsultList.length}
                 </button>
                 {CONSULT_CH.map(ch=>{
-                  const cnt = consultList.filter(c=>c.channel===ch).length;
+                  const cnt = monthConsultList.filter(c=>c.channel===ch).length;
                   if (!cnt) return null;
                   const col = CONSULT_CH_COLOR[ch];
                   return (
@@ -3622,13 +3658,13 @@
             )}
 
             {/* 목록 */}
-            {consultList.length === 0 ? (
+            {monthConsultList.length === 0 ? (
               <div style={{textAlign:'center',padding:'28px 0',color:'var(--text-3)',fontSize:12,border:'1px dashed #e8e7e3',borderRadius:10}}>
-                아직 저장된 상담 내역이 없습니다
+                {fmtMonth(consultMonth)}에 저장된 상담 내역이 없습니다
               </div>
             ) : (
               <div style={{display:'flex',flexDirection:'column',gap:8}}>
-                {consultList
+                {monthConsultList
                   .filter(c=>!consultFilter||c.channel===consultFilter)
                   .map(entry=>{
                     const col = CONSULT_CH_COLOR[entry.channel]||'#6b7280';
@@ -6065,7 +6101,7 @@
       // 초기화는 이번 달 업무를 닫는 작업이므로 백업 월 = 이전 달 (전달 데이터 보존)
       const backupMonth = prevMonth();
       const CONSULT_TARGETS = ['btskin', 'belrmon'];
-      const newHistories = CONSULT_TARGETS.map(cid => {
+      let newHistories = CONSULT_TARGETS.map(cid => {
         const raw     = safeStorage.getItem('consult-v1-' + cid);
         const records = raw ? (() => { try { return JSON.parse(raw); } catch { return []; } })() : [];
         const byChannel = {};
@@ -6092,22 +6128,6 @@
         if (!result.success) throw new Error(`${action} 실패: ${result.error || 'API 오류'}`);
         return result;
       };
-      const consultSheetBody = (clientId, record, fallbackMonth) => {
-        const item = normalizeConsult({ ...record, clientId: record.clientId || clientId });
-        if (!item.id) return null;
-        return {
-          action: 'addConsult',
-          clientId,
-          consultId: item.id,
-          date: item.date,
-          month: item.month || fallbackMonth || normalizeMonth(item.date),
-          channel: item.channel,
-          nickname: item.nickname,
-          content: item.content,
-          createdAt: item.createdAt || new Date().toISOString(),
-        };
-      };
-
       const targetMonth = nowMonth();
 
       // ── 2) Sheets 초기화 먼저 완료 확인 ──
@@ -6115,28 +6135,33 @@
       const isCompletedSubJob = (job) => String(job.note || '').trim().startsWith('완료');
       const allSubs = (data.monthlyJobs || []).filter(j => j.kind === '서브');
       const carryoverSubs = allSubs.filter(j => !isCompletedSubJob(j));
-      const completedServerSubs = allSubs.filter(j => !j.syncPending && isCompletedSubJob(j));
-      const deleteCompletedSubJob = async (job) => {
-        try {
-          return await postJson({ action: 'deleteSubJob', jobId: job.jobId });
-        } catch (e) {
-          if (String(e.message || e).includes('Job not found:')) {
-            console.warn('monthlyReset: 이미 Sheets에 없는 완료 서브업무로 간주:', job.jobId);
-            return { success: true, alreadyDeleted: true, jobId: job.jobId };
-          }
-          throw e;
-        }
-      };
-
       setSyncStatus('loading');
       let afterReset = null;
       try {
-        const consultBodies = newHistories
-          .flatMap(h => (h.records || []).map(record => consultSheetBody(h.clientId, record, h.month)))
-          .filter(Boolean);
-        await Promise.all(consultBodies.map(body => postJson(body)));
+        newHistories = await Promise.all(CONSULT_TARGETS.map(async cid => {
+          const result = await window.dashboardAPI.consultsList(cid, backupMonth);
+          const records = result.data?.consults || result.consults || [];
+          if (!result.success || !Array.isArray(records)) throw new Error(result.error || `${cid} ${backupMonth} 상담 조회 실패`);
+          const normalized = records
+            .map(record => ({ ...normalizeConsult(record), clientId: record.clientId || cid }))
+            .filter(record => record.id && normalizeMonth(record.month || record.date) === backupMonth);
+          const byChannel = {};
+          normalized.forEach(record => { byChannel[record.channel] = (byChannel[record.channel] || 0) + 1; });
+          const clientName = (data.clients || []).find(client => client.clientId === cid)?.clientName || cid;
+          return {
+            month: backupMonth,
+            clientId: cid,
+            clientName,
+            records: normalized,
+            savedAt: new Date().toISOString(),
+            summary: { total: normalized.length, byChannel },
+          };
+        }));
+        newHistories = newHistories.filter(history => history.records.length > 0);
 
-        await Promise.all(completedServerSubs.map(deleteCompletedSubJob));
+        // consultsList에서 읽은 원격 상담은 이미 Sheets에 있으므로 다시 addConsult 하지 않는다.
+        // 여기서는 월별 백업 이력용 newHistories만 만들고, 실제 초기화 요청 수를 최소화한다.
+
         await postJson({ action: 'monthlyReset', month: targetMonth });
 
         // live monthlyReset 내부 구현이 서브업무를 건드리더라도, 미완료 서브업무는 다시 보강한다.

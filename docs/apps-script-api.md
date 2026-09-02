@@ -353,7 +353,7 @@ delta: `1` (증가) 또는 `-1` (감소)
 ```
 > 자동 실행하지 않는다. 월말보고서 작성을 모두 마친 뒤 대시보드의 `다음 달 초기화` 버튼으로만 실행한다.
 >
-> 대시보드 버튼은 먼저 `note`가 `"완료"` 또는 `"완료 (...)"`로 시작하는 완료된 서브업무만 `deleteSubJob`으로 삭제한 뒤, `monthlyReset`으로 필수 업무 카운트 초기화와 새 달 시트 구성을 처리한다. 완료 체크하지 않은 서브업무는 다음 달로 이월한다. 완료 서브업무 삭제 중 `Job not found`가 나오면 이미 Sheets에서 삭제된 항목으로 간주하고 계속 진행한다. 초기화 후 `summary`를 다시 조회해 이월 대상 서브업무가 누락됐으면 `addSubJob`/`updateSubJob`으로 보강한다. `month`는 새 운영월(`YYYY-MM`)을 전달한다.
+> 대시보드 버튼은 `monthlyReset` 단일 요청으로 `note`가 `"완료"` 또는 `"완료 (...)"`로 시작하는 완료된 서브업무 삭제, 필수 업무 카운트 초기화, 새 달 시트 구성을 서버에서 함께 처리한다. 완료 체크하지 않은 서브업무는 다음 달로 이월한다. 초기화 후 `summary`를 다시 조회해 이월 대상 서브업무가 누락됐으면 `addSubJob`/`updateSubJob`으로 보강한다. `month`는 새 운영월(`YYYY-MM`)을 전달한다.
 >
 > 손익 관리의 고정비는 `다음 달 초기화` 성공 후 자동 복사하지 않는다. 다음 달에도 적용할 고정비는 손익 관리 > 비용 기록에서 해당 고정비 행의 수동 적용 버튼으로 새 운영월에 추가한다. 수동 적용은 기존 `addExpense` 액션을 사용하며, 새 운영월에 같은 카테고리·세부 내용·금액·거래처·결제수단·메모 조합의 고정비가 이미 있으면 중복 생성하지 않는다.
 >
@@ -977,6 +977,8 @@ const res = await fetch(API, {
 
 > `summary` GET에도 `consults` 배열이 포함될 수 있다. 보고서 생성 스크립트는 우선 `consultsList`를 시도하고, 미배포 상태면 `summary.consults` 또는 자료 공백 표시로 처리한다.
 
+> 대시보드 상담 화면은 월 선택으로 과거 월을 조회한다. 월말 초기화 미리보기와 실제 백업은 브라우저 `localStorage` 건수가 아니라 `GET ?action=consultsList&clientId=...&month=YYYY-MM`의 전월 원격 자료를 기준으로 한다. 두 거래처 중 하나라도 원격 상담 조회에 실패하면 일부 자료만 백업하지 않도록 초기화를 중단한다. 조회한 상담은 이미 Sheets에 저장된 원격 자료이므로 초기화 전에 `addConsult`로 재전송하지 않고, 대시보드 월별 백업 이력에만 보존한다.
+
 보고서 작성 전 상담 표준경로만 빠르게 확인하려면 아래 명령을 사용한다.
 
 ```bash
@@ -1077,6 +1079,10 @@ const res = await fetch(API, {
 리뷰 증가·감소·차단·확인 실패 시 ReviewLogs 시트에 기록한다.  
 이 로그는 대시보드 카드에 노출되지 않으며 내부 기록용이다.
 
+> 2026-09: 외부 메신저 알림 연동을 제거했다. 요청 본문에서 `telegramSent`를 더 이상 보내지 않는다.
+> Apps Script는 값이 없으면 `false`로 기록하므로 `ReviewLogs.telegramSent` 컬럼은 유지되지만 신규 행에서는 항상 `false`다.
+> 과거 행의 `true` 값은 이력으로 남겨 둔다. 컬럼 자체를 지우려면 Apps Script와 시트를 함께 수정해야 한다.
+
 ```javascript
 const res = await fetch(API, {
   method: 'POST',
@@ -1089,9 +1095,8 @@ const res = await fetch(API, {
     diff: 3,
     status: 'increased',           // 아래 status 표 참조
     detectedReviewCount: 3,        // 실제 확인한 신규 리뷰 수
-    newReviewsSummary: '친절함 2건, 시술 만족 1건',  // 텔레그램 전송용 요약
+    newReviewsSummary: '친절함 2건, 시술 만족 1건',  // 알림 로그용 요약
     newReviewsJson: '[{"text":"...","date":"..."}]',
-    telegramSent: true,
     errorMessage: ''
   })
 });
