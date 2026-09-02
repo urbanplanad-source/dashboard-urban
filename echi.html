@@ -226,7 +226,8 @@
 <main class="container">
   <p class="timeline-label">보고서 목록</p>
   <div class="month-tabs">
-    <div class="month-tab active" onclick="switchTab('jul', event)">2026년 7월</div>
+    <div class="month-tab active" onclick="switchTab('aug', event)">2026년 8월</div>
+    <div class="month-tab" onclick="switchTab('jul', event)">2026년 7월</div>
     <div class="month-tab" onclick="switchTab('jun', event)">2026년 6월</div>
     <div class="month-tab" onclick="switchTab('may', event)">2026년 5월</div>
     <div class="month-tab" onclick="switchTab('apr', event)">2026년 4월</div>
@@ -236,7 +237,16 @@
 
   <!-- ═══════ 6월 보고서 ═══════ -->
 
-  <div class="report-panel active" id="panel-jul"><article class="jul-report">
+  <div class="report-panel active" id="panel-aug"><article class="jul-report">
+    <div class="jul-topline"><span><strong>이치과의원</strong> · 2026년 8월 마케팅 성과 리포트</span><time datetime="2026-09-02">기준일 2026.09.02</time></div>
+    <header class="jul-hero"><p class="jul-kicker">August performance brief</p><h2>8월, 블로그 조회는 유지됐지만<br>플레이스 순위는 월말 하락했습니다</h2><p class="jul-hero-copy">블로그 조회는 280건으로 7월보다 2.2% 증가했고, 사이트 유입 비중은 93.36%로 확인됐습니다. 네이버 플레이스는 최고 3위를 기록했으나 23일부터 15위 밖으로 내려가 월말 22위로 마감했습니다.</p><div class="jul-kpis" aria-label="8월 핵심 성과"><div class="jul-kpi"><span>블로그 조회</span><strong>280<em>건</em></strong><p>전월 대비 +2.2%</p></div><div class="jul-kpi jul-kpi--green"><span>플레이스 최고 순위</span><strong>3<em>위</em></strong><p>8/9–8/10 기록</p></div><div class="jul-kpi"><span>월말 순위</span><strong>22<em>위</em></strong><p>8/31 기준</p></div></div></header>
+    <section class="jul-execution" aria-labelledby="echi-aug-summary-title"><div class="jul-head"><h3 id="echi-aug-summary-title">8월 운영 요약</h3></div><p class="jul-work-intro">블로그·플레이스가 사이트 방문의 중심 경로로 유지됐으며, 플레이스 순위는 월 전반 10위 이내를 유지한 뒤 후반에 하락했습니다.</p><ul class="jul-task-list"><li>블로그 월간 조회 280건 · 전월 대비 6건 증가</li><li>사이트 유입 93.36% · 블로그 PC와 플레이스 모바일 중심</li><li>플레이스 순위 8/1–8/22 10위 이내 유지 후 월말 22위</li></ul></section>
+    <section class="jul-card" aria-labelledby="echi-aug-rank-title"><div class="jul-head"><h3 id="echi-aug-rank-title">네이버 플레이스 순위 추이</h3><p>8/1–8/31</p></div><div class="jul-rank-flow" aria-label="네이버 플레이스 순위 변화"><div class="jul-rank-step"><b>7위</b><span>8/1 시작</span></div><span class="jul-rank-arrow" aria-hidden="true">→</span><div class="jul-rank-step jul-rank-step--best"><b>3위</b><span>최고 순위</span></div><span class="jul-rank-arrow" aria-hidden="true">→</span><div class="jul-rank-step"><b>22위</b><span>8/31 마감</span></div></div><div class="jul-chart"><canvas id="aug-echi-rank-chart" role="img" aria-label="8월 네이버 플레이스 순위 그래프"></canvas></div><p class="jul-note">8월 22일까지 10위 이내 순위를 유지했으나 23일 14위로 내려간 뒤, 27일 26위까지 하락했습니다. 월말에는 22위로 일부 회복했지만 등록 목표인 15위 이내를 벗어났습니다.</p></section>
+    <section class="jul-viz-card" aria-labelledby="echi-aug-inflow-title"><div class="jul-viz-head"><h3 id="echi-aug-inflow-title">블로그·사이트 유입</h3><span class="jul-total-chip">280건</span></div><p class="jul-visual-label">사이트 유입 안에서 확인된 주요 경로</p><div class="jul-segmented" role="img" aria-label="네이버 블로그 PC 40%, 네이버 플레이스 모바일 32.44%, 네이버 블로그 모바일 17.33%, 네이버 플레이스 PC 9.78%, 카카오맵 0.44%"><span class="jul-segment jul-segment--home" style="flex:40">블로그 PC 40%</span><span class="jul-segment jul-segment--wechat" style="flex:32.44">플레이스 M 32%</span><span class="jul-segment jul-segment--blog" style="flex:17.33">블로그 M 17%</span><span class="jul-segment jul-segment--line" style="flex:9.78">플레이스 PC</span></div><ul class="jul-legend"><li><i style="background:#6d20a8"></i>네이버 블로그 PC 40.00%</li><li><i style="background:#079a64"></i>네이버 플레이스 모바일 32.44%</li><li><i style="background:#ec5b00"></i>네이버 블로그 모바일 17.33%</li><li><i style="background:#72a928"></i>네이버 플레이스 PC 9.78%</li><li><i style="background:#b9bdc4"></i>카카오맵 0.44%</li></ul><p class="jul-content-summary"><strong>사이트 유입 비중은 93.36%입니다.</strong> 블로그와 플레이스 경로가 대부분을 차지했습니다. 검색 유입은 6.64%였고 ‘입 씹는 이유’를 포함한 입술 교합 관련 검색어가 확인됐습니다.</p></section>
+    <section class="jul-consult"><div><h3>8월 보고서 안내</h3><p style="margin-top:7px;text-align:left;">제공된 블로그 조회·유입 및 플레이스 순위 자료를 중심으로 간략히 정리했습니다.</p></div><p>8월 콘텐츠 발행 기록은<br>대시보드에 등록된 내역이 없습니다.</p></section>
+  </article></div><!-- /panel-aug -->
+
+  <div class="report-panel" id="panel-jul"><article class="jul-report">
     <div class="jul-topline"><span><strong>이치과의원</strong> · 2026년 7월 마케팅 성과 리포트</span><time datetime="2026-08-04">기준일 2026.08.04</time></div>
     <header class="jul-hero"><p class="jul-kicker">July performance brief</p><h2>7월, 검색 노출을<br>15위에서 4위까지 끌어올렸습니다</h2><p class="jul-hero-copy">네이버 플레이스는 월초 15위에서 시작해 7월 12일 4위까지 빠르게 상승했고, 이후 월말까지 한 자릿수 순위를 유지했습니다. 블로그는 월간 274건의 조회가 확인됐습니다.</p><div class="jul-kpis" aria-label="7월 핵심 성과"><div class="jul-kpi"><span>블로그 조회</span><strong>274<em>건</em></strong><p>7월 월간 기준</p></div><div class="jul-kpi jul-kpi--green"><span>플레이스 최고 순위</span><strong>4<em>위</em></strong><p>7/12 기록</p></div><div class="jul-kpi jul-kpi--green"><span>한 자릿수 유지</span><strong>20<em>일</em></strong><p>7/12–7/31</p></div></div></header>
     <section class="jul-execution" aria-labelledby="echi-work-title"><div class="jul-head"><h3 id="echi-work-title">7월 주요 작업</h3></div><p class="jul-work-intro">창원 지역의 치과 검색 결과에서 더 잘 보일 수 있도록 네이버 플레이스 순위 흐름과 블로그에서 사이트로 이어지는 경로를 함께 점검했습니다.</p><ul class="jul-task-list"><li>네이버 플레이스 순위 흐름 모니터링</li><li>블로그·플레이스 기반 사이트 유입 경로 점검</li><li>창원 지역 검색 결과 내 정보 노출 흐름 관리</li></ul></section>
@@ -957,10 +967,12 @@
     if (event && event.currentTarget) event.currentTarget.classList.add('active');
     document.querySelectorAll('.report-panel').forEach(p=>p.classList.remove('active'));
     document.getElementById('panel-'+id).classList.add('active');
+    setTimeout(()=>{if(id==='aug')drawEchiAugRank();if(id==='jul')drawEchiRank()},0);
   }
 
+  function drawEchiAugRank(){const c=document.getElementById('aug-echi-rank-chart');if(!c)return;const d=[7,10,10,10,9,7,8,10,3,3,5,5,5,4,4,4,6,7,6,7,6,6,14,20,20,22,26,25,24,21,22],r=c.getBoundingClientRect(),q=window.devicePixelRatio||1,w=Math.max(280,r.width),hh=Math.max(170,r.height);c.width=w*q;c.height=hh*q;const x=c.getContext('2d');x.scale(q,q);x.clearRect(0,0,w,hh);const l=30,t=16,rr=12,bb=28,p=v=>t+(v-1)/28*(hh-t-bb);x.strokeStyle='#e4ebf3';x.lineWidth=1;[1,6,10,15,19,24,29].forEach(v=>{x.beginPath();x.moveTo(l,p(v));x.lineTo(w-rr,p(v));x.stroke();x.fillStyle='#8390a5';x.font='11px sans-serif';x.fillText(v+'위',1,p(v)+4)});x.strokeStyle='#1769e8';x.lineWidth=3;x.beginPath();d.forEach((v,i)=>{const px=l+i*(w-l-rr)/(d.length-1),py=p(v);i?x.lineTo(px,py):x.moveTo(px,py)});x.stroke();d.forEach((v,i)=>{const px=l+i*(w-l-rr)/(d.length-1),py=p(v);x.fillStyle=i<22?'#0b9a62':'#1769e8';x.beginPath();x.arc(px,py,3.5,0,Math.PI*2);x.fill()});x.fillStyle='#758298';x.font='11px sans-serif';x.fillText('8/1',l,hh-6);x.fillText('8/31',w-rr-27,hh-6)}
   function drawEchiRank(){const c=document.getElementById('jul-echi-rank-chart');if(!c)return;const d=[15,15,23,22,20,17,18,15,16,18,21,4,5,8,8,6,7,7,9,8,8,7,8,8,6,5,5,5,5,6,6],r=c.getBoundingClientRect(),q=window.devicePixelRatio||1,w=Math.max(280,r.width),hh=Math.max(170,r.height);c.width=w*q;c.height=hh*q;const x=c.getContext('2d');x.scale(q,q);x.clearRect(0,0,w,hh);const l=30,t=16,rr=12,bb=28,p=v=>t+(v-1)/24*(hh-t-bb);x.strokeStyle='#e4ebf3';x.lineWidth=1;[1,6,11,16,21,25].forEach(v=>{x.beginPath();x.moveTo(l,p(v));x.lineTo(w-rr,p(v));x.stroke();x.fillStyle='#8390a5';x.font='11px sans-serif';x.fillText(v+'위',1,p(v)+4)});x.strokeStyle='#1769e8';x.lineWidth=3;x.beginPath();d.forEach((v,i)=>{const px=l+i*(w-l-rr)/(d.length-1),py=p(v);i?x.lineTo(px,py):x.moveTo(px,py)});x.stroke();d.forEach((v,i)=>{const px=l+i*(w-l-rr)/(d.length-1),py=p(v);x.fillStyle=i>=11?'#0b9a62':'#1769e8';x.beginPath();x.arc(px,py,3.5,0,Math.PI*2);x.fill()});x.fillStyle='#758298';x.font='11px sans-serif';x.fillText('7/1',l,hh-6);x.fillText('7/31',w-rr-27,hh-6)}
-  drawEchiRank();window.addEventListener('resize',drawEchiRank);
+  drawEchiAugRank();drawEchiRank();window.addEventListener('resize',()=>{drawEchiAugRank();drawEchiRank()});
 </script>
 </body>
 </html>
