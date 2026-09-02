@@ -1,0 +1,34 @@
+# Vercel 공개 범위 제한 — 2026-09 보안 정리
+#
+# 이 저장소는 공개 배포용 거래처 보고서와 비공개 운영 자산이 한 루트에 섞여 있다.
+# 설정이 없으면 Vercel은 저장소 전체를 정적 파일로 공개한다.
+# 아래는 allow-list 방식이다. 기본적으로 전부 제외하고, 거래처 보고서 8개만 공개한다.
+#
+# ⚠️ 새 거래처 보고서를 추가하면 반드시 아래 목록에도 추가해야 공개된다.
+# ⚠️ 이 파일은 다음 배포 시점부터 적용된다. 프로덕션에 반영하기 전에
+#    반드시 preview 배포로 8개 보고서가 정상 렌더되는지 확인한다.
+
+# 1) 루트의 모든 항목을 기본 제외
+/*
+
+# 2) 공개 유지 — 거래처별 월말보고서 (각 파일은 외부 로컬 자산 의존이 없는 self-contained HTML)
+!/btskin.html
+!/belrmon.html
+!/gyunghee.html
+!/eyecare.html
+!/igochi.html
+!/echi.html
+!/seoulup.html
+!/jejuexpress.html
+
+# 위 allow-list에 의해 아래 항목은 모두 비공개로 전환된다.
+#   index.html                     운영 대시보드 (Apps Script endpoint, 전 거래처 데이터)
+#   index.backup.html
+#   index.before-*.html            백업 HTML 4개
+#   scripts/                       운영 스크립트
+#   docs/                          API 계약, 브리프, 컴플라이언스 원본 PDF
+#   apps-script/                   서버 패치 코드
+#   test/  .github/  .claude/      개발 자산
+#   package.json  *.md             저장소 메타/운영 문서
+#   review-monitor.config.example.json
+#   credentials.local.example.js

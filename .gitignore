@@ -1,8 +1,32 @@
+## 로컬 전용 설정 / 비밀값 ─────────────────────────────
 review-monitor.config.json
 credentials.local.js
-.report-context/
-node_modules/
 .env
+.env.*
+
+## 임시 진단 스크립트 / 일회성 작업 산출물 ──────────────
+# 2026-09 보안 정리: 환자 상담 원문과 운영 endpoint가 섞여 들어간 전례가 있다.
+# 임시 스크립트는 절대 커밋하지 않는다. 정식화가 필요하면 tmp- 접두어를 떼고
+# 개인정보·하드코딩 endpoint를 제거한 뒤 scripts/ 에 정식 이름으로 추가한다.
+scripts/tmp-*
+tmp-*
+.tmp-*
+
+## 운영 검증 스크린샷 / 상태 파일 ───────────────────────
+verification-status.*
+*-verify-status.*
+*-verification.png
+btskin-aug-*.json
+btskin-aug-*.ok
+btskin-aug-*.failed
+*.local.json
+.local-*.json
+
+## 데이터 스냅샷 ────────────────────────────────────────
+.report-context/
+
+## 빌드 / OS / 로그 ─────────────────────────────────────
+node_modules/
 *.log
 .DS_Store
 Thumbs.db
