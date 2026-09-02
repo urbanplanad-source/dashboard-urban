@@ -11,7 +11,10 @@
 # 1) 루트의 모든 항목을 기본 제외
 /*
 
-# 2) 공개 유지 — 거래처별 월말보고서 (각 파일은 외부 로컬 자산 의존이 없는 self-contained HTML)
+# 2) 공개 유지 — 검색엔진 수집 차단 (보고서는 직접 링크로만 전달한다)
+!/robots.txt
+
+# 3) 공개 유지 — 거래처별 월말보고서 (각 파일은 외부 로컬 자산 의존이 없는 self-contained HTML)
 !/btskin.html
 !/belrmon.html
 !/gyunghee.html
@@ -22,7 +25,10 @@
 !/jejuexpress.html
 
 # 위 allow-list에 의해 아래 항목은 모두 비공개로 전환된다.
-#   index.html                     운영 대시보드 (Apps Script endpoint, 전 거래처 데이터)
+#   index.html                     운영 대시보드 — 의도적으로 배포하지 않는다.
+#                                  외부에서 쓸 때는 노트북에 파일을 두고 직접 연다.
+#                                  데이터는 Apps Script API에서 실시간으로 받으므로
+#                                  배포 여부와 무관하게 항상 최신이다. README 참조.
 #   index.backup.html
 #   index.before-*.html            백업 HTML 4개
 #   scripts/                       운영 스크립트

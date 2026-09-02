@@ -60,3 +60,23 @@ Review changes are reported as a `[notice]` summary in the run output. External 
 `review-monitor.config.example.json` shows the optional config shape. The real local config file name is `review-monitor.config.json`, and it is ignored by Git.
 
 For local-only account notes, copy `credentials.local.example.js` to `credentials.local.js`. The real `credentials.local.js` file is ignored by Git and must not be uploaded to GitHub Pages.
+
+## Using The Dashboard Away From The Main PC
+
+`index.html` is deliberately **not** deployed to Vercel. The public deployment serves only the
+client report pages (`btskin.html` and the other seven), enforced by `.vercelignore`.
+
+To work from a laptop, keep a copy of `index.html` on that machine and open it directly:
+
+```bash
+git pull        # only needed when the dashboard UI itself changes
+```
+
+Then double-click `index.html`, or open it in any browser.
+
+All dashboard data — clients, jobs, post logs, expenses, consults — is fetched live from the
+Apps Script API at page load, so a local copy shows exactly the same, current data as the main
+PC. Only the UI code goes stale, and only when the dashboard itself is updated.
+
+`credentials.local.js` is optional. When it is absent the browser logs a harmless 404 and the
+dashboard runs normally.
