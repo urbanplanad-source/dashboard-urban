@@ -144,10 +144,14 @@ test('두 거래처 중 하나만 실패해도 초기화를 시작하지 않는�
   assert.equal(calls.post.length, 0);
 });
 
-test('monthlyReset POST 실패: 서버 미반영으로 보고한다', async () => {
-  const { runMonthlyReset, MONTHLY_RESET_STAGE } = resetHarness();
+test('서버가 JSON으로 거부하면 확실한 실패로 보고한다', async () => {
+  const { runMonthlyReset, MONTHLY_RESET_STAGE, MONTHLY_RESET_MESSAGE } = resetHarness();
   const { deps, calls } = makeDeps({
-    postJson: async () => { throw new Error('monthlyReset 실패: API 오류'); },
+    postJson: async () => {
+      const err = new Error('monthlyReset 실패: API 오류');
+      err.serverResponded = true;   // 서버가 응답했고 거부했다
+      throw err;
+    },
   });
 
   const out = await runMonthlyReset(deps);
@@ -155,6 +159,43 @@ test('monthlyReset POST 실패: 서버 미반영으로 보고한다', async () =
   assert.equal(out.stage, MONTHLY_RESET_STAGE.RESET_FAILED);
   assert.equal(out.serverResetSucceeded, false);
   assert.equal(calls.summary, 0, 'summary must not be fetched after a failed reset');
+  // 서버가 처리하지 않았음이 확실하므로 재시도를 안내해도 된다.
+  assert.match(MONTHLY_RESET_MESSAGE[out.stage], /다시 시도/);
+  assert.match(MONTHLY_RESET_MESSAGE[out.stage], /변경되지 않았고/);
+});
+
+test('통신이 끊기면 실패로 단정하지 않고 결과 불명으로 보고한다', async () => {
+  const { runMonthlyReset, MONTHLY_RESET_STAGE, MONTHLY_RESET_MESSAGE } = resetHarness();
+  const { deps, calls } = makeDeps({
+    postJson: async () => {
+      // Failed to fetch. 서버가 이미 처리했을 수도 있다.
+      const err = new Error('monthlyReset 요청이 서버에 도달했는지 확인할 수 없습니다.');
+      err.serverResponded = false;
+      throw err;
+    },
+  });
+
+  const out = await runMonthlyReset(deps);
+
+  assert.equal(out.stage, MONTHLY_RESET_STAGE.RESET_OUTCOME_UNKNOWN);
+  assert.equal(out.serverResetSucceeded, false, '확인되지 않았으므로 성공으로 취급하지 않는다');
+  assert.equal(calls.summary, 0);
+
+  const message = MONTHLY_RESET_MESSAGE[out.stage];
+  assert.match(message, /확인할 수 없습니다/);
+  assert.match(message, /다시 실행하지 마세요/);
+  assert.doesNotMatch(message, /다시 시도해 주세요/, '재시도를 권하면 중복 처리 위험이 있다');
+});
+
+test('serverResponded 표시가 없는 예외도 결과 불명으로 처리한다', async () => {
+  const { runMonthlyReset, MONTHLY_RESET_STAGE } = resetHarness();
+  const { deps } = makeDeps({
+    postJson: async () => { throw new Error('알 수 없는 오류'); },
+  });
+
+  const out = await runMonthlyReset(deps);
+  assert.equal(out.stage, MONTHLY_RESET_STAGE.RESET_OUTCOME_UNKNOWN,
+    'fail-safe: 모르면 실패가 아니라 불명으로 분류해야 한다');
 });
 
 test('POST 성공 후 summary 실패: 서버 적용됨으로 남고 재초기화를 안내하지 않는다', async () => {
@@ -257,15 +298,34 @@ test('상담 화면 진입만으로는 addConsult POST가 발생하지 않는다
   assert.doesNotMatch(loadEffect, /method:\s*'POST'/, 'the load effect must not POST at all');
 
   // 명시적 사용자 행동은 그대로 남아 있어야 한다.
-  assert.match(block, /function addConsult\(\)[\s\S]*action:\s*'addConsult'/);
-  assert.match(block, /function deleteConsult\(id\)[\s\S]*action:\s*'deleteConsult'/);
+  // greedy 매칭으로 함수 경계를 넘지 않도록 각 함수 본문을 잘라서 확인한다.
+  const fnBody = (header, next) => {
+    const s0 = block.indexOf(header);
+    assert.ok(s0 >= 0, `${header} must exist`);
+    const s1 = block.indexOf(next, s0);
+    assert.ok(s1 > s0, `${next} must follow ${header}`);
+    return block.slice(s0, s1);
+  };
+
+  const addBody = fnBody('    async function addConsult() {', '    async function retryConsultSync(');
+  assert.match(addBody, /await sendConsult\(entry\)/, 'save must await a single send');
+  assert.equal((addBody.match(/sendConsult\(/g) || []).length, 1, 'exactly one send per save');
+  assert.doesNotMatch(addBody, /fetch\(/, 'the save path must go through the shared POST helper');
+
+  const delBody = fnBody('    async function deleteConsult(id) {', '    useEffect(() => {');
+  assert.match(delBody, /action:\s*'deleteConsult'/);
+  assert.equal((delBody.match(/postApiJson\(/g) || []).length, 1, 'exactly one delete request');
+
+  // 페이로드는 공용 헬퍼가 만든다.
+  assert.match(block, /function consultPayload\(entry\) \{[\s\S]{0,400}?action: 'addConsult'/);
 });
 
 test('초기화는 ref 기반 재진입 가드와 버튼 비활성화를 갖는다', () => {
   assert.match(dashboard, /const resetInFlight = useRef\(false\)/);
   assert.match(dashboard, /if \(resetInFlight\.current\) return;/);
   assert.match(dashboard, /resetInFlight\.current = true;/);
-  assert.match(dashboard, /disabled=\{resetRunning\}/);
+  assert.match(dashboard, /disabled=\{resetRunning \|\| resetOutcomeUnknown\}/);
+  assert.match(dashboard, /const resetOutcomeUnknown = resetStage === MONTHLY_RESET_STAGE\.RESET_OUTCOME_UNKNOWN;/);
 });
 
 test('초기화 후 로컬 monthlyJobs는 서버 응답을 그대로 사용한다', () => {
@@ -311,7 +371,7 @@ test('초기화 성공 후 로컬 상담 캐시를 통째로 비우지 않는다
 });
 
 test('미리보기 삭제 예고는 서버가 실제로 지우는 서브 업무만 대상으로 한다', () => {
-  // 서버(monthly_reset_patch_v16.gs)는 kind === '서브'만 삭제한다.
+  // 서버 통합 패치는 kind === '서브'만 삭제한다.
   // 순위 업무를 삭제 대상으로 예고하면 다음 달에 되살아나 사용자를 혼란시킨다.
   assert.match(dashboard, /const isDeletableSubJob = \(job\) => job\?\.kind === '서브';/);
 
@@ -326,12 +386,12 @@ test('미리보기 삭제 예고는 서버가 실제로 지우는 서브 업무�
 });
 
 test('미리보기 판정이 서버 패치의 kind 조건과 일치한다', async () => {
-  const patch = await fs.readFile(path.join(root, 'apps-script/monthly_reset_patch_v16.gs'), 'utf8');
+  const patch = await fs.readFile(path.join(root, 'apps-script/internal_api_security_patch_v23.gs'), 'utf8');
 
   // 서버 삭제 조건
   assert.match(patch, /if \(kind === '서브' && note\.indexOf\('완료'\) === 0\)/);
   // 서버 이월 조건
-  assert.match(patch, /if \(kind === '서브'\) \{\s*\n\s*carryoverSubJobs\+\+;/);
+  assert.match(patch, /if \(kind === '서브'\) \{[\s\S]{0,160}?carryoverSubJobs\+\+;/);
   // 서버 카운트 초기화 조건
   assert.match(patch, /if \(kind === '필수' \|\| hasTarget\) \{/);
 

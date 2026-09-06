@@ -164,15 +164,6 @@ test('monthShift도 월 13이나 00을 거부한다', () => {
 
 // ── 소스 수준 보증 ─────────────────────────────────────────
 
-test('loadData가 reviewTargets를 localStorage에서 복원한다', () => {
-  const start = dashboard.indexOf('  function loadData() {');
-  const end = dashboard.indexOf('  // ── 로컬 자동 백업 ──', start);
-  assert.ok(start >= 0 && end > start, 'loadData must exist');
-  const block = dashboard.slice(start, end);
-  assert.match(block, /reviewTargets:\s*s\.reviewTargets\s*\?\?\s*\[\]/);
-  assert.match(dashboard, /reviewTargets: \[\],/, 'DEFAULT_DATA must carry the key too');
-});
-
 test('상담 월 selector는 유효하지 않은 선택을 최신 월로 보정한다', () => {
   const start = dashboard.indexOf('    const consultMonths = [...new Set(consultList');
   const end = dashboard.indexOf('    const monthConsultList =', start);

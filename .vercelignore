@@ -34,7 +34,6 @@
 #   scripts/                       운영 스크립트
 #   docs/                          API 계약, 브리프, 컴플라이언스 원본 PDF
 #   apps-script/                   서버 패치 코드
-#   test/  .github/  .claude/      개발 자산
+#   test/  .github/                개발 자산
 #   package.json  *.md             저장소 메타/운영 문서
-#   review-monitor.config.example.json
 #   credentials.local.example.js

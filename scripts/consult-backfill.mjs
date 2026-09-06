@@ -31,8 +31,7 @@ function usage() {
     '  --client ID      대상 clientId (필수)',
     '  --month YYYY-MM  대상 운영월 (필수)',
     '  --input FILE     상담 레코드 JSON 배열 파일 (필수). .gitignore 대상 경로를 사용한다.',
-    '  --api-url URL    Apps Script endpoint. 미지정 시 REPORT_CONTEXT_API_URL',
-    '                   또는 REVIEW_MONITOR_API_URL 환경변수를 사용한다.',
+    '  --api-url URL    Apps Script endpoint. 미지정 시 DASHBOARD_API_URL을 사용한다.',
     '  --apply          실제 addConsult POST를 전송한다. 없으면 dry-run.',
     '',
     'Input file format (JSON array):',
@@ -46,7 +45,8 @@ function usage() {
 
 function parseArgs(argv) {
   const args = {
-    apiUrl: process.env.REPORT_CONTEXT_API_URL || process.env.REVIEW_MONITOR_API_URL || '',
+    apiUrl: process.env.DASHBOARD_API_URL || '',
+    apiKey: process.env.DASHBOARD_API_KEY || '',
     apply: false,
   };
 
@@ -124,8 +124,8 @@ async function requestJson(url, init = {}) {
   }
 }
 
-async function fetchRemoteIds(apiUrl, clientId, month) {
-  const json = await requestJson(buildUrl(apiUrl, { action: 'consultsList', clientId, month }), {
+async function fetchRemoteIds(apiUrl, apiKey, clientId, month) {
+  const json = await requestJson(buildUrl(apiUrl, { action: 'consultsList', clientId, month, apiKey }), {
     method: 'GET',
   });
   if (!json.success) throw new Error(json.error || 'consultsList returned success=false');
@@ -181,10 +181,10 @@ async function loadRecords(file, clientId, month) {
   return { records, skipped };
 }
 
-async function postConsult(apiUrl, clientId, record) {
+async function postConsult(apiUrl, apiKey, clientId, record) {
   const json = await requestJson(apiUrl, {
     method: 'POST',
-    body: JSON.stringify({ action: 'addConsult', clientId, ...record }),
+    body: JSON.stringify({ action: 'addConsult', apiKey, clientId, ...record }),
   });
   if (!json.success) throw new Error(json.error || 'addConsult returned success=false');
   return json;
@@ -204,9 +204,10 @@ async function main() {
   if (!args.input) throw new Error('--input is required');
   if (!args.apiUrl) {
     throw new Error(
-      'API endpoint가 없습니다. --api-url 을 지정하거나 REPORT_CONTEXT_API_URL 환경변수를 설정하세요.',
+      'API endpoint가 없습니다. --api-url 을 지정하거나 DASHBOARD_API_URL 환경변수를 설정하세요.',
     );
   }
+  if (!args.apiKey) throw new Error('DASHBOARD_API_KEY 환경변수를 설정하세요.');
 
   const { records, skipped } = await loadRecords(args.input, args.client, args.month);
   console.log(`consult-backfill ${args.client} ${args.month}`);
@@ -218,7 +219,7 @@ async function main() {
   }
   if (!records.length) return;
 
-  const remoteIds = await fetchRemoteIds(args.apiUrl, args.client, args.month);
+  const remoteIds = await fetchRemoteIds(args.apiUrl, args.apiKey, args.client, args.month);
   console.log(`- 원격 기존 레코드: ${remoteIds.size}건`);
 
   const missing = records.filter((record) => !remoteIds.has(record.consultId));
@@ -242,7 +243,7 @@ async function main() {
   let failed = 0;
   for (const record of missing) {
     try {
-      await postConsult(args.apiUrl, args.client, record);
+      await postConsult(args.apiUrl, args.apiKey, args.client, record);
       sent += 1;
       console.log(`  sent ${record.consultId}`);
     } catch (error) {

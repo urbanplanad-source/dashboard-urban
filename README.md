@@ -1,79 +1,40 @@
-# Urbanplanad Report Dashboard
+# Urbanplanad Dashboard
 
-Urbanplanad client report dashboard and Naver Place visitor review monitor.
+Codex로만 유지보수하는 로컬 운영 대시보드와 정적 거래처 보고서 저장소입니다.
 
-## Dashboard
+## 구성
 
-- Main dashboard: `index.html`
-- Client reports: `btskin.html`, `belrmon.html`, `gyunghee.html`, and other client HTML files
-- Codex project guide: `AGENTS.md`
-- Detailed Apps Script API reference: `docs/apps-script-api.md`
-- Apps Script patch snippets: `apps-script/`
+- `index.html`: 개발 PC와 노트북에서 직접 여는 로컬 대시보드. 공개 배포하지 않습니다.
+- `credentials.local.js`: Apps Script URL, 관리 키, 계정 메모. Git에 포함하지 않습니다.
+- 거래처 보고서 HTML 8개: Apps Script나 다른 API를 호출하지 않는 완전 정적 문서입니다.
+- `apps-script/internal_api_security_patch_v23.gs`: 라이브 Apps Script 편집기에 수동 반영하는 인증·안전성 패치입니다.
 
-This project is a static HTML dashboard. The primary working file is the local `index.html`. It is deliberately **not** deployed anywhere — see "Using The Dashboard Away From The Main PC" below. The public Vercel deployment serves only the client report pages, enforced by `.vercelignore`.
+## 최초 설정
 
-## Operating Modes
+1. `credentials.local.example.js`를 `credentials.local.js`로 복사합니다.
+2. `apiUrl`에 기존 Apps Script `/exec` URL을 입력합니다.
+3. 충분히 긴 임의 키를 생성해 `apiKey`에 입력합니다.
+4. 같은 값을 Apps Script 프로젝트의 Script Properties에 `DASHBOARD_API_KEY`로 등록합니다.
+5. 두 PC에는 각각 로컬 파일을 만들고 Git으로 키를 전달하지 않습니다.
 
-- Local: open `index.html` directly from this folder.
-- Remote: keep a copy of `index.html` on the other machine and open it there. The dashboard is not published to Vercel or GitHub Pages.
-- Public: only the client report pages (`btskin.html` and the other seven) are published, through Vercel.
-- Keep dashboard links relative, such as `btskin.html`, so local file use and the public deployment stay in sync.
-- Before uploading changes, run `npm run check` or `npm.cmd run check`.
+설정이 없거나 키가 비어 있으면 대시보드는 API를 호출하지 않고 설정 안내만 표시합니다.
 
-## Visitor Review Monitor
+## 검증
 
-The review monitor checks only Naver Place visitor reviews. Blog review counts are ignored.
-
-Targets:
-
-- `btskin` / 노형아름다운피부과
-- `belrmon` / 벨르몬성형외과
-- `kyunghee` / 365경희부부한의원
-
-The monitor reads `visitorReviewsTotal` from each Naver visitor review page, compares it with `savedVisitorReviewCount` from the Apps Script API, then records changes through `addReviewLog` and updates `ReviewTargets` only when the visitor review count was read successfully.
-
-## Commands
-
-```bash
-npm run check
-npm run check:syntax
-npm run review:monitor:dry-run
-npm run review:monitor:check
-npm run review:monitor
+```powershell
+npm.cmd run verify
 ```
 
-`npm run check` runs the operational guardrails for this Codex-managed repository, including report-file link checks. No npm dependencies are required. Node.js 20 or newer is enough.
+인증된 읽기 전용 보고서 컨텍스트를 생성할 때는 현재 터미널에
+`DASHBOARD_API_URL`과 `DASHBOARD_API_KEY`를 설정한 뒤 실행합니다.
 
-## GitHub Actions
-
-`.github/workflows/naver-review-monitor.yml` runs the review monitor.
-
-**Manual trigger only.** The workflow declares `workflow_dispatch` and no `schedule`, so nothing runs on its own — start it from the GitHub Actions tab. A previous version of this file documented a 09:00 / 13:00 / 17:00 KST cron that the workflow does not have; do not rely on automatic monitoring until a `schedule` block is added deliberately.
-
-Review changes are reported as a `[notice]` summary in the run output. External messenger delivery was removed in 2026-09; read the results in the GitHub Actions run log or the local console.
-
-## Optional Local Config
-
-`review-monitor.config.example.json` shows the optional config shape. The real local config file name is `review-monitor.config.json`, and it is ignored by Git.
-
-For local-only account notes, copy `credentials.local.example.js` to `credentials.local.js`. The real `credentials.local.js` file is ignored by Git and must not be published.
-
-## Using The Dashboard Away From The Main PC
-
-`index.html` is deliberately **not** deployed to Vercel. The public deployment serves only the
-client report pages (`btskin.html` and the other seven), enforced by `.vercelignore`.
-
-To work from a laptop, keep a copy of `index.html` on that machine and open it directly:
-
-```bash
-git pull        # only needed when the dashboard UI itself changes
+```powershell
+npm.cmd run report:context -- --month YYYY-MM --client btskin
+npm.cmd run report:consults:check -- --month YYYY-MM --client btskin,belrmon
 ```
 
-Then double-click `index.html`, or open it in any browser.
+## 배포 경계
 
-All dashboard data — clients, jobs, post logs, expenses, consults — is fetched live from the
-Apps Script API at page load, so a local copy shows exactly the same, current data as the main
-PC. Only the UI code goes stale, and only when the dashboard itself is updated.
-
-`credentials.local.js` is optional. When it is absent the browser logs a harmless 404 and the
-dashboard runs normally.
+Vercel에는 `.vercelignore` allow-list의 보고서 8개와 `robots.txt`만 배포합니다.
+`index.html`, Apps Script 패치, 문서, 테스트, 로컬 비밀값은 공개 대상이 아닙니다.
+운영 POST, Apps Script 배포, GitHub Pages 종료, 저장소 private 전환은 자동화하지 않습니다.

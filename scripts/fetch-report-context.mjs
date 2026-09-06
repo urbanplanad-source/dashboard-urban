@@ -1,13 +1,8 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-const DEFAULT_API_URL =
-  'https://script.google.com/macros/s/AKfycbwUsy5dDEG-t4FszWRCj-f0-FLIOY4SPMatiNsm55xM7bFXzaAEFS6McQdvmXT85dT0/exec';
-
-const API_URL =
-  process.env.REPORT_CONTEXT_API_URL ||
-  process.env.REVIEW_MONITOR_API_URL ||
-  DEFAULT_API_URL;
+const API_URL = process.env.DASHBOARD_API_URL || '';
+const API_KEY = process.env.DASHBOARD_API_KEY || '';
 
 const CLIENT_ALIASES = new Map([
   ['bellemont', 'belrmon'],
@@ -37,7 +32,7 @@ function usage() {
     '',
     'Options:',
     '  --out DIR      Output directory. Default: .report-context',
-    '  --api-url URL  Apps Script endpoint. Default: REPORT_CONTEXT_API_URL or project endpoint',
+    '  --api-url URL  Apps Script endpoint. Default: DASHBOARD_API_URL',
     '  --dry-run      Fetch and summarize without writing files',
   ].join('\n');
 }
@@ -259,14 +254,14 @@ async function fetchJson(url, { optional = false } = {}) {
 }
 
 async function fetchSummary(apiUrl) {
-  const url = buildUrl(apiUrl, { action: 'summary', draftMode: 'light' });
+  const url = buildUrl(apiUrl, { action: 'summary', draftMode: 'light', apiKey: API_KEY });
   const json = await fetchJson(url);
   if (!json.success) throw new Error(json.error || 'summary request failed');
   return json.data || {};
 }
 
 async function fetchConsults(apiUrl, clientId, month) {
-  const url = buildUrl(apiUrl, { action: 'consultsList', clientId, month });
+  const url = buildUrl(apiUrl, { action: 'consultsList', clientId, month, apiKey: API_KEY });
   const json = await fetchJson(url, { optional: true });
   if (!json.success) {
     return {
@@ -301,11 +296,6 @@ function normalizeSummaryData(data) {
       contractStart: normalizeDate(contract.contractStart),
       contractRenew: normalizeDate(contract.contractRenew),
     })),
-    reviewTargets: (data.reviewTargets || []).map((target) => ({
-      ...target,
-      clientId: canonicalClientId(target.clientId),
-      savedVisitorReviewCount: Number(target.savedVisitorReviewCount) || 0,
-    })),
     logs: (data.logs || []).map(normalizeLog),
     drafts: (data.drafts || []).map(normalizeDraft),
     consults: (data.consults || []).map(normalizeConsult),
@@ -330,7 +320,6 @@ async function buildClientContext({ data, apiUrl, month, clientId }) {
     .filter((draft) => draft.clientId === clientId)
     .filter((draft) => belongsToMonth(draft, month));
   const contract = data.contracts.find((item) => item.clientId === clientId) || null;
-  const reviewTarget = data.reviewTargets.find((item) => item.clientId === clientId) || null;
 
   const summaryConsults = data.consults
     .filter((consult) => consult.clientId === clientId)
@@ -398,7 +387,6 @@ async function buildClientContext({ data, apiUrl, month, clientId }) {
       },
     },
     contract,
-    reviewTarget,
     logs,
     drafts,
     consults: {
@@ -458,6 +446,7 @@ async function main() {
     return;
   }
   assertArgs(args);
+  if (!args.apiUrl || !API_KEY) throw new Error('DASHBOARD_API_URL과 DASHBOARD_API_KEY를 설정하세요.');
 
   const summary = await fetchSummary(args.apiUrl);
   const data = normalizeSummaryData(summary);

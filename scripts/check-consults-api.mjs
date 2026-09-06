@@ -1,12 +1,7 @@
 import process from 'node:process';
 
-const DEFAULT_API_URL =
-  'https://script.google.com/macros/s/AKfycbwUsy5dDEG-t4FszWRCj-f0-FLIOY4SPMatiNsm55xM7bFXzaAEFS6McQdvmXT85dT0/exec';
-
-const API_URL =
-  process.env.REPORT_CONTEXT_API_URL ||
-  process.env.REVIEW_MONITOR_API_URL ||
-  DEFAULT_API_URL;
+const API_URL = process.env.DASHBOARD_API_URL || '';
+const API_KEY = process.env.DASHBOARD_API_KEY || '';
 
 const CLIENT_ALIASES = new Map([
   ['bellemont', 'belrmon'],
@@ -25,7 +20,7 @@ function usage() {
     'Options:',
     '  --month YYYY-MM  Report month. Defaults to the current KST month.',
     '  --client LIST    Comma-separated client IDs. Defaults to btskin,belrmon.',
-    '  --api-url URL    Apps Script endpoint. Default: REPORT_CONTEXT_API_URL or project endpoint.',
+    '  --api-url URL    Apps Script endpoint. Default: DASHBOARD_API_URL.',
   ].join('\n');
 }
 
@@ -106,7 +101,7 @@ async function fetchJson(url) {
 }
 
 async function checkClient({ apiUrl, clientId, month }) {
-  const url = buildUrl(apiUrl, { action: 'consultsList', clientId, month });
+  const url = buildUrl(apiUrl, { action: 'consultsList', clientId, month, apiKey: API_KEY });
   const json = await fetchJson(url);
   if (!json.success) throw new Error(json.error || 'consultsList returned success=false');
 
@@ -132,6 +127,7 @@ async function main() {
   if (!/^\d{4}-\d{2}$/.test(args.month || '')) {
     throw new Error('--month must be YYYY-MM');
   }
+  if (!args.apiUrl || !API_KEY) throw new Error('DASHBOARD_API_URL과 DASHBOARD_API_KEY를 설정하세요.');
   if (!args.clients.length) throw new Error('No clients selected');
 
   console.log(`Consults API check for ${args.month}`);

@@ -1,5 +1,9 @@
-// Copy this file to credentials.local.js for local-only account notes.
-// Do not commit credentials.local.js.
+// Copy this file to credentials.local.js. Never commit the copied file.
+window.URBANPLANAD_LOCAL_CONFIG = {
+  apiUrl: '',
+  apiKey: '',
+};
+
 window.URBANPLANAD_LOCAL_CREDENTIALS = {
   // btskin: [
   //   {

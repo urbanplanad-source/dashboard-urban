@@ -13,15 +13,11 @@ const expectedPaths = [
   'docs/apps-script-api.md',
   'apps-script/contracts_patch.gs',
   'apps-script/expenses_drafts_patch_v12.gs',
-  'apps-script/review_monitor_patch_v13.gs',
   'apps-script/consults_patch_v14.gs',
-  'apps-script/monthly_reset_patch_v16.gs',
+  'apps-script/internal_api_security_patch_v23.gs',
   'scripts/check-consults-api.mjs',
-  'scripts/naver-review-monitor.mjs',
   'scripts/fetch-report-context.mjs',
   'test/draft-approval-routing.test.mjs',
-  '.github/workflows/naver-review-monitor.yml',
-  'review-monitor.config.example.json',
   'credentials.local.example.js',
 ];
 
@@ -64,8 +60,9 @@ for (const rel of obsoleteRootFiles) {
 }
 
 await parseJson('package.json');
-await parseJson('review-monitor.config.example.json');
 await checkDashboardReportFiles();
+await checkPublicReportsAreStatic();
+await checkVercelAllowList();
 await checkNoHardcodedCredentials();
 await checkDraftClientRouting();
 await checkNaverWriterBridge();
@@ -135,6 +132,32 @@ async function checkDashboardReportFiles() {
       errors.push(`${rel}: reportFile target does not exist: ${reportFile}`);
     }
   }
+}
+
+async function checkPublicReportsAreStatic() {
+  const reports = [
+    'btskin.html', 'belrmon.html', 'gyunghee.html', 'eyecare.html',
+    'igochi.html', 'echi.html', 'seoulup.html', 'jejuexpress.html',
+  ];
+  const forbidden = ['script.google.com/macros', 'fetch(', 'action=summary', 'postLogs', 'consultsList'];
+  for (const rel of reports) {
+    const text = await fs.readFile(path.join(root, rel), 'utf8');
+    for (const marker of forbidden) {
+      if (text.includes(marker)) errors.push(`${rel}: public report contains internal network marker "${marker}"`);
+    }
+  }
+}
+
+async function checkVercelAllowList() {
+  const rules = await fs.readFile(path.join(root, '.vercelignore'), 'utf8');
+  const allowed = [
+    'btskin.html', 'belrmon.html', 'gyunghee.html', 'eyecare.html',
+    'igochi.html', 'echi.html', 'seoulup.html', 'jejuexpress.html', 'robots.txt',
+  ];
+  for (const rel of allowed) {
+    if (!rules.includes('!/' + rel)) errors.push(`.vercelignore: missing allow-list entry for ${rel}`);
+  }
+  if (rules.includes('!index.html')) errors.push('.vercelignore: dashboard index.html must not be public');
 }
 
 async function checkTextFiles(dir) {
@@ -240,8 +263,9 @@ async function checkNaverWriterBridge() {
     ['approval button blog-only routing', 'const showApprove = shouldShowApproveButton(draft);'],
     ['approved blog-only bulk list', 'const approvedBlogFiltered = filtered.filter(d => isNaverCommandEligible(d)'],
     ['selected click-order preservation', 'selectedDraftIds.map(id => approvedBlogById.get(id)).filter(Boolean)'],
-    ['single-line individual command', ' && npm.cmd run draft:dashboard -- --draft-id "${safeId}"'],
-    ['single-line bulk command', ' && npm.cmd run drafts:dashboard -- --draft-ids "${safeIds.join(\',\')}"'],
+    ['cross-shell command launcher', 'cmd.exe /d /c call "%USERPROFILE%'],
+    ['single-line individual command', '\\\\naver-writer\\\\scripts\\\\run-approved-drafts.cmd" "${safeId}"'],
+    ['single-line bulk command', '\\\\naver-writer\\\\scripts\\\\run-approved-drafts.cmd" "${safeIds.join(\',\')}"'],
     ['verified clipboard fallback', "document.execCommand('copy') !== true"],
     ['selected-copy feedback', 'setSelectedCommandCopied'],
     ['all-copy feedback', 'setAllCommandCopied'],
@@ -340,9 +364,9 @@ function isSourceFile(rel) {
 }
 
 async function checkScriptSyntax() {
-  await checkNodeSyntax('scripts/naver-review-monitor.mjs');
   await checkNodeSyntax('scripts/fetch-report-context.mjs');
   await checkNodeSyntax('scripts/check-consults-api.mjs');
+  await checkNodeSyntax('scripts/consult-backfill.mjs');
   await checkNodeSyntax('test/draft-approval-routing.test.mjs');
 }
 

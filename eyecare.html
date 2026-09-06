@@ -1361,9 +1361,6 @@
 
 
 <script>
-  const API_URL = 'https://script.google.com/macros/s/AKfycbwUsy5dDEG-t4FszWRCj-f0-FLIOY4SPMatiNsm55xM7bFXzaAEFS6McQdvmXT85dT0/exec';
-  const CLIENT_ID = 'eyecare';
-  const CURRENT_MONTH = '2026-03';
 
   const CHANNEL_TAG = {
     '블로그':        '<span class="tag tag-blog">블로그</span>',
@@ -1401,64 +1398,11 @@
     };
   }
 
-  let marLoaded = false;
-
-  function loadMarchContent() {
-    if (marLoaded) return;
-    marLoaded = true;
-
-    fetch(API_URL + '?action=postLogs')
-      .then(r => r.json())
-      .then(res => {
-        const posts = (res.data || []).map(normalizePostLog).filter(p =>
-          p.clientId === CLIENT_ID && p.month === CURRENT_MONTH
-        );
-        renderMarchContent(posts);
-      })
-      .catch(err => {
-        document.getElementById('mar-content-area').innerHTML =
-          '<p style="font-size:14px;color:var(--muted);padding:20px;">데이터를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.</p>';
-        document.getElementById('mar-chip').textContent = '오류';
-        marLoaded = false;
-      });
-  }
-
-  function renderMarchContent(posts) {
-    const count = posts.length;
-    document.getElementById('mar-chip').textContent = count + '건';
-    document.getElementById('mar-content-count').textContent = count;
-
-    if (count === 0) {
-      document.getElementById('mar-content-area').innerHTML =
-        '<div style="padding:40px;text-align:center;color:var(--muted);">' +
-        '<div style="font-size:36px;margin-bottom:12px;">📭</div>' +
-        '<p style="font-size:14px;">아직 발행된 콘텐츠가 없습니다.<br>발행 기록을 저장하면 자동으로 여기에 표시됩니다.</p>' +
-        '</div>';
-      return;
-    }
-
-    let rows = posts.map((p, i) => {
-      const title = p.url
-        ? '<a href="' + p.url + '" target="_blank" style="color:var(--blue);text-decoration:none;">' + (p.title || '(제목없음)') + '</a>'
-        : (p.title || '(제목없음)');
-      const date = p.publishedAt ? '<span style="color:var(--muted);font-size:12px;"> · ' + p.publishedAt + '</span>' : '';
-      return '<tr><td>' + (i+1) + '</td><td>' + title + date + '</td><td>' + channelTag(p.channel || '홈페이지') + '</td></tr>';
-    }).join('');
-
-    document.getElementById('mar-content-area').innerHTML =
-      '<div style="overflow-x:auto;">' +
-      '<table class="content-table">' +
-      '<thead><tr><th>#</th><th>제목</th><th>채널</th></tr></thead>' +
-      '<tbody>' + rows + '</tbody>' +
-      '</table></div>';
-  }
-
   function switchTab(id, e) {
     document.querySelectorAll('.month-tab').forEach(t => t.classList.remove('active'));
     (e ? e.currentTarget : document.querySelector('.month-tab')).classList.add('active');
     document.querySelectorAll('.report-panel').forEach(p => p.classList.remove('active'));
     document.getElementById('panel-' + id).classList.add('active');
-    if (id === 'mar') loadMarchContent();
   }
 
   document.addEventListener('DOMContentLoaded', () => {});

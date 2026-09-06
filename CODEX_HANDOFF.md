@@ -59,7 +59,10 @@ Naver writer:
 npm.cmd run check
 npm.cmd run dashboard:drafts -- --channel blog --limit 5
 npm.cmd run draft:dashboard -- --draft-id DRAFT_ID --dry-run
+cmd.exe /d /c call "%USERPROFILE%\Desktop\개발 작업\naver-writer\scripts\run-approved-drafts.cmd" "DRAFT_ID_1,DRAFT_ID_2"
 ```
+
+The dashboard's single and bulk `CMD 복사` buttons use the final launcher form above so the same copied command works from both Windows CMD and PowerShell.
 
 Hospital GEO:
 
